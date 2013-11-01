@@ -9,5 +9,5 @@ Elm mode for emacs
 
 2. Add the following lines to your .emacs file
 
-    (add-to-list 'load-path "~/path/to/elm-mode/")
-    (require 'elm-mode)
+  (add-to-list 'load-path "~/path/to/elm-mode/")
+  (require 'elm-mode)
