@@ -3,6 +3,11 @@ elm-mode
 
 Elm mode for emacs
 
+## Features
+
+1. Syntax highlighting
+2. Intelligent indentation
+
 ## Installation
 
 1. Download or clone this repository
