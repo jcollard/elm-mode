@@ -24,6 +24,7 @@
   "Keymap for Elm major mode")
 
 (require 'elm-indent)
+(require 'elm-indentation)
 (require 'elm-font-lock)
 
 ;;;###autoload

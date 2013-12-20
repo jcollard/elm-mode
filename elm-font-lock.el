@@ -29,14 +29,6 @@ and `unicode'."
                  (const unicode)
                  (const japanese-jisx0208)))
 
-(defun elm-font-lock-dot-is-not-composition (start)
-  "Return non-nil if the \".\" at START is not a composition operator.
-This is the case if the \".\" is part of a \"forall <tvar> . <type>\"."
-  (save-excursion
-    (goto-char start)
-    (re-search-backward "\\<forall\\>[^.\"]*\\="
-                        (line-beginning-position) t)))
-
 ;; Use new vars for the font-lock faces.  The indirection allows people to
 ;; use different faces than in other modes, as before.
 (defvar elm-keyword-face 'font-lock-keyword-face)
@@ -93,10 +85,7 @@ Regexp match data 0 points to the chars."
 (defun elm-font-lock-keywords-create (literate)
   "Create fontification definitions for Elm scripts.
 Returns keywords suitable for `font-lock-keywords'."
-  (let* (;; Bird-style literate scripts start a line of code with
-         ;; "^>", otherwise a line of code starts with "^".
-         (line-prefix (if (eq literate 'bird) "^> ?" "^"))
-
+  (let* (
          ;; Most names are borrowed from the lexical syntax of the Elm
          ;; report.
          ;; Some of these definitions have been superseded by using the
@@ -123,22 +112,14 @@ Returns keywords suitable for `font-lock-keywords'."
          ;; Reserved operations
          (reservedsym
           (concat "\\S_"
-                  ;; (regexp-opt '(".." ":" "=" "\\" "|" "<-" "->"
-                  ;;            "@" "~" "=>") t)
-                  "\\(->\\|\\.\\.\\|:\\|∷\\|<-\\|=>\\|[=@\\|~]\\)"
+                  ;; -> . .. :: : <~ =
+                  "\\(->\\|\\.\\|\\.\\.\\|::\\|:\\|<~\\|=\\)"
                   "\\S_"))
          ;; Reserved identifiers
          (reservedid
           (concat "\\<"
-                  ;; `as', `hiding', and `qualified' are part of the import
-                  ;; spec syntax, but they are not reserved.
-                  ;; `_' can go in here since it has temporary word syntax.
-                  ;; (regexp-opt
-                  ;;  '("case" "class" "data" "default" "deriving" "do"
-                  ;;    "else" "if" "import" "in" "infix" "infixl"
-                  ;;    "infixr" "instance" "let" "module" "newtype" "of"
-                  ;;    "then" "type" "where" "_") t)
-                  "\\(_\\|c\\(ase\\|lass\\)\\|d\\(ata\\|e\\(fault\\|riving\\)\\|o\\)\\|else\\|i\\(mport\\|n\\(fix[lr]?\\|stance\\)\\|[fn]\\)\\|let\\|module\\|mdo\\|newtype\\|of\\|rec\\|proc\\|t\\(hen\\|ype\\)\\|where\\)"
+		  ;; case data else if import open in let module of then type
+                  "\\(_\\|case\\|data\\|else\\|if\\|import\\|open\\|in\\|let\\|module\\|of\\|then\\|type\\)"
                   "\\>"))
 
          ;; This unreadable regexp matches strings and character
@@ -153,19 +134,19 @@ Returns keywords suitable for `font-lock-keywords'."
          ;; Top-level declarations
          (topdecl-var
           (concat line-prefix "\\(" varid "\\)\\s-*"
-                  ;; optionally allow for a single newline after identifier
-                  ;; NOTE: not supported for bird-style .lhs files
-                  (if (eq literate 'bird) nil "\\([\n]\\s-+\\)?")
                   ;; A toplevel declaration can be followed by a definition
-                  ;; (=), a type (:) or (∷), a guard, or a pattern which can
+                  ;; (=), a type (:), a guard, or a pattern which can
                   ;; either be a variable, a constructor, a parenthesized
                   ;; thingy, or an integer or a string.
-                  "\\(" varid "\\|" conid "\\|:\\|∷\\|=\\||\\|\\s(\\|[0-9\"']\\)"))
+                  "\\(" varid "\\|" conid "\\|:\\|=\\||\\|\\s(\\|[0-9\"']\\)"))
          (topdecl-var2
           (concat line-prefix "\\(" varid "\\|" conid "\\)\\s-*`\\(" varid "\\)`"))
          (topdecl-sym
           (concat line-prefix "\\(" varid "\\|" conid "\\)\\s-*\\(" sym "\\)"))
          (topdecl-sym2 (concat line-prefix "(\\(" sym "\\))"))
+
+	 (comments
+          (concat ""))
 
          keywords)
 
@@ -231,65 +212,9 @@ Returns keywords suitable for `font-lock-keywords'."
                       elm-operator-face))))
     (unless (boundp 'font-lock-syntactic-keywords)
       (case literate
-        (bird
          (setq keywords
-               `(("^[^>\n].*$" 0 elm-comment-face t)
-                 ,@keywords
-                 ("^>" 0 elm-default-face t))))
-        ((latex tex)
-         (setq keywords
-               `((elm-fl-latex-comments 0 'font-lock-comment-face t)
-                 ,@keywords)))))
+               `(@keywords))))
     keywords))
-
-;; The next three aren't used in Emacs 21.
-
-(defvar elm-fl-latex-cache-pos nil
-  "Position of cache point used by `elm-fl-latex-cache-in-comment'.
-Should be at the start of a line.")
-
-(defvar elm-fl-latex-cache-in-comment nil
-  "If `elm-fl-latex-cache-pos' is outside a
-\\begin{code}..\\end{code} block (and therefore inside a comment),
-this variable is set to t, otherwise nil.")
-
-(defun elm-fl-latex-comments (end)
-  "Sets `match-data' according to the region of the buffer before end
-that should be commented under LaTeX-style literate scripts."
-  (let ((start (point)))
-    (if (= start end)
-        ;; We're at the end.  No more to fontify.
-        nil
-      (if (not (eq start elm-fl-latex-cache-pos))
-          ;; If the start position is not cached, calculate the state
-          ;; of the start.
-          (progn
-            (setq elm-fl-latex-cache-pos start)
-            ;; If the previous \begin{code} or \end{code} is a
-            ;; \begin{code}, then start is not in a comment, otherwise
-            ;; it is in a comment.
-            (setq elm-fl-latex-cache-in-comment
-                  (if (and
-                       (re-search-backward
-                        "^\\(\\(\\\\begin{code}\\)\\|\\(\\\\end{code}\\)\\)$"
-                        (point-min) t)
-                       (match-end 2))
-                      nil t))
-            ;; Restore position.
-            (goto-char start)))
-      (if elm-fl-latex-cache-in-comment
-          (progn
-            ;; If start is inside a comment, search for next \begin{code}.
-            (re-search-forward "^\\\\begin{code}$" end 'move)
-            ;; Mark start to end of \begin{code} (if present, till end
-            ;; otherwise), as a comment.
-            (set-match-data (list start (point)))
-            ;; Return point, as a normal regexp would.
-            (point))
-        ;; If start is inside a code block, search for next \end{code}.
-        (if (re-search-forward "^\\\\end{code}$" end t)
-            ;; If one found, mark it as a comment, otherwise finish.
-            (point))))))
 
 (defconst elm-basic-syntactic-keywords
   '(;; Character constants (since apostrophe can't have string syntax).
@@ -313,94 +238,22 @@ that should be commented under LaTeX-style literate scripts."
                              (t "_")))) ; other symbol sequence
     ))
 
-(defconst elm-bird-syntactic-keywords
-  (cons '("^[^\n>]"  (0 "<"))
-        elm-basic-syntactic-keywords))
 
-(defconst elm-latex-syntactic-keywords
-  (append
-   '(("^\\\\begin{code}\\(\n\\)" 1 "!")
-     ;; Note: buffer is widened during font-locking.
-     ("\\`\\(.\\|\n\\)" (1 "!"))               ; start comment at buffer start
-     ("^\\(\\\\\\)end{code}$" 1 "!"))
-   elm-basic-syntactic-keywords))
 
-(defcustom elm-font-lock-haddock (boundp 'font-lock-doc-face)
-  "If non-nil try to highlight Haddock comments specially."
-  :type 'boolean
-  :group 'elm)
-
-(defvar elm-font-lock-seen-haddock nil)
-(make-variable-buffer-local 'elm-font-lock-seen-haddock)
-
-(defun elm-syntactic-face-function (state)
-  "`font-lock-syntactic-face-function' for Elm."
-  (cond
-   ((nth 3 state) font-lock-string-face) ; as normal
-   ;; Else comment.  If it's from syntax table, use default face.
-   ((or (eq 'syntax-table (nth 7 state))
-        (and (eq elm-literate 'bird)
-             (memq (char-before (nth 8 state)) '(nil ?\n))))
-    elm-literate-comment-face)
-   ;; Try and recognize Haddock comments.  From what I gather from its
-   ;; documentation, its comments can take the following forms:
-   ;; a) {-| ... -}
-   ;; b) {-^ ... -}
-   ;; c) -- | ...
-   ;; d) -- ^ ...
-   ;; e) -- ...
-   ;; Where `e' is the tricky one: it is only a Haddock comment if it
-   ;; follows immediately another Haddock comment.  Even an empty line
-   ;; breaks such a sequence of Haddock comments.  It is not clear if `e'
-   ;; can follow any other case, so I interpreted it as following only cases
-   ;; c,d,e (not a or b).  In any case, this `e' is expensive since it
-   ;; requires extra work for each and every non-Haddock comment, so I only
-   ;; go through the more expensive check if we've already seen a Haddock
-   ;; comment in the buffer.
-   ((and elm-font-lock-haddock
-         (save-excursion
-           (goto-char (nth 8 state))
-           (or (looking-at "\\(-- \\|{-\\)[ \\t]*[|^]")
-               (and elm-font-lock-seen-haddock
-                    (looking-at "-- ")
-                    (let ((doc nil)
-                          pos)
-                      (while (and (not doc)
-                                  (setq pos (line-beginning-position))
-                                  (forward-comment -1)
-                                  (eq (line-beginning-position 2) pos)
-                                  (looking-at "--\\( [|^]\\)?"))
-                        (setq doc (match-beginning 1)))
-                      doc)))))
-    (set (make-local-variable 'elm-font-lock-seen-haddock) t)
-    font-lock-doc-face)
-   (t font-lock-comment-face)))
 
 (defconst elm-font-lock-keywords
   (elm-font-lock-keywords-create nil)
   "Font lock definitions for non-literate Elm.")
 
-(defconst elm-font-lock-bird-literate-keywords
-  (elm-font-lock-keywords-create 'bird)
-  "Font lock definitions for Bird-style literate Elm.")
-
-(defconst elm-font-lock-latex-literate-keywords
-  (elm-font-lock-keywords-create 'latex)
-  "Font lock definitions for LaTeX-style literate Elm.")
-
 ;;;###autoload
 (defun elm-font-lock-choose-keywords ()
   (let ((literate (if (boundp 'elm-literate) elm-literate)))
     (case literate
-      (bird elm-font-lock-bird-literate-keywords)
-      ((latex tex) elm-font-lock-latex-literate-keywords)
       (t elm-font-lock-keywords))))
 
 (defun elm-font-lock-choose-syntactic-keywords ()
   (let ((literate (if (boundp 'elm-literate) elm-literate)))
     (case literate
-      (bird elm-bird-syntactic-keywords)
-      ((latex tex) elm-latex-syntactic-keywords)
       (t elm-basic-syntactic-keywords))))
 
 (defun elm-font-lock-defaults-create ()
@@ -466,10 +319,6 @@ To turn font locking on for all Elm buffers, add this to .emacs:
 To turn font locking on for the current buffer, call
 `turn-on-elm-font-lock'.  To turn font locking off in the current
 buffer, call `turn-off-elm-font-lock'.
-
-Bird-style literate Elm scripts are supported: If the value of
-`elm-literate-bird-style' (automatically set by the Elm mode
-of Moss&Thorn) is non-nil, a Bird-style literate script is assumed.
 
 Invokes `elm-font-lock-hook' if not nil."
   (elm-font-lock-defaults-create)
