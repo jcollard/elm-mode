@@ -16,10 +16,21 @@
 ;; Elm mode hook for user defined functionality
 (defvar elm-mode-hook nil)
 
+(defun elm-comment-dwim (arg)
+  "Comment or uncomment current line or region in a smart way.
+For detail, see `comment-dwim'."
+  (interactive "*P")
+  (require 'newcomment)
+  (let (
+        (comment-start "--") (comment-end "")
+        )
+    (comment-dwim arg)))
+
 ;; Elm mode keyboard short cuts
 (defvar elm-mode-map
   (let ((map (make-keymap)))
     (define-key map "\C-j" 'newline-and-indent)
+    (define-key map [remap comment-dwim] 'elm-comment-dwim)
     map)
   "Keymap for Elm major mode")
 
@@ -31,7 +42,7 @@
 (add-to-list 'auto-mode-alist '("\\.elm\\'" . elm-mode))
 
 (defun elm-mode ()
-  "Major mode for editing Workflow Process Description Language files"
+  "Major mode for editing Elm source code"
   (interactive)
   (kill-all-local-variables)
   (use-local-map elm-mode-map)
