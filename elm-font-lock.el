@@ -20,7 +20,7 @@
 ;; Reserved Keywords
 
 (defconst keywords 
-  '("data" "let" "case" "in" "if" 
+  '("data" "let" "case" "in" "if" "of"
     "then" "else" "otherwise" "module" 
     "import" "open" "as" "type"
     "foreign")
@@ -65,7 +65,7 @@
 
 ;; Types and Modules
 (defconst regexp-type
-  "[A-Z][^ \n]*")
+  "\\<[A-Z][^ \n]*\\>")
 
 (defconst elm-font-lock-types
   (list
