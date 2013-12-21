@@ -16,6 +16,9 @@
 (require 'font-lock)
 (with-no-warnings (require 'cl))
 
+
+;; Reserved Keywords
+
 (defconst keywords 
   '("data" "let" "case" "in" "if" 
     "then" "else" "otherwise" "module" 
@@ -26,19 +29,20 @@
 (defconst regexp-keywords         
   (concat (concat "\\<" (regexp-opt keywords t)) "\\>"))
 
+(defconst elm-font-lock-keywords
+  (list
+   (cons regexp-keywords font-lock-keyword-face))
+  "Highlighting for keywords")
+
+;; Comments
+
 (defconst regexp-single-line-comment
   "\-\-[^\n]*")
 
 ;; TODO: Not sure why this only works on loading of an elm file
+;; Doesn't work for complex multi-line comments
 (defconst regexp-multi-line-comment
   "\{\-[[:unibyte:]]+?\-\}")
-
-  
-(defconst elm-font-lock-keywords
-  (list
-   (cons regexp-keywords font-lock-keyword-face)
-   )
-  "Highlighting for keywords")
 
 (defconst elm-font-lock-comments
   (list
@@ -46,15 +50,34 @@
    (cons regexp-multi-line-comment font-lock-comment-face))
   "Highlighting for comments")
 
+;; Function names
+(defconst regexp-function
+  "^[a-z][^ ]*")
+
+(defconst elm-font-lock-functions
+  (list
+   (cons regexp-function font-lock-function-name-face))
+  "Highlighting for function names")
+
+;; Types and Modules
+(defconst regexp-type
+  "[A-Z][^ \n]*")
+
+(defconst elm-font-lock-types
+  (list
+   (cons regexp-type font-lock-type-face))
+  "Highlighting for module names and types")
+
 (defconst elm-font-lock-highlighting
   (append
    elm-font-lock-comments
-   elm-font-lock-keywords))
+   elm-font-lock-keywords
+   elm-font-lock-functions
+   elm-font-lock-types))
 
 (defun turn-on-elm-font-lock ()
   (setq font-lock-multiline t)
   (set (make-local-variable 'font-lock-defaults) '(elm-font-lock-highlighting)))
-
 
 
 (provide 'elm-font-lock)
