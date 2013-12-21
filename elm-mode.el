@@ -29,7 +29,6 @@ For detail, see `comment-dwim'."
 ;; Elm mode keyboard short cuts
 (defvar elm-mode-map
   (let ((map (make-keymap)))
-    (define-key map "\C-j" 'newline-and-indent)
     (define-key map [remap comment-dwim] 'elm-comment-dwim)
     map)
   "Keymap for Elm major mode")
@@ -46,7 +45,7 @@ For detail, see `comment-dwim'."
   (interactive)
   (kill-all-local-variables)
   (use-local-map elm-mode-map)
-;;  (elm-indent-mode)
+  (elm-indent-mode)
   (turn-on-elm-font-lock)
   (setq major-mode 'elm-mode)
   (setq mode-name "Elm")
