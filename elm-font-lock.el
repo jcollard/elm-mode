@@ -36,18 +36,22 @@
 
 ;; Comments
 
+;; TODO: Comments like the following
+;;   -- "literal string"
+;; fail due to the "string"
 (defconst regexp-single-line-comment
-  "\-\-[^\n]*")
+  "\\(\-\-[^\n]*\\)")
 
-;; TODO: Not sure why this only works on loading of an elm file
-;; Doesn't work for complex multi-line comments
-(defconst regexp-multi-line-comment
-  "\{\-[[:unibyte:]]+?\-\}")
+(defvar elm-mode-syntax-table
+  (let ((st (make-syntax-table)))
+    (modify-syntax-entry ?{ ". 1n" st)
+    (modify-syntax-entry ?- ". 23n" st)
+    (modify-syntax-entry ?} ". 4n" st)
+   st))
 
 (defconst elm-font-lock-comments
   (list
-   (cons regexp-single-line-comment font-lock-comment-face)
-   (cons regexp-multi-line-comment font-lock-comment-face))
+   (cons regexp-single-line-comment font-lock-comment-face))
   "Highlighting for comments")
 
 ;; Function names
@@ -77,6 +81,7 @@
 
 (defun turn-on-elm-font-lock ()
   (setq font-lock-multiline t)
+  (set-syntax-table elm-mode-syntax-table)
   (set (make-local-variable 'font-lock-defaults) '(elm-font-lock-highlighting)))
 
 

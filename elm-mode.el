@@ -30,31 +30,12 @@
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.elm\\'" . elm-mode))
 
-;; Are we looking at a literate script?
-(defvar elm-literate nil
-  "*If not nil, the current buffer contains a literate Elm script.
-Possible values are: `bird' and `tex', for Bird-style and LaTeX-style
-literate scripts respectively.  Set by `elm-mode' and
-`literate-elm-mode'.  For an ambiguous literate buffer -- i.e. does
-not contain either \"\\begin{code}\" or \"\\end{code}\" on a line on
-its own, nor does it contain \">\" at the start of a line -- the value
-of `elm-literate-default' is used.")
-(make-variable-buffer-local 'elm-literate)
-(put 'elm-literate 'safe-local-variable 'symbolp)
-;; Default literate style for ambiguous literate buffers.
-(defcustom elm-literate-default 'bird
-  "Default value for `elm-literate'.
-Used if the style of a literate buffer is ambiguous.  This variable should
-be set to the preferred literate style."
-  :group 'elm
-  :type '(choice (const bird) (const tex) (const nil)))
-
 (defun elm-mode ()
   "Major mode for editing Workflow Process Description Language files"
   (interactive)
   (kill-all-local-variables)
   (use-local-map elm-mode-map)
-  (elm-indent-mode)
+;;  (elm-indent-mode)
   (turn-on-elm-font-lock)
   (setq major-mode 'elm-mode)
   (setq mode-name "Elm")
