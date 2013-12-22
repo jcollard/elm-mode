@@ -16,6 +16,12 @@
 ;; Elm mode hook for user defined functionality
 (defvar elm-mode-hook nil)
 
+(require 'elm-indent)
+(require 'elm-indentation)
+(require 'elm-font-lock)
+(require 'elm-repl)
+
+
 (defun elm-comment-dwim (arg)
   "Comment or uncomment current line or region in a smart way.
 For detail, see `comment-dwim'."
@@ -30,12 +36,9 @@ For detail, see `comment-dwim'."
 (defvar elm-mode-map
   (let ((map (make-keymap)))
     (define-key map [remap comment-dwim] 'elm-comment-dwim)
+    (define-key map "\C-c\C-l" 'run-elm-repl)
     map)
   "Keymap for Elm major mode")
-
-(require 'elm-indent)
-(require 'elm-indentation)
-(require 'elm-font-lock)
 
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.elm\\'" . elm-mode))
