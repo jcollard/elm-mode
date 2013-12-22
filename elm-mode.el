@@ -26,12 +26,19 @@
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.elm\\'" . elm-mode))
 
+
 (defun elm-mode ()
   "Major mode for editing Elm source code"
   (interactive)
+  (setq indent-tabs-mode nil)
   (kill-all-local-variables)
   (use-local-map elm-mode-map)
   (elm-indent-mode)
+  ;; TODO
+  ;; This line makes tabs use spaces which is what
+  ;; we need for elm. However, I think it overrides behavior
+  ;; outside of elm-mode
+  (setq-default indent-tabs-mode nil)
   (turn-on-elm-font-lock)
   (setq major-mode 'elm-mode)
   (setq mode-name "Elm")

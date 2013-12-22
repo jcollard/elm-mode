@@ -1,7 +1,8 @@
 ;;; elm-indentation.el -- indentation module for Elm Mode
 
-;;; This file is a translation of haskell-indentation written by
-;;; Kristof Bastiaensen
+;; Copyright (C) 2009  Kristof Bastiaensen
+
+;; Author: Kristof Bastiaensen <kristof.bastiaensen@vleeuwen.org>
 
 ;; This file is not part of GNU Emacs.
 
@@ -20,9 +21,37 @@
 
 ;;; Commentary:
 
+;; Installation:
+;;
+;; To turn indentation on for all Elm buffers under Elm mode
+;; <http://www.elm.org/elm-mode/> add this to .emacs:
+;;
+;;    (add-hook elm-mode-hook 'turn-on-elm-indentation)
+;;
+;; Otherwise, call `elm-indentation-mode'.
+
+;;; Code:
 
 (require 'syntax)
 (with-no-warnings (require 'cl))
+
+(defvar elm-literate nil
+  "*If not nil, the current buffer contains a literate Elm script.
+Possible values are: `bird' and `tex', for Bird-style and LaTeX-style
+literate scripts respectively.  Set by `elm-mode' and
+`literate-elm-mode'.  For an ambiguous literate buffer -- i.e. does
+not contain either \"\\begin{code}\" or \"\\end{code}\" on a line on
+its own, nor does it contain \">\" at the start of a line -- the value
+of `elm-literate-default' is used.")
+(make-variable-buffer-local 'elm-literate)
+(put 'elm-literate 'safe-local-variable 'symbolp)
+;; Default literate style for ambiguous literate buffers.
+(defcustom elm-literate-default 'bird
+  "Default value for `elm-literate'.
+Used if the style of a literate buffer is ambiguous.  This variable should
+be set to the preferred literate style."
+  :group 'elm
+  :type '(choice (const bird) (const tex) (const nil)))
 
 ;; Dynamically scoped variables.
 (defvar following-token)

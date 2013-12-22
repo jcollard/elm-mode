@@ -1,3 +1,14 @@
+;;; elm-indent.el --- "semi-intelligent" indentation module for Elm Mode
+
+;; Copyright 2004, 2005, 2007, 2008, 2009  Free Software Foundation, Inc.
+;; Copyright 1997-1998  Guy Lapalme
+
+;; Author: 1997-1998 Guy Lapalme <lapalme@iro.umontreal.ca>
+
+;; Keywords: indentation Elm layout-rule
+;; Version: 1.2
+;; URL: http://www.iro.umontreal.ca/~lapalme/layout/index.html
+
 ;; This file is not part of GNU Emacs.
 
 ;; This file is free software; you can redistribute it and/or modify
@@ -12,6 +23,68 @@
 
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+;;; Commentary:
+
+;; Purpose:
+;;
+;; To support automatic indentation of Elm programs using
+;; the layout rule described in section 1.5 and appendix B.3 of the
+;; the Elm report.  The rationale and the implementation principles
+;; are described in an article to appear in Journal of Functional Programming.
+;;   "Dynamic tabbing for automatic indentation with the layout rule"
+;;
+;; It supports literate scripts.
+;; Elm indentation is performed
+;;     within \begin{code}...\end{code} sections of a literate script
+;;     and in lines beginning with > with Bird style literate script
+;; TAB aligns to the left column outside of these sections.
+;;
+;; Installation:
+;;
+;; To turn indentation on for all Elm buffers under the Elm
+;; mode of Moss&Thorn <http://www.elm.org/elm-mode/>
+;; add this to .emacs:
+;;
+;;    (add-hook 'elm-mode-hook 'turn-on-elm-indent)
+;;
+;; Otherwise, call `turn-on-elm-indent'.
+;;
+;;
+;; Customisation:
+;;       The "standard" offset for statements is 4 spaces.
+;;       It can be changed by setting the variable "elm-indent-offset" to
+;;       another value
+;;
+;;       The default number of blanks after > in a Bird style literate script
+;;       is 1; it can be changed by setting the variable
+;;       "elm-indent-literate-Bird-default-offset"
+;;
+;;       `elm-indent-hook' is invoked if not nil.
+;;
+;; All functions/variables start with
+;; `(turn-(on/off)-)elm-indent' or `elm-indent-'.
+
+;; This file can also be used as a hook for the Hugs Mode developed by
+;;         Chris Van Humbeeck <chris.vanhumbeeck@cs.kuleuven.ac.be>
+;; It can be obtained at:
+;; http://www-i2.informatik.rwth-aachen.de/Forschung/FP/Elm/hugs-mode.el
+;;
+;; For the Hugs mode put the following in your .emacs
+;;
+;;(setq auto-mode-alist (append auto-mode-alist '(("\\.hs\\'" . hugs-mode))))
+;;(autoload 'hugs-mode "hugs-mode" "Go into hugs mode" t)
+;;
+;; If only the indentation mode is used then replace the two
+;; preceding lines with
+;;(setq auto-mode-alist (append auto-mode-alist
+;;                              '(("\\.hs\\'" . turn-on-elm-indent))))
+;;(autoload 'turn-on-elm-indent "hindent" "Indentation mode for Elm" t)
+;;
+;; For indentation in both cases then add the following to your .emacs
+;;(add-hook 'hugs-mode-hook 'turn-on-elm-indent)
+;;(autoload 'elm-indent-cycle "hindent" "Indentation cycle for Elm" t)
+;;
 
 ;;; Code:
 
@@ -90,7 +163,7 @@ Uses free var `elm-indent-info'."
   (setq column (+ column offset))
   ;; (if (and elm-indent-tab-align (> offset 0))
   ;;     (* 8 (/ (+ column 7) 8))
-    column) ;; )
+  column) ;; )
 
 (defun elm-indent-push-pos-offset (pos &optional offset)
   "Pushes indentation information for the column corresponding to POS
@@ -313,7 +386,7 @@ Returns the location of the start of the comment, nil otherwise."
            (nth 8 pps)))))
 
 (defvar elm-indent-off-side-keywords-re
-      "\\<\\(do\\|let\\|of\\|where\\|mdo\\|rec\\)\\>[ \t]*")
+  "\\<\\(do\\|let\\|of\\|where\\|mdo\\|rec\\)\\>[ \t]*")
 
 (defun elm-indent-type-at-point ()
   "Return the type of the line (also puts information in `match-data')."
@@ -354,14 +427,14 @@ Returns the location of the start of the comment, nil otherwise."
   "Move point to the next symbol."
   (skip-syntax-forward ")" end)
   (if (< (point) end)
-     (progn
-       (forward-sexp 1)
-       (elm-indent-skip-blanks-and-newlines-forward end))))
+      (progn
+        (forward-sexp 1)
+        (elm-indent-skip-blanks-and-newlines-forward end))))
 
 (defun elm-indent-next-symbol-safe (end)
   "Puts point to the next following symbol, or to end if there are no more symbols in the sexp."
   (condition-case errlist (elm-indent-next-symbol end)
-      (error (goto-char end))))
+    (error (goto-char end))))
 
 (defun elm-indent-separate-valdef (start end)
   "Return a list of positions for important parts of a valdef."
@@ -704,49 +777,49 @@ than an identifier, a guard or rhs."
                (string-match elm-indent-start-keywords-re valname-string))
           (elm-indent-push-pos-offset valname)
         (case                           ; general case
-         (elm-indent-find-case test)
-         ;; "1.1.11"   1= vn gd rh arh
-         (1 (elm-indent-push-pos aft-rhs-sign))
-         ;; "1.1.10"   2= vn gd rh
-         (2 (if last-line
-                   (elm-indent-push-pos-offset guard)
+            (elm-indent-find-case test)
+          ;; "1.1.11"   1= vn gd rh arh
+          (1 (elm-indent-push-pos aft-rhs-sign))
+          ;; "1.1.10"   2= vn gd rh
+          (2 (if last-line
+                 (elm-indent-push-pos-offset guard)
                (elm-indent-push-pos-offset rhs-sign 2)))
-         ;; "1.1100"   3= vn gd agd
-         (3 (elm-indent-push-pos aft-guard))
-         ;; "1.1000"   4= vn gd
-         (4 (elm-indent-push-pos-offset guard 2))
-         ;; "1.0011"   5= vn rh arh
-         (5 (elm-indent-push-pos valname)
-            (elm-indent-push-pos aft-rhs-sign))
-         ;; "1.0010"   6= vn rh
-         (6 (if last-line
-                (elm-indent-push-pos-offset valname)
-              (elm-indent-push-pos-offset rhs-sign 2)))
-         ;; "110000"   7= vn avn
-         (7 (elm-indent-push-pos-offset aft-valname))
-         ;; "100000"   8= vn
-         (8 (elm-indent-push-pos valname))
-         ;; "001.11"   9= gd rh arh
-         (9 (elm-indent-push-pos aft-rhs-sign))
-         ;; "001.10"  10= gd rh
-         (10 (if last-line
-                   (elm-indent-push-pos-offset guard)
+          ;; "1.1100"   3= vn gd agd
+          (3 (elm-indent-push-pos aft-guard))
+          ;; "1.1000"   4= vn gd
+          (4 (elm-indent-push-pos-offset guard 2))
+          ;; "1.0011"   5= vn rh arh
+          (5 (elm-indent-push-pos valname)
+             (elm-indent-push-pos aft-rhs-sign))
+          ;; "1.0010"   6= vn rh
+          (6 (if last-line
+                 (elm-indent-push-pos-offset valname)
                (elm-indent-push-pos-offset rhs-sign 2)))
-         ;; "001100"  11= gd agd
-         (11 (if (elm-indent-no-otherwise guard)
-                   (elm-indent-push-pos aft-guard)))
-         ;; "001000"  12= gd
-         (12 (if last-line (elm-indent-push-pos-offset guard 2)))
-         ;; "000011"  13= rh arh
-         (13 (elm-indent-push-pos aft-rhs-sign))
-         ;; "000010"  14= rh
-         (14 (if last-line (elm-indent-push-pos-offset rhs-sign 2)))
-         ;; "000000"  15=
-         (t (error "elm-indent-other: %s impossible case" test ))))
+          ;; "110000"   7= vn avn
+          (7 (elm-indent-push-pos-offset aft-valname))
+          ;; "100000"   8= vn
+          (8 (elm-indent-push-pos valname))
+          ;; "001.11"   9= gd rh arh
+          (9 (elm-indent-push-pos aft-rhs-sign))
+          ;; "001.10"  10= gd rh
+          (10 (if last-line
+                  (elm-indent-push-pos-offset guard)
+                (elm-indent-push-pos-offset rhs-sign 2)))
+          ;; "001100"  11= gd agd
+          (11 (if (elm-indent-no-otherwise guard)
+                  (elm-indent-push-pos aft-guard)))
+          ;; "001000"  12= gd
+          (12 (if last-line (elm-indent-push-pos-offset guard 2)))
+          ;; "000011"  13= rh arh
+          (13 (elm-indent-push-pos aft-rhs-sign))
+          ;; "000010"  14= rh
+          (14 (if last-line (elm-indent-push-pos-offset rhs-sign 2)))
+          ;; "000000"  15=
+          (t (error "elm-indent-other: %s impossible case" test ))))
       elm-indent-info)))
 
 (defun elm-indent-valdef-indentation (start end end-visible curr-line-type
-                                          indent-info)
+                                                indent-info)
   "Find indentation information for a value definition."
   (let ((elm-indent-info indent-info))
     (if (< start end-visible)
@@ -760,7 +833,7 @@ than an identifier, a guard or rhs."
       elm-indent-info)))
 
 (defun elm-indent-line-indentation (line-start line-end end-visible
-                                         curr-line-type indent-info)
+                                                   curr-line-type indent-info)
   "Compute indentation info between LINE-START and END-VISIBLE.
 Separate a line of program into valdefs between offside keywords
 and find indentation info for each part."
@@ -997,10 +1070,10 @@ is at the end of an otherwise-non-empty line."
   :group 'elm-indent
   :type '(repeat (choice string
                          (cons :tag "" (string :tag "keyword:")
-                         (cons :tag "" (integer :tag "offset")
-                         (choice (const nil)
-                                 (list :tag ""
-                                       (integer :tag "offset-pending"))))))))
+                               (cons :tag "" (integer :tag "offset")
+                                     (choice (const nil)
+                                             (list :tag ""
+                                                   (integer :tag "offset-pending"))))))))
 
 (defun elm-indent-skip-lexeme-forward ()
   (and (zerop (skip-syntax-forward "w"))
@@ -1072,18 +1145,18 @@ is at the end of an otherwise-non-empty line."
     ;; There might still be layout within the open structure.
     (let* ((end (point))
            (basic-indent-info
-             ;; Anything else than a ) is subject to layout.
-             (if (looking-at "\\s.\\|\\$ ")
-                 (elm-indent-point-to-col open) ; align a punct with (
-               (let ((follow (save-excursion
-                               (goto-char (1+ open))
-                               (elm-indent-skip-blanks-and-newlines-forward end)
-                               (point))))
-                 (if (= follow end)
-                     (save-excursion
-                       (goto-char open)
-                       (elm-indent-after-keyword-column nil nil 1))
-                   (elm-indent-point-to-col follow)))))
+            ;; Anything else than a ) is subject to layout.
+            (if (looking-at "\\s.\\|\\$ ")
+                (elm-indent-point-to-col open) ; align a punct with (
+              (let ((follow (save-excursion
+                              (goto-char (1+ open))
+                              (elm-indent-skip-blanks-and-newlines-forward end)
+                              (point))))
+                (if (= follow end)
+                    (save-excursion
+                      (goto-char open)
+                      (elm-indent-after-keyword-column nil nil 1))
+                  (elm-indent-point-to-col follow)))))
            (open-column (elm-indent-point-to-col open))
            (contour-line (elm-indent-contour-line (1+ open) end)))
       (if (null contour-line)
@@ -1250,23 +1323,23 @@ If P-ARG is t align all defs up to the mark.
 TYPE is either 'guard or 'rhs."
   (save-excursion
     (let (start-block end-block
-          (maxcol (if (eq type 'rhs) elm-indent-rhs-align-column 0))
-          contour sep defname defnamepos
-          defcol pos lastpos
-          regstack eqns-start start-found)
+                      (maxcol (if (eq type 'rhs) elm-indent-rhs-align-column 0))
+                      contour sep defname defnamepos
+                      defcol pos lastpos
+                      regstack eqns-start start-found)
       ;; find the starting and ending boundary points for alignment
       (if p-arg
           (if (mark)                    ; aligning everything in the region
-            (progn
-              (when (> (mark) (point)) (exchange-point-and-mark))
-              (setq start-block
-                    (save-excursion
-                      (goto-char (mark))
-                      (line-beginning-position)))
-              (setq end-block
-                  (progn (if (elm-indent-bolp)
-                             (elm-indent-forward-line -1))
-                         (line-end-position))))
+              (progn
+                (when (> (mark) (point)) (exchange-point-and-mark))
+                (setq start-block
+                      (save-excursion
+                        (goto-char (mark))
+                        (line-beginning-position)))
+                (setq end-block
+                      (progn (if (elm-indent-bolp)
+                                 (elm-indent-forward-line -1))
+                             (line-end-position))))
             (error "The mark is not set for aligning definitions"))
         ;; aligning the current definition
         (setq start-block (elm-indent-start-of-def))
@@ -1380,7 +1453,7 @@ TYPE is either 'guard or 'rhs."
 Alignment works only if all guards are to the south-east of their |."
   (interactive "*")
   (let ((pc (if (elm-indent-bolp) ?\012
-                (preceding-char)))
+              (preceding-char)))
         (pc1 (or (char-after (- (point) 2)) 0)))
     ;; check what guard to insert depending on the previous context
     (if (= pc ?\ )                      ; x = any char other than blank or |
