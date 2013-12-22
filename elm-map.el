@@ -38,6 +38,6 @@ For detail, see `comment-dwim'."
     (define-key elm-mode-map [menu-bar elm] (cons "Elm" menuMap))
 
     (define-key menuMap [elm-repl]
-      '("elm-repl" . elm-repl)))
+      '("elm-repl" . run-elm-repl)))
 
 (provide 'elm-map)
