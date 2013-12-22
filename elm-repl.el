@@ -44,4 +44,11 @@
     (select-window selected_window)))
 
 
+;; TODO: Add an load-elm-repl that searches for the nearest 
+;; elm_dependencies.json. It should use that directory as the root directory
+;; for loading the current buffer. This requires elm-repl to have a
+;; `cd` command for switching directories. elm-repl should also use the
+;; specified elm_dependencies.json to determine a default set of src-dirs to
+;; use when launched.
+
 (provide 'elm-repl)

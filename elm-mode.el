@@ -20,25 +20,8 @@
 (require 'elm-indentation)
 (require 'elm-font-lock)
 (require 'elm-repl)
+(require 'elm-map)
 
-
-(defun elm-comment-dwim (arg)
-  "Comment or uncomment current line or region in a smart way.
-For detail, see `comment-dwim'."
-  (interactive "*P")
-  (require 'newcomment)
-  (let (
-        (comment-start "--") (comment-end "")
-        )
-    (comment-dwim arg)))
-
-;; Elm mode keyboard short cuts
-(defvar elm-mode-map
-  (let ((map (make-keymap)))
-    (define-key map [remap comment-dwim] 'elm-comment-dwim)
-    (define-key map "\C-c\C-l" 'run-elm-repl)
-    map)
-  "Keymap for Elm major mode")
 
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.elm\\'" . elm-mode))
