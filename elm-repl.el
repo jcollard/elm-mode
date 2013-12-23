@@ -45,6 +45,22 @@
     ;; Switch focus back to the originally selected window
     (select-window selected_window)))
 
+(defun get-crd (path)
+  (concat (concat ":change-root \"" path) "\"\n"))
+ 
+;; Loads an interactive version elm-repl if there isn't already one running
+;; Changes the current root directory to be the directory with the closest
+;; `dependencies-file-name` if one exists otherwise sets it to be the 
+;; working directory of the file specified
+(defun load-elm-repl ()
+  (interactive)
+  (run-elm-repl)
+  (letrec ((dependency-file-path (find-dependency-file-path))
+	   (change-root-directory-command
+	      (if dependency-file-path (get-crd dependency-file-path)
+		                       (get-crd (get-file-directory)))))
+    (send-string (get-process "elm-repl") (concat ":reset\n" change-root-directory-command))))
+
 ;; TODO: Add an load-elm-repl that searches for the nearest 
 ;; elm_dependencies.json. It should use that directory as the root directory
 ;; for loading the current buffer. This requires elm-repl to have a
