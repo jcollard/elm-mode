@@ -66,11 +66,23 @@
     (send-string elm-repl change-root-directory-command)
     (send-string elm-repl (get-open-import (get-module-name)))))
 
+;; Pushes the selected region to elm-repl
+(defun push-elm-repl ()
+  (interactive)
+  (run-elm-repl)
+  (letrec ((to-push (buffer-substring-no-properties (mark) (point)))
+           (format-tp (replace-regexp-in-string "\n" "\\\\\n" to-push)))
+    (send-string (get-process "elm-repl") format-tp)
+    (send-string (get-process "elm-repl") "\n")))
+
 ;; TODO: Add an load-elm-repl that searches for the nearest 
 ;; elm_dependencies.json. It should use that directory as the root directory
 ;; for loading the current buffer. This requires elm-repl to have a
 ;; `cd` command for switching directories. elm-repl should also use the
 ;; specified elm_dependencies.json to determine a default set of src-dirs to
 ;; use when launched.
+
+;; TODO: When a command is sent to the elm-repl process, it would be nice if
+;; it was echoed in the process buffer
 
 (provide 'elm-repl)

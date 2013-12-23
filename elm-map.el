@@ -28,6 +28,7 @@ For detail, see `comment-dwim'."
   (let ((map (make-keymap)))
     (define-key map [remap comment-dwim] 'elm-comment-dwim)
     (define-key map "\C-c\C-l" 'load-elm-repl)
+    (define-key map "\C-c\C-p" 'push-elm-repl)
     map)
   "Keymap for Elm major mode")
 
@@ -37,6 +38,8 @@ For detail, see `comment-dwim'."
 (let ((menuMap (make-sparse-keymap "Elm")))
     (define-key elm-mode-map [menu-bar elm] (cons "Elm" menuMap))
     (define-key menuMap [elm-repl]
-      '("elm-repl" . load-elm-repl)))
+      '("elm-repl: Load Buffer" . load-elm-repl))
+    (define-key menuMap [elm-push]
+      '("elm-repl: Push Region" . push-elm-repl)))
 
 (provide 'elm-map)
