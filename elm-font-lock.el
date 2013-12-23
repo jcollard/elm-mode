@@ -22,7 +22,7 @@
 (defconst keywords 
   '("data" "let" "case" "in" "if" "of"
     "then" "else" "otherwise" "module" 
-    "import" "open" "as" "type"
+    "import" "open" "as" "type" "where"
     "foreign")
   "Special Keywords")
 
