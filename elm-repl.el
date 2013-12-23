@@ -14,18 +14,11 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 (require 'comint)
+(require 'elm-util)
 
 (defconst elm-repl-buffer
   "*elm-repl*")
 
-;; If splitting right would not half the width of the current
-;; buffer, splits right. Otherwise, splits below
-(defun intelligent-split-window ()
-  (let ((width (window-total-width))
-	(height (window-total-height)))
-    (if (> (/ width 2) height)
-	(split-window-right)
-        (split-window-below))))
 
 (defun run-elm-repl ()
   (interactive)
@@ -51,7 +44,6 @@
     
     ;; Switch focus back to the originally selected window
     (select-window selected_window)))
-
 
 ;; TODO: Add an load-elm-repl that searches for the nearest 
 ;; elm_dependencies.json. It should use that directory as the root directory
