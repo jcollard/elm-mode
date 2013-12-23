@@ -18,6 +18,15 @@
 (defconst elm-repl-buffer
   "*elm-repl*")
 
+;; If splitting right would not half the width of the current
+;; buffer, splits right. Otherwise, splits below
+(defun intelligent-split-window ()
+  (let ((width (window-total-width))
+	(height (window-total-height)))
+    (if (> (/ width 2) height)
+	(split-window-right)
+        (split-window-below))))
+
 (defun run-elm-repl ()
   (interactive)
   (letrec 
@@ -33,7 +42,7 @@
     ;; then select that window so elm-repl will be running there
     (if target_window      
 	(select-window target_window)
-      (let ((split_window (split-window)))
+      (let ((split_window (intelligent-split-window)))
 	(set-window-buffer split_window buffer)
 	(select-window split_window)))
     
