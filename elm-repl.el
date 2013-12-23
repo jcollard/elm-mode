@@ -19,7 +19,6 @@
 (defconst elm-repl-buffer
   "*elm-repl*")
 
-
 (defun run-elm-repl ()
   (interactive)
   (letrec 
@@ -47,6 +46,9 @@
 
 (defun get-crd (path)
   (concat (concat ":change-root \"" path) "\"\n"))
+
+(defun get-open-import (module)
+  (concat (concat "import open " module) "\n"))
  
 ;; Loads an interactive version elm-repl if there isn't already one running
 ;; Changes the current root directory to be the directory with the closest
@@ -55,11 +57,14 @@
 (defun load-elm-repl ()
   (interactive)
   (run-elm-repl)
-  (letrec ((dependency-file-path (find-dependency-file-path))
+  (letrec ((elm-repl (get-process "elm-repl"))
+           (dependency-file-path (find-dependency-file-path))
 	   (change-root-directory-command
 	      (if dependency-file-path (get-crd dependency-file-path)
 		                       (get-crd (get-file-directory)))))
-    (send-string (get-process "elm-repl") (concat ":reset\n" change-root-directory-command))))
+    (send-string elm-repl ":reset\n")
+    (send-string elm-repl change-root-directory-command)
+    (send-string elm-repl (get-open-import (get-module-name)))))
 
 ;; TODO: Add an load-elm-repl that searches for the nearest 
 ;; elm_dependencies.json. It should use that directory as the root directory
