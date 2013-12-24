@@ -41,24 +41,24 @@
 
 ;; Get the current working directory for the file being worked on
 (defun get-file-directory ()
-  (letrec ((file-path (buffer-file-name))
-	   (split-file-path (split-string file-path directory-seperator))
-	   (dir-path-list (butlast split-file-path))
-	   (dir-path (merge-path dir-path-list)))
+  (let* ((file-path (buffer-file-name))
+	 (split-file-path (split-string file-path directory-seperator))
+	 (dir-path-list (butlast split-file-path))
+	 (dir-path (merge-path dir-path-list)))
     dir-path))
 
 ;; Returns the name of the module in the current buffer based on
 ;; its filename and relative location to the nearest `dependencies-file-name`
 (defun get-module-name ()
-  (letrec ((m-d-path (find-dependency-file-path))
-	   (d-path (if m-d-path m-d-path (get-file-directory)))
-	   (d-split (split-string d-path directory-seperator))
-	   (f-path (buffer-file-name))
-	   (f-split (split-string f-path directory-seperator))
-	   (mod-split (remove-matching d-split f-split))
-	   (mod (intercalate "." mod-split))
-	   (mod-split2 (butlast (split-string mod "\\.")))
-	   (mod2 (intercalate "." mod-split2)))
+  (let* ((m-d-path (find-dependency-file-path))
+	 (d-path (if m-d-path m-d-path (get-file-directory)))
+	 (d-split (split-string d-path directory-seperator))
+	 (f-path (buffer-file-name))
+	 (f-split (split-string f-path directory-seperator))
+	 (mod-split (remove-matching d-split f-split))
+	 (mod (intercalate "." mod-split))
+	 (mod-split2 (butlast (split-string mod "\\.")))
+	 (mod2 (intercalate "." mod-split2)))
     mod2))
 
 (defun remove-matching (ls0 ls1)
@@ -85,10 +85,10 @@
 
 ;; Returns the parent directory of `dir-path` or `nil` if there is no parent directory
 (defun up-dir (dir-path)
-  (letrec ((dir-path-clean (file-name-as-directory dir-path))
-	   (split-file-path (split-string dir-path-clean directory-seperator))
-	   (up-dir-path-list (butlast split-file-path 2))
-	   (up-dir-path (merge-path up-dir-path-list)))
+  (let* ((dir-path-clean (file-name-as-directory dir-path))
+	 (split-file-path (split-string dir-path-clean directory-seperator))
+	 (up-dir-path-list (butlast split-file-path 2))
+	 (up-dir-path (merge-path up-dir-path-list)))
     (if (eq up-dir-path "") nil up-dir-path)))
 
 ;; Returns true if the `dir-path` contains `dependencies-file-name` and `nil` otherwise

@@ -21,7 +21,7 @@
 
 (defun run-elm-repl ()
   (interactive)
-  (letrec 
+  (let*
       
       ;; The *elm-repl* buffer
       ((buffer (get-buffer-create elm-repl-buffer))
@@ -57,11 +57,11 @@
 (defun load-elm-repl ()
   (interactive)
   (run-elm-repl)
-  (letrec ((elm-repl (get-process "elm-repl"))
-           (dependency-file-path (find-dependency-file-path))
-	   (change-root-directory-command
-	      (if dependency-file-path (get-crd dependency-file-path)
-		                       (get-crd (get-file-directory)))))
+  (let* ((elm-repl (get-process "elm-repl"))
+	 (dependency-file-path (find-dependency-file-path))
+	 (change-root-directory-command
+	  (if dependency-file-path (get-crd dependency-file-path)
+	    (get-crd (get-file-directory)))))
     (send-string elm-repl ":reset\n")
     (send-string elm-repl change-root-directory-command)
     (send-string elm-repl (get-open-import (get-module-name)))))
@@ -70,8 +70,8 @@
 (defun push-elm-repl ()
   (interactive)
   (run-elm-repl)
-  (letrec ((to-push (buffer-substring-no-properties (mark) (point)))
-           (format-tp (replace-regexp-in-string "\n" "\\\\\n" to-push)))
+  (let* ((to-push (buffer-substring-no-properties (mark) (point)))
+	 (format-tp (replace-regexp-in-string "\n" "\\\\\n" to-push)))
     (send-string (get-process "elm-repl") format-tp)
     (send-string (get-process "elm-repl") "\n")))
 
