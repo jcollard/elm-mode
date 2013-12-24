@@ -16,10 +16,11 @@
 ;; Provides useful utility functions
 
 ;; TODO: should be based on the OS.
-(defconst directory-seperator 
+(defvar directory-seperator 
   "/")
 
-(defconst dependencies-file-name
+
+(defvar dependencies-file-name
   "elm_dependencies.json")
 
 ;; If splitting right would not half the width of the current
@@ -47,6 +48,13 @@
 	 (dir-path (merge-path dir-path-list)))
     dir-path))
 
+(defun get-file-path-directory (file-path)
+  (let* ((split-file-path (split-string file-path directory-seperator))
+	 (dir-path-list (butlast split-file-path))
+	 (dir-path (merge-path dir-path-list)))
+    dir-path))
+
+
 ;; Returns the name of the module in the current buffer based on
 ;; its filename and relative location to the nearest `dependencies-file-name`
 (defun get-module-name ()
@@ -60,6 +68,17 @@
 	 (mod-split2 (butlast (split-string mod "\\.")))
 	 (mod2 (intercalate "." mod-split2)))
     mod2))
+
+(defun buffer-local-file-name ()
+  (let* ((m-d-path (find-dependency-file-path))
+	 (d-path (if m-d-path m-d-path (get-file-directory)))
+	 (d-split (split-string d-path directory-seperator))
+	 (f-path (buffer-file-name))
+	 (f-split (split-string f-path directory-seperator))
+	 (mod-split (remove-matching d-split f-split))
+	 (mod (intercalate directory-seperator mod-split)))
+    mod))
+  
 
 (defun remove-matching (ls0 ls1)
   (if (null ls0) ls1
@@ -95,5 +114,7 @@
 (defun contains-dependency-file (dir-path)
   (let ((ls (directory-files-and-attributes dir-path nil dependencies-file-name)))
     (not (null ls))))
+
+
 
 (provide 'elm-util)

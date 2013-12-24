@@ -21,7 +21,8 @@
 (require 'elm-font-lock)
 (require 'elm-repl)
 (require 'elm-map)
-
+(require 'elm-compile)
+(require 'elm-preview)
 
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.elm\\'" . elm-mode))

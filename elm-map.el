@@ -13,6 +13,10 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+(require 'elm-repl)
+(require 'elm-compile)
+(require 'elm-preview)
+
 (defun elm-comment-dwim (arg)
   "Comment or uncomment current line or region in a smart way.
 For detail, see `comment-dwim'."
@@ -29,6 +33,8 @@ For detail, see `comment-dwim'."
     (define-key map [remap comment-dwim] 'elm-comment-dwim)
     (define-key map "\C-c\C-l" 'load-elm-repl)
     (define-key map "\C-c\C-p" 'push-elm-repl)
+    (define-key map "\C-c\C-m" 'elm-compile-buffer)
+    (define-key map "\C-c\C-n" 'elm-preview-buffer)
     map)
   "Keymap for Elm major mode")
 
@@ -40,6 +46,10 @@ For detail, see `comment-dwim'."
     (define-key menuMap [elm-repl]
       '("elm-repl: Load Buffer" . load-elm-repl))
     (define-key menuMap [elm-push]
-      '("elm-repl: Push Region" . push-elm-repl)))
+      '("elm-repl: Push Region" . push-elm-repl))
+    (define-key menuMap [elm-compile]
+      '("Compile Buffer" . elm-compile-buffer))
+    (define-key menuMap [elm-preview]
+      '("Preview Buffer" . elm-preview-buffer)))
 
 (provide 'elm-map)
