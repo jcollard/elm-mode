@@ -26,11 +26,12 @@
 ;; If splitting right would not half the width of the current
 ;; buffer, splits right. Otherwise, splits below
 (defun intelligent-split-window ()
-  (let ((width (window-total-width))
-	(height (window-total-height)))
-    (if (> (/ width 2) height)
-	(split-window-right)
-        (split-window-below))))
+  (if (not (fboundp 'window-total-width)) (split-window)
+    (let ((width (window-total-width))
+	  (height (window-total-height)))
+      (if (> (/ width 2) height)
+	  (split-window-right)
+        (split-window-below)))))
 
 (defun intercalate (seperator list)
   (let ((helper (lambda (x y) (concat x (concat seperator y)))))
