@@ -30,17 +30,19 @@
   (concat (concat "\\<" (regexp-opt keywords t)) "\\>"))
 
 (defconst elm-font-lock-keywords
-  (list
-   (cons regexp-keywords font-lock-keyword-face))
+   (cons regexp-keywords font-lock-keyword-face)
   "Highlighting for keywords")
 
 ;; Comments
-
-;; TODO: Comments like the following
-;;   -- "literal string"
-;; fail due to the "string"
 (defconst regexp-single-line-comment
-  "\\(\-\-[^\n]*\\)")
+  "--.+$")
+;;  "--[^\\\n]*")
+;; also works, but if you C-Shift-; font-lock-defaults <ret>
+;; the newline isn't being escaped... lisp wtf?
+
+(defconst elm-font-lock-comments
+   (list regexp-single-line-comment 0 font-lock-comment-face t)
+  "Highlighting for comments")
 
 (defvar elm-mode-syntax-table
   (let ((st (make-syntax-table)))
@@ -49,40 +51,36 @@
     (modify-syntax-entry ?} ". 4n" st)
    st))
 
-(defconst elm-font-lock-comments
-  (list
-   (cons regexp-single-line-comment font-lock-comment-face))
-  "Highlighting for comments")
-
 ;; Function names
 (defconst regexp-function
-  "^[a-z][^ ]*")
+  "^[a-z][^[:space:]]*")
 
 (defconst elm-font-lock-functions
-  (list
-   (cons regexp-function font-lock-function-name-face))
+   (cons regexp-function font-lock-function-name-face)
   "Highlighting for function names")
 
 ;; Types and Modules
 (defconst regexp-type
-  "\\<[A-Z][^ \n]*\\>")
+  "\\<[A-Z][^[:space:]]*\\>")
 
 (defconst elm-font-lock-types
-  (list
-   (cons regexp-type font-lock-type-face))
+   (cons regexp-type font-lock-type-face)
   "Highlighting for module names and types")
 
 (defconst elm-font-lock-highlighting
-  (append
-   elm-font-lock-comments
-   elm-font-lock-keywords
-   elm-font-lock-functions
-   elm-font-lock-types))
+  (list (list
+         elm-font-lock-keywords
+         elm-font-lock-functions
+         elm-font-lock-types
+         elm-font-lock-comments
+      ; nil turns off string/comment highlighting
+      ; t turns off capital letter matching
+         ) nil nil))
 
 (defun turn-on-elm-font-lock ()
   (setq font-lock-multiline t)
   (set-syntax-table elm-mode-syntax-table)
-  (set (make-local-variable 'font-lock-defaults) '(elm-font-lock-highlighting)))
+  (set (make-local-variable 'font-lock-defaults) elm-font-lock-highlighting))
 
 
 (provide 'elm-font-lock)
