@@ -33,17 +33,6 @@
    (cons regexp-keywords font-lock-keyword-face)
   "Highlighting for keywords")
 
-;; Comments
-(defconst regexp-single-line-comment
-  "--.*$")
-;;  "--[^\\\n]*")
-;; also works, but if you C-Shift-; font-lock-defaults <ret>
-;; the newline isn't being escaped... lisp wtf?
-
-(defconst elm-font-lock-comments
-   (list regexp-single-line-comment 0 font-lock-comment-face t)
-  "Highlighting for comments")
-
 ;; the syntax propertize function for setting single line comments
 (defun elm-syntax-propertize (start end)
   (goto-char start)
@@ -90,7 +79,6 @@
          elm-font-lock-keywords
          elm-font-lock-functions
          elm-font-lock-types
-;         elm-font-lock-comments
       ; nil turns off string/comment highlighting
       ; t turns off capital letter matching
          ) nil nil))
