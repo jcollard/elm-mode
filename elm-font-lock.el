@@ -44,7 +44,7 @@
    (list regexp-single-line-comment 0 font-lock-comment-face t)
   "Highlighting for comments")
 
-;(defun elm-syntax-propertize-function (start end)
+;; the syntax propertize function for setting single line comments
 (defun elm-syntax-propertize (start end)
   (goto-char start)
   (funcall
@@ -62,11 +62,11 @@
     (modify-syntax-entry ?{ "(} 1n" st)
     (modify-syntax-entry ?- ". 23n" st)
     (modify-syntax-entry ?} "){ 4n" st)
-;    (modify-syntax-entry ?- ". 12c" st)
-;    (modify-syntax-entry ?\n ". 34c" st)
    st))
 
 ;; Function names
+;; added punct here to not count hello? as a variable name
+;; need to talk to joe to figure out what the valid variable names are in elm
 (defconst regexp-function
   "^[a-z][^[:space:][:punct:]]*")
 ;  "^[a-z][^[:space:]]*")
@@ -75,6 +75,8 @@
    (cons regexp-function font-lock-function-name-face)
   "Highlighting for function names")
 
+;; TODO: right now this highlights Mouse.position all in green (including the period)
+;; is this desirable behavior?
 ;; Types and Modules
 (defconst regexp-type
   "\\<[A-Z][^[:space:]]*\\>")
@@ -96,7 +98,7 @@
 (defun turn-on-elm-font-lock ()
   (setq font-lock-multiline t)
   (set-syntax-table elm-mode-syntax-table)
-;  (set (make-local-variable 'syntax-propertize-function) #'elm-syntax-propertize)
+  (set (make-local-variable 'syntax-propertize-function) #'elm-syntax-propertize)
   (set (make-local-variable 'font-lock-defaults) elm-font-lock-highlighting))
 
 
