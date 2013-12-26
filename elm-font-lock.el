@@ -33,6 +33,7 @@
    (cons regexp-keywords font-lock-keyword-face)
   "Highlighting for keywords")
 
+;;TODO: Move single line comments to the syntax level somehow
 ;; Comments
 (defconst regexp-single-line-comment
   "--.*$")
