@@ -44,16 +44,32 @@
    (list regexp-single-line-comment 0 font-lock-comment-face t)
   "Highlighting for comments")
 
+;(defun elm-syntax-propertize-function (start end)
+(defun elm-syntax-propertize (start end)
+  (goto-char start)
+  (funcall
+   (syntax-propertize-rules
+           ("^[[:space:]]*\\(--.*\\)\\(
+\\)"
+            (1 "< b")
+            (2 "> b")
+            )
+           )
+   start end))
+
 (defvar elm-mode-syntax-table
   (let ((st (make-syntax-table)))
-    (modify-syntax-entry ?{ ". 1n" st)
+    (modify-syntax-entry ?{ "(} 1n" st)
     (modify-syntax-entry ?- ". 23n" st)
-    (modify-syntax-entry ?} ". 4n" st)
+    (modify-syntax-entry ?} "){ 4n" st)
+;    (modify-syntax-entry ?- ". 12c" st)
+;    (modify-syntax-entry ?\n ". 34c" st)
    st))
 
 ;; Function names
 (defconst regexp-function
-  "^[a-z][^[:space:]]*")
+  "^[a-z][^[:space:][:punct:]]*")
+;  "^[a-z][^[:space:]]*")
 
 (defconst elm-font-lock-functions
    (cons regexp-function font-lock-function-name-face)
@@ -72,7 +88,7 @@
          elm-font-lock-keywords
          elm-font-lock-functions
          elm-font-lock-types
-         elm-font-lock-comments
+;         elm-font-lock-comments
       ; nil turns off string/comment highlighting
       ; t turns off capital letter matching
          ) nil nil))
@@ -80,6 +96,7 @@
 (defun turn-on-elm-font-lock ()
   (setq font-lock-multiline t)
   (set-syntax-table elm-mode-syntax-table)
+;  (set (make-local-variable 'syntax-propertize-function) #'elm-syntax-propertize)
   (set (make-local-variable 'font-lock-defaults) elm-font-lock-highlighting))
 
 
