@@ -35,7 +35,7 @@
 
 ;; Comments
 (defconst regexp-single-line-comment
-  "--.+$")
+  "--.*$")
 ;;  "--[^\\\n]*")
 ;; also works, but if you C-Shift-; font-lock-defaults <ret>
 ;; the newline isn't being escaped... lisp wtf?
