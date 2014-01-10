@@ -1,3 +1,10 @@
+;;; elm-preview.el ---
+
+;; Copyright (C) 2013, 2014  Joseph Collard
+
+;; Author: Joseph Collard
+;; URL: https://github.com/jcollard/elm-mode
+
 ;; This file is not part of GNU Emacs.
 
 ;; This file is free software; you can redistribute it and/or modify
@@ -12,6 +19,10 @@
 
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+;;; Commentary:
+
+;;; Code:
 
 (require 'elm-util)
 (require 'elm-compile)
@@ -32,3 +43,5 @@
     (browse-url (concat "file:///" path-html))))
   
 (provide 'elm-preview)
+
+;;; elm-preview.el ends here
