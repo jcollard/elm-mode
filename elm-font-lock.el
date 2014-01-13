@@ -33,33 +33,39 @@
    (cons regexp-keywords font-lock-keyword-face)
   "Highlighting for keywords")
 
-;;TODO: Move single line comments to the syntax level somehow
-;; Comments
-(defconst regexp-single-line-comment
-  "--.*$")
-;;  "--[^\\\n]*")
-;; also works, but if you C-Shift-; font-lock-defaults <ret>
-;; the newline isn't being escaped... lisp wtf?
-
-(defconst elm-font-lock-comments
-   (list regexp-single-line-comment 0 font-lock-comment-face t)
-  "Highlighting for comments")
+;; the syntax propertize function for setting single line comments
+(defun elm-syntax-propertize (start end)
+  (goto-char start)
+  (funcall
+   (syntax-propertize-rules
+           ("^[[:space:]]*\\(--.*\\)\\(
+\\)"
+            (1 "< b")
+            (2 "> b")
+            )
+           )
+   start end))
 
 (defvar elm-mode-syntax-table
   (let ((st (make-syntax-table)))
-    (modify-syntax-entry ?{ ". 1n" st)
+    (modify-syntax-entry ?{ "(} 1n" st)
     (modify-syntax-entry ?- ". 23n" st)
-    (modify-syntax-entry ?} ". 4n" st)
+    (modify-syntax-entry ?} "){ 4n" st)
    st))
 
 ;; Function names
+;; added punct here to not count hello? as a variable name
+;; need to talk to joe to figure out what the valid variable names are in elm
 (defconst regexp-function
-  "^[a-z][^[:space:]]*")
+  "^[a-z][^[:space:][:punct:]]*")
+;  "^[a-z][^[:space:]]*")
 
 (defconst elm-font-lock-functions
    (cons regexp-function font-lock-function-name-face)
   "Highlighting for function names")
 
+;; TODO: right now this highlights Mouse.position all in green (including the period)
+;; is this desirable behavior?
 ;; Types and Modules
 (defconst regexp-type
   "\\<[A-Z][^[:space:]]*\\>")
@@ -73,7 +79,6 @@
          elm-font-lock-keywords
          elm-font-lock-functions
          elm-font-lock-types
-         elm-font-lock-comments
       ; nil turns off string/comment highlighting
       ; t turns off capital letter matching
          ) nil nil))
@@ -81,6 +86,7 @@
 (defun turn-on-elm-font-lock ()
   (setq font-lock-multiline t)
   (set-syntax-table elm-mode-syntax-table)
+  (set (make-local-variable 'syntax-propertize-function) #'elm-syntax-propertize)
   (set (make-local-variable 'font-lock-defaults) elm-font-lock-highlighting))
 
 
