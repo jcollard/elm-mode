@@ -11,6 +11,10 @@ Elm mode for emacs
 
 ## Installation
 
+If your Emacs has `package.el` (which is automatically the case for Emacs >= 24), you can install `elm-mode` from the package in [MELPA](http://melpa.milkbox.net/).
+
+Alternatively, install `elm-mode` manually:
+
 ######1. Download or clone this repository
 
 ######2. Add the following lines to your .emacs file
