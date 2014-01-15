@@ -39,6 +39,7 @@
 (add-to-list 'auto-mode-alist '("\\.elm\\'" . elm-mode))
 
 
+;;;###autoload
 (defun elm-mode ()
   "Major mode for editing Elm source code"
   (interactive)
