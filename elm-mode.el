@@ -1,3 +1,10 @@
+;;; elm-mode.el --- Major mode for Elm
+
+;; Copyright (C) 2013, 2014  Joseph Collard
+
+;; Author: Joseph Collard
+;; URL: https://github.com/jcollard/elm-mode
+
 ;; This file is not part of GNU Emacs.
 
 ;; This file is free software; you can redistribute it and/or modify
@@ -12,6 +19,10 @@
 
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+;;; Commentary:
+
+;;; Code:
 
 ;; Elm mode hook for user defined functionality
 (defvar elm-mode-hook nil)
@@ -28,6 +39,7 @@
 (add-to-list 'auto-mode-alist '("\\.elm\\'" . elm-mode))
 
 
+;;;###autoload
 (defun elm-mode ()
   "Major mode for editing Elm source code"
   (interactive)
@@ -46,3 +58,5 @@
   (run-hooks 'elm-mode-hook))
 
 (provide 'elm-mode)
+
+;;; elm-mode.el ends here
