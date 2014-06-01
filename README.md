@@ -7,7 +7,7 @@ Elm mode for emacs
 
 1. Syntax highlighting
 2. Intelligent indentation
-3. Integration with [elm-repl](https://github.com/evancz/elm-repl)
+3. Integration with [elm-repl](https://github.com/elm-lang/elm-repl)
 
 ## Installation
 
