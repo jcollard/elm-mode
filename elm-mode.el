@@ -45,6 +45,11 @@
   (interactive)
   (setq indent-tabs-mode nil)
   (kill-all-local-variables)
+
+  ;; Set single line comments
+  (set (make-local-variable 'comment-start) "--")
+  (set (make-local-variable 'comment-end) "")
+
   (use-local-map elm-mode-map)
   (elm-indent-mode)
   ;; TODO
