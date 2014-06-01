@@ -45,10 +45,10 @@
     (select-window selected_window)))
 
 (defun get-crd (path)
-  (concat (concat ":change-root \"" path) "\"\n"))
+  (concat (concat ":flags add --src-dir=\"" path) "\"\n"))
 
 (defun get-open-import (module)
-  (concat (concat "import open " module) "\n"))
+  (concat "import " module " (..) \n"))
  
 ;; Loads an interactive version elm-repl if there isn't already one running
 ;; Changes the current root directory to be the directory with the closest
