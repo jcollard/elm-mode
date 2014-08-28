@@ -45,6 +45,12 @@
 (defun get-elm-cache-dir ()
   (if elm-cache-dir (concat " --cache-dir=" elm-cache-dir) ""))
 
+(defvar elm-only-js
+  nil)
+
+(defun et-elm-only-js ()
+  (if elm-js-only " --only-js" ""))
+
 (defvar elm-compiler
   "elm")
 
@@ -52,7 +58,8 @@
   (let* ((runtime (get-elm-runtime))
 	 (build (get-elm-build-dir))
 	 (cache (get-elm-cache-dir))
-	 (ls (list elm-compiler " --make" runtime build cache " " file)))
+	 (js-only (get-elm-js-only))
+	 (ls (list elm-compiler " --make" runtime build cache js-only " " file)))
     (reduce 'concat ls)))
 
 (defun elm-compile (file)
