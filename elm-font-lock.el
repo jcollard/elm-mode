@@ -49,7 +49,7 @@
   (goto-char start)
   (funcall
    (syntax-propertize-rules
-           ("^[[:space:]]*\\(--.*\\)\\(
+           ("^[[:space:]]*\\(--\\).*\\(
 \\)"
             (1 "< b")
             (2 "> b")
