@@ -31,7 +31,7 @@
   "elm-make")
 
 (defun elm-compile-command (file &optional output)
-  (let* ((output-command (if output (string-append " --output=" output) ""))
+  (let* ((output-command (if output (concat " --output=" output) ""))
          (ls (list elm-compiler " " file output-command " --yes")))
     (reduce 'concat ls)))
 
