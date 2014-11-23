@@ -34,7 +34,7 @@
   '("data" "let" "case" "in" "if" "of"
     "then" "else" "otherwise" "module" 
     "import" "open" "as" "type" "where"
-    "alias" "port" "foreign")
+    "alias" "port")
   "Special Keywords")
 
 (defconst regexp-keywords         
