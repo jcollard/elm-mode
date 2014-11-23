@@ -32,7 +32,7 @@
 
 
 (defvar dependencies-file-name
-  "elm_dependencies.json")
+  "elm-package.json")
 
 ;; If splitting right would not half the width of the current
 ;; buffer, splits right. Otherwise, splits below
