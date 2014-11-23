@@ -30,13 +30,14 @@
 (defvar elm-compiler
   "elm-make")
 
-(defun elm-compile-command (file)
-  (let* ((ls (list elm-compiler " " file)))
+(defun elm-compile-command (file &optional output)
+  (let* ((output-command (if output (string-append " --output=" output) ""))
+         (ls (list elm-compiler " " file output-command " --yes")))
     (reduce 'concat ls)))
 
 (defun elm-compile (file)
   (let* ((d-file (find-dependency-file-path))
-	 (default-directory (if d-file d-file (get-file-path-directory file)))
+	 (default-directory (if d-file d-file (get-file-directory)))
 	 (command (elm-compile-command file)))
     (print (shell-command-to-string command))))
 
