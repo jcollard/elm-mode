@@ -31,15 +31,10 @@
 ;; Compiles the current buffer and opens it in the default browser
 (defun elm-preview-buffer ()
   (interactive)
-  (elm-compile-buffer)
   (let* ((d-file (find-dependency-file-path))
-	 (file-name (buffer-local-file-name))
-	 (dir (if d-file d-file (get-file-path-directory (buffer-file-name))))
-	 (build (if elm-build-dir elm-build-dir "build/"))
-	 (path (concat dir build))
-	 (file-split (split-string file-name "\\."))
-	 (file-html (intercalate "." (append (butlast file-split) '("html"))))
-	 (path-html (concat path file-html)))
+	 (dir (if d-file d-file (get-file-directory)))
+	 (path-html (concat dir "preview.html")))
+    (elm-compile-buffer "preview.html")
     (browse-url (concat "file:///" path-html))))
   
 (provide 'elm-preview)
