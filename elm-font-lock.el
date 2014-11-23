@@ -31,7 +31,7 @@
 ;; Reserved Keywords
 
 (defconst keywords 
-  '("data" "let" "case" "in" "if" "of"
+  '("let" "case" "in" "if" "of"
     "then" "else" "otherwise" "module" 
     "import" "open" "as" "type" "where"
     "alias" "port")
