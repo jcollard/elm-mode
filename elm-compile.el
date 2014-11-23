@@ -35,15 +35,15 @@
          (ls (list elm-compiler " " file output-command " --yes")))
     (reduce 'concat ls)))
 
-(defun elm-compile (file)
+(defun elm-compile (file &optional output)
   (let* ((d-file (find-dependency-file-path))
 	 (default-directory (if d-file d-file (get-file-directory)))
-	 (command (elm-compile-command file)))
+	 (command (elm-compile-command file output)))
     (print (shell-command-to-string command))))
 
-(defun elm-compile-buffer ()
+(defun elm-compile-buffer (&optional output)
   (interactive)
-  (elm-compile (buffer-local-file-name)))
+  (elm-compile (buffer-local-file-name) output))
 
 (provide 'elm-compile)
 
