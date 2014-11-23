@@ -33,7 +33,7 @@
 (defconst keywords 
   '("let" "case" "in" "if" "of"
     "then" "else" "otherwise" "module" 
-    "import" "as" "type"
+    "import" "as" "type" "where"
     "alias" "port")
   "Special Keywords")
 
