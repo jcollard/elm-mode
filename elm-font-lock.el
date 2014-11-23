@@ -75,11 +75,9 @@
    (cons regexp-function font-lock-function-name-face)
   "Highlighting for function names")
 
-;; TODO: right now this highlights Mouse.position all in green (including the period)
-;; is this desirable behavior?
 ;; Types and Modules
 (defconst regexp-type
-  "\\<[A-Z][^[:space:]]*\\>")
+  "\\<[A-Z][^[:space:].]*\\>")
 
 (defconst elm-font-lock-types
    (cons regexp-type font-lock-type-face)
