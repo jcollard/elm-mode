@@ -27,32 +27,11 @@
 (require 'elm-util)
 
 ;; Compilation
-(defvar elm-runtime
-  nil)
-
-(defun get-elm-runtime ()
-  (if elm-runtime (concat " --runtime=" elm-runtime) ""))
-
-(defvar elm-build-dir
-  nil)
-
-(defun get-elm-build-dir ()
-  (if elm-build-dir (concat " --build-dir=" elm-build-dir) ""))
-
-(defvar elm-cache-dir
-  nil)
-
-(defun get-elm-cache-dir ()
-  (if elm-cache-dir (concat " --cache-dir=" elm-cache-dir) ""))
-
 (defvar elm-compiler
-  "elm")
+  "elm-make")
 
 (defun elm-compile-command (file)
-  (let* ((runtime (get-elm-runtime))
-	 (build (get-elm-build-dir))
-	 (cache (get-elm-cache-dir))
-	 (ls (list elm-compiler " --make" runtime build cache " " file)))
+  (let* ((ls (list elm-compiler " " file)))
     (reduce 'concat ls)))
 
 (defun elm-compile (file)
