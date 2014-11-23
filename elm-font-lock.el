@@ -65,8 +65,6 @@
    st))
 
 ;; Function names
-;; added punct here to not count hello? as a variable name
-;; need to talk to joe to figure out what the valid variable names are in elm
 (defconst regexp-function
   "^[a-z][^[:space:][:punct:]]*")
 ;  "^[a-z][^[:space:]]*")
