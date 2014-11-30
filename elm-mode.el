@@ -27,6 +27,7 @@
 ;; Elm mode hook for user defined functionality
 (defvar elm-mode-hook nil)
 
+
 (require 'elm-indent)
 (require 'elm-indentation)
 (require 'elm-font-lock)
