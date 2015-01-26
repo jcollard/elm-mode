@@ -47,10 +47,6 @@
 (defun intercalate (separator list)
   (mapconcat #'identity list separator))
 
-(defun merge-path (dir-path-list)
-  (let ((helper (lambda (x y) (concat x (concat y directory-seperator)))))
-    (reduce helper (cons "" dir-path-list))))
-
 ;; Returns the name of the module in the current buffer based on
 ;; its filename and relative location to the nearest `elm-dependencies-file-name`
 (defun get-module-name ()
