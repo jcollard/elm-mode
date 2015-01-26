@@ -30,9 +30,6 @@
 (defconst elm-repl-buffer
   "*elm-repl*")
 
-;; The current directory where elm-repl is running
-(defvar working-directory nil)
-
 (defun run-elm-repl ()
   (interactive)
   (let*
