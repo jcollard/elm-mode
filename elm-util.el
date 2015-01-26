@@ -60,13 +60,6 @@
 	 (dir-path (merge-path dir-path-list)))
     dir-path))
 
-(defun get-file-path-directory (file-path)
-  (let* ((split-file-path (split-string file-path directory-seperator))
-	 (dir-path-list (butlast split-file-path))
-	 (dir-path (merge-path dir-path-list)))
-    dir-path))
-
-
 ;; Returns the name of the module in the current buffer based on
 ;; its filename and relative location to the nearest `dependencies-file-name`
 (defun get-module-name ()
