@@ -27,7 +27,7 @@
 ;; TODO: should be based on the OS.
 
 ;;; Code:
-(defvar directory-seperator 
+(defvar elm-directory-separator 
   "/")
 
 
@@ -52,9 +52,9 @@
 (defun elm-get-module-name ()
   (let* ((m-d-path (elm-find-dependency-file-path))
 	 (d-path (or m-d-path default-directory))
-	 (d-split (split-string d-path directory-seperator))
+	 (d-split (split-string d-path elm-directory-separator))
 	 (f-path (buffer-file-name))
-	 (f-split (split-string f-path directory-seperator))
+	 (f-split (split-string f-path elm-directory-separator))
 	 (mod-split (elm-remove-matching d-split f-split))
 	 (mod (elm-intercalate "." mod-split))
 	 (mod-split2 (butlast (split-string mod "\\.")))
@@ -64,11 +64,11 @@
 (defun elm-buffer-local-file-name ()
   (let* ((m-d-path (elm-find-dependency-file-path))
 	 (d-path (or m-d-path default-directory))
-	 (d-split (split-string d-path directory-seperator))
+	 (d-split (split-string d-path elm-directory-separator))
 	 (f-path (buffer-file-name))
-	 (f-split (split-string f-path directory-seperator))
+	 (f-split (split-string f-path elm-directory-separator))
 	 (mod-split (elm-remove-matching d-split f-split))
-	 (mod (elm-intercalate directory-seperator mod-split)))
+	 (mod (elm-intercalate elm-directory-separator mod-split)))
     mod))
 
 (defun elm-remove-matching (ls0 ls1)
