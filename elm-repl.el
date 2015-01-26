@@ -55,10 +55,10 @@
     ;; Switch focus back to the originally selected window
     (select-window selected_window)))
 
-(defun get-crd (path)
+(defun elm-repl-get-crd (path)
   (concat (concat ":flags add --src-dir=\"" path) "\"\n"))
 
-(defun get-open-import (module)
+(defun elm-repl-get-open-import (module)
   (concat "import " module " (..) \n"))
  
 ;; Loads an interactive version elm-repl if there isn't already one running
@@ -71,11 +71,11 @@
   (let* ((elm-repl (get-process "elm-repl"))
 	 (dependency-file-path (elm-find-dependency-file-path))
 	 (change-root-directory-command
-	  (if dependency-file-path (get-crd dependency-file-path)
-	    (get-crd default-directory))))
+	  (if dependency-file-path (elm-repl-get-crd dependency-file-path)
+	    (elm-repl-get-crd default-directory))))
     (send-string elm-repl ":reset\n")
     (send-string elm-repl change-root-directory-command)
-    (send-string elm-repl (get-open-import (get-module-name)))))
+    (send-string elm-repl (elm-repl-get-open-import (elm-get-module-name)))))
 
 ;; Pushes the selected region to elm-repl
 (defun push-elm-repl ()

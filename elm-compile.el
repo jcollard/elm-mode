@@ -43,7 +43,7 @@
 
 (defun elm-compile-buffer (&optional output)
   (interactive)
-  (elm-compile (buffer-local-file-name) output))
+  (elm-compile (elm-buffer-local-file-name) output))
 
 (provide 'elm-compile)
 
