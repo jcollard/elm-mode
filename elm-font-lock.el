@@ -92,8 +92,6 @@
 
 (defun turn-on-elm-font-lock ()
   (setq font-lock-multiline t)
-  (set-syntax-table elm-mode-syntax-table)
-  (set (make-local-variable 'syntax-propertize-function) #'elm-syntax-propertize)
   (set (make-local-variable 'font-lock-defaults) elm-font-lock-highlighting))
 
 

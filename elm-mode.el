@@ -49,6 +49,10 @@
   ;; Set single line comments
   (set (make-local-variable 'comment-start) "--")
   (set (make-local-variable 'comment-end) "")
+
+  (set-syntax-table elm-mode-syntax-table)
+  (set (make-local-variable 'syntax-propertize-function) #'elm-syntax-propertize)
+
   (elm-indent-mode)
   (set (make-local-variable 'indent-tabs-mode) nil)
   (turn-on-elm-font-lock))
