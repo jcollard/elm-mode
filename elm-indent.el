@@ -88,7 +88,6 @@
 
 ;;; Code:
 
-(require 'elm-string)
 (with-no-warnings (require 'cl))
 
 (defvar elm-literate)
@@ -636,6 +635,10 @@ Returns the location of the start of the comment, nil otherwise."
           ;; "000000"  15=
           (t (error "elm-indent-empty: %s impossible case" test ))))
       elm-indent-info)))
+
+(defun elm-trim (string)
+  "Return STRING with any leading or trailing whitespace removed."
+  (replace-regexp-in-string "\\(?:^[ \t\n]+\\|[ \t\n]+$\\)" "" string))
 
 (defun elm-indent-ident (start end end-visible indent-info)
   "Find indentation points for a line starting with an identifier."

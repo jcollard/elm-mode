@@ -30,19 +30,19 @@
 
 ;; Reserved Keywords
 
-(defconst keywords 
+(defconst elm-keywords 
   '("let" "case" "in" "if" "of"
     "then" "else" "otherwise" "module" 
     "import" "as" "type" "where"
     "alias" "port" "infixr" "infixl")
-  "Special Keywords")
+  "Special Keywords.")
 
-(defconst regexp-keywords         
-  (concat (concat "\\<" (regexp-opt keywords t)) "\\>"))
+(defconst elm-regexp-keywords         
+  (concat "\\<" (regexp-opt elm-keywords t) "\\>"))
 
 (defconst elm-font-lock-keywords
-   (cons regexp-keywords font-lock-keyword-face)
-  "Highlighting for keywords")
+  (cons elm-regexp-keywords font-lock-keyword-face)
+  "Highlighting for keywords.")
 
 ;; the syntax propertize function for setting single line comments
 (defun elm-syntax-propertize (start end)
@@ -65,21 +65,21 @@
    st))
 
 ;; Function names
-(defconst regexp-function
+(defconst elm-regexp-function
   "^[a-z][^[:space:][:punct:]]*")
 ;  "^[a-z][^[:space:]]*")
 
 (defconst elm-font-lock-functions
-   (cons regexp-function font-lock-function-name-face)
-  "Highlighting for function names")
+  (cons elm-regexp-function font-lock-function-name-face)
+  "Highlighting for function names.")
 
 ;; Types and Modules
-(defconst regexp-type
+(defconst elm-regexp-type
   "\\<[A-Z][^[:space:].]*\\>")
 
 (defconst elm-font-lock-types
-   (cons regexp-type font-lock-type-face)
-  "Highlighting for module names and types")
+  (cons elm-regexp-type font-lock-type-face)
+  "Highlighting for module names and types.")
 
 (defconst elm-font-lock-highlighting
   (list (list
@@ -92,8 +92,6 @@
 
 (defun turn-on-elm-font-lock ()
   (setq font-lock-multiline t)
-  (set-syntax-table elm-mode-syntax-table)
-  (set (make-local-variable 'syntax-propertize-function) #'elm-syntax-propertize)
   (set (make-local-variable 'font-lock-defaults) elm-font-lock-highlighting))
 
 

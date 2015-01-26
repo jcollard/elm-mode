@@ -30,27 +30,23 @@
 (defconst elm-repl-buffer
   "*elm-repl*")
 
-;; The current directory where elm-repl is running
-(defvar working-directory nil)
-
 (defun run-elm-repl ()
   (interactive)
   (let*
-      
       ;; The *elm-repl* buffer
       ((buffer (get-buffer-create elm-repl-buffer))
        ;; The window that should hold elm-repl
-       (target_window (get-buffer-window buffer))
+       (target-window (get-buffer-window buffer))
        ;; The current window
-       (selected_window (selected-window)))
+       (selected-window (selected-window)))
     
     ;; If the target window does not exist, create it and set the buffer
     ;; then select that window so elm-repl will be running there
-    (if target_window      
-	(select-window target_window)
-      (let ((split_window (intelligent-split-window)))
-	(set-window-buffer split_window buffer)
-	(select-window split_window)))
+    (if target-window      
+	(select-window target-window)
+      (let ((split-window (funcall split-window-preferred-function)))
+	(set-window-buffer split-window buffer)
+	(select-window split-window)))
     
     ;; Start elm-repl if it is not already running
     (comint-run "elm-repl")
@@ -58,27 +54,27 @@
     ;; Switch focus back to the originally selected window
     (select-window selected_window)))
 
-(defun get-crd (path)
+(defun elm-repl-get-crd (path)
   (concat (concat ":flags add --src-dir=\"" path) "\"\n"))
 
-(defun get-open-import (module)
+(defun elm-repl-get-open-import (module)
   (concat "import " module " (..) \n"))
  
 ;; Loads an interactive version elm-repl if there isn't already one running
 ;; Changes the current root directory to be the directory with the closest
-;; `dependencies-file-name` if one exists otherwise sets it to be the 
+;; `elm-dependencies-file-name` if one exists otherwise sets it to be the 
 ;; working directory of the file specified
 (defun load-elm-repl ()
   (interactive)
   (run-elm-repl)
   (let* ((elm-repl (get-process "elm-repl"))
-	 (dependency-file-path (find-dependency-file-path))
+	 (dependency-file-path (elm-find-dependency-file-path))
 	 (change-root-directory-command
-	  (if dependency-file-path (get-crd dependency-file-path)
-	    (get-crd (get-file-directory)))))
+	  (if dependency-file-path (elm-repl-get-crd dependency-file-path)
+	    (elm-repl-get-crd default-directory))))
     (send-string elm-repl ":reset\n")
     (send-string elm-repl change-root-directory-command)
-    (send-string elm-repl (get-open-import (get-module-name)))))
+    (send-string elm-repl (elm-repl-get-open-import (elm-get-module-name)))))
 
 ;; Pushes the selected region to elm-repl
 (defun push-elm-repl ()

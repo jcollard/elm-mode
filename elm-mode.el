@@ -24,10 +24,6 @@
 
 ;;; Code:
 
-;; Elm mode hook for user defined functionality
-(defvar elm-mode-hook nil)
-
-
 (require 'elm-indent)
 (require 'elm-indentation)
 (require 'elm-font-lock)
@@ -40,28 +36,26 @@
 (add-to-list 'auto-mode-alist '("\\.elm\\'" . elm-mode))
 
 
+(defalias 'elm-parent-mode
+  (if (fboundp 'prog-mode) 'prog-mode 'fundamental-mode))
+
 ;;;###autoload
-(defun elm-mode ()
-  "Major mode for editing Elm source code"
-  (interactive)
+(define-derived-mode elm-mode elm-parent-mode "Elm"
+  "Major mode for editing Elm source code.
+
+\\{elm-mode-map}"
   (setq indent-tabs-mode nil)
-  (kill-all-local-variables)
 
   ;; Set single line comments
   (set (make-local-variable 'comment-start) "--")
   (set (make-local-variable 'comment-end) "")
 
-  (use-local-map elm-mode-map)
+  (set-syntax-table elm-mode-syntax-table)
+  (set (make-local-variable 'syntax-propertize-function) #'elm-syntax-propertize)
+
   (elm-indent-mode)
-  ;; TODO
-  ;; This line makes tabs use spaces which is what
-  ;; we need for elm. However, I think it overrides behavior
-  ;; outside of elm-mode
-  (setq-default indent-tabs-mode nil)
-  (turn-on-elm-font-lock)
-  (setq major-mode 'elm-mode)
-  (setq mode-name "Elm")
-  (run-hooks 'elm-mode-hook))
+  (set (make-local-variable 'indent-tabs-mode) nil)
+  (turn-on-elm-font-lock))
 
 (provide 'elm-mode)
 
