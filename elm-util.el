@@ -34,16 +34,6 @@
 (defvar elm-dependencies-file-name
   "elm-package.json")
 
-;; If splitting right would not half the width of the current
-;; buffer, splits right. Otherwise, splits below
-(defun intelligent-split-window ()
-  (if (not (fboundp 'window-total-width)) (split-window)
-    (let ((width (window-total-width))
-	  (height (window-total-height)))
-      (if (> (/ width 2) height)
-	  (split-window-right)
-        (split-window-below)))))
-
 (defun elm-intercalate (separator list)
   (mapconcat #'identity list separator))
 

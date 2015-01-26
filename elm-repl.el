@@ -44,7 +44,7 @@
     ;; then select that window so elm-repl will be running there
     (if target-window      
 	(select-window target-window)
-      (let ((split-window (intelligent-split-window)))
+      (let ((split-window (funcall split-window-preferred-function)))
 	(set-window-buffer split-window buffer)
 	(select-window split-window)))
     
