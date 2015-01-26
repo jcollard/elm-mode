@@ -52,19 +52,11 @@
   (let ((helper (lambda (x y) (concat x (concat y directory-seperator)))))
     (reduce helper (cons "" dir-path-list))))
 
-;; Get the current working directory for the file being worked on
-(defun get-file-directory ()
-  (let* ((file-path (buffer-file-name))
-	 (split-file-path (split-string file-path directory-seperator))
-	 (dir-path-list (butlast split-file-path))
-	 (dir-path (merge-path dir-path-list)))
-    dir-path))
-
 ;; Returns the name of the module in the current buffer based on
 ;; its filename and relative location to the nearest `dependencies-file-name`
 (defun get-module-name ()
   (let* ((m-d-path (find-dependency-file-path))
-	 (d-path (if m-d-path m-d-path (get-file-directory)))
+	 (d-path (or m-d-path default-directory))
 	 (d-split (split-string d-path directory-seperator))
 	 (f-path (buffer-file-name))
 	 (f-split (split-string f-path directory-seperator))
@@ -76,7 +68,7 @@
 
 (defun buffer-local-file-name ()
   (let* ((m-d-path (find-dependency-file-path))
-	 (d-path (if m-d-path m-d-path (get-file-directory)))
+	 (d-path (or m-d-path default-directory))
 	 (d-split (split-string d-path directory-seperator))
 	 (f-path (buffer-file-name))
 	 (f-split (split-string f-path directory-seperator))
@@ -97,7 +89,7 @@
 ;; directory that contains `dependencies-file-name`. If no parent folder
 ;; contains `dependencies-file-name` `nil` is returned
 (defun find-dependency-file-path ()
-  (find-dependency-file-path-helper (get-file-directory)))
+  (find-dependency-file-path-helper default-directory))
 
 ;; Returns `dir-path` if it contains `dependencies-file-name`.
 ;; Otherwise, it checks the parent directory. If the root directory

@@ -37,7 +37,7 @@
 
 (defun elm-compile (file &optional output)
   (let* ((d-file (find-dependency-file-path))
-	 (default-directory (if d-file d-file (get-file-directory)))
+	 (default-directory (or d-file default-directory))
 	 (command (elm-compile-command file output)))
     (print (shell-command-to-string command))))
 

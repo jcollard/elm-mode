@@ -75,7 +75,7 @@
 	 (dependency-file-path (find-dependency-file-path))
 	 (change-root-directory-command
 	  (if dependency-file-path (get-crd dependency-file-path)
-	    (get-crd (get-file-directory)))))
+	    (get-crd default-directory))))
     (send-string elm-repl ":reset\n")
     (send-string elm-repl change-root-directory-command)
     (send-string elm-repl (get-open-import (get-module-name)))))

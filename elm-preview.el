@@ -32,7 +32,7 @@
 (defun elm-preview-buffer ()
   (interactive)
   (let* ((d-file (find-dependency-file-path))
-	 (dir (if d-file d-file (get-file-directory)))
+	 (dir (or d-file default-directory))
 	 (path-html (concat dir "preview.html")))
     (elm-compile-buffer "preview.html")
     (browse-url (concat "file:///" path-html))))
