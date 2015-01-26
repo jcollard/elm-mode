@@ -33,21 +33,20 @@
 (defun run-elm-repl ()
   (interactive)
   (let*
-      
       ;; The *elm-repl* buffer
       ((buffer (get-buffer-create elm-repl-buffer))
        ;; The window that should hold elm-repl
-       (target_window (get-buffer-window buffer))
+       (target-window (get-buffer-window buffer))
        ;; The current window
-       (selected_window (selected-window)))
+       (selected-window (selected-window)))
     
     ;; If the target window does not exist, create it and set the buffer
     ;; then select that window so elm-repl will be running there
-    (if target_window      
-	(select-window target_window)
-      (let ((split_window (intelligent-split-window)))
-	(set-window-buffer split_window buffer)
-	(select-window split_window)))
+    (if target-window      
+	(select-window target-window)
+      (let ((split-window (intelligent-split-window)))
+	(set-window-buffer split-window buffer)
+	(select-window split-window)))
     
     ;; Start elm-repl if it is not already running
     (comint-run "elm-repl")
