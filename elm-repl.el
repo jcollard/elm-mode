@@ -66,13 +66,13 @@
  
 ;; Loads an interactive version elm-repl if there isn't already one running
 ;; Changes the current root directory to be the directory with the closest
-;; `dependencies-file-name` if one exists otherwise sets it to be the 
+;; `elm-dependencies-file-name` if one exists otherwise sets it to be the 
 ;; working directory of the file specified
 (defun load-elm-repl ()
   (interactive)
   (run-elm-repl)
   (let* ((elm-repl (get-process "elm-repl"))
-	 (dependency-file-path (find-dependency-file-path))
+	 (dependency-file-path (elm-find-dependency-file-path))
 	 (change-root-directory-command
 	  (if dependency-file-path (get-crd dependency-file-path)
 	    (get-crd default-directory))))

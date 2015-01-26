@@ -36,7 +36,7 @@
     (reduce 'concat ls)))
 
 (defun elm-compile (file &optional output)
-  (let* ((d-file (find-dependency-file-path))
+  (let* ((d-file (elm-find-dependency-file-path))
 	 (default-directory (or d-file default-directory))
 	 (command (elm-compile-command file output)))
     (print (shell-command-to-string command))))

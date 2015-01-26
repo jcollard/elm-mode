@@ -31,7 +31,7 @@
   "/")
 
 
-(defvar dependencies-file-name
+(defvar elm-dependencies-file-name
   "elm-package.json")
 
 ;; If splitting right would not half the width of the current
@@ -44,18 +44,17 @@
 	  (split-window-right)
         (split-window-below)))))
 
-(defun intercalate (seperator list)
-  (let ((helper (lambda (x y) (concat x (concat seperator y)))))
-    (reduce helper list)))
+(defun intercalate (separator list)
+  (mapconcat #'identity list separator))
 
 (defun merge-path (dir-path-list)
   (let ((helper (lambda (x y) (concat x (concat y directory-seperator)))))
     (reduce helper (cons "" dir-path-list))))
 
 ;; Returns the name of the module in the current buffer based on
-;; its filename and relative location to the nearest `dependencies-file-name`
+;; its filename and relative location to the nearest `elm-dependencies-file-name`
 (defun get-module-name ()
-  (let* ((m-d-path (find-dependency-file-path))
+  (let* ((m-d-path (elm-find-dependency-file-path))
 	 (d-path (or m-d-path default-directory))
 	 (d-split (split-string d-path directory-seperator))
 	 (f-path (buffer-file-name))
@@ -67,7 +66,7 @@
     mod2))
 
 (defun buffer-local-file-name ()
-  (let* ((m-d-path (find-dependency-file-path))
+  (let* ((m-d-path (elm-find-dependency-file-path))
 	 (d-path (or m-d-path default-directory))
 	 (d-split (split-string d-path directory-seperator))
 	 (f-path (buffer-file-name))
@@ -84,35 +83,11 @@
       (if (equal h0 h1) (remove-matching (cdr ls0) (cdr ls1))
 	ls1))))
 
-;; Returns the directory of the current buffer if it contains 
-;; `dependencies-file-name`. Otherwise, it returns the nearest parent 
-;; directory that contains `dependencies-file-name`. If no parent folder
-;; contains `dependencies-file-name` `nil` is returned
-(defun find-dependency-file-path ()
-  (find-dependency-file-path-helper default-directory))
-
-;; Returns `dir-path` if it contains `dependencies-file-name`.
-;; Otherwise, it checks the parent directory. If the root directory
-;; is reached `nil` is returned
-(defun find-dependency-file-path-helper (dir-path)
-  (if (not dir-path) nil
-    (if (contains-dependency-file dir-path) dir-path
-      (find-dependency-file-path-helper (up-dir dir-path)))))
-
-;; Returns the parent directory of `dir-path` or `nil` if there is no parent directory
-(defun up-dir (dir-path)
-  (let* ((dir-path-clean (file-name-as-directory dir-path))
-	 (split-file-path (split-string dir-path-clean directory-seperator))
-	 (up-dir-path-list (butlast split-file-path 2))
-	 (up-dir-path (merge-path up-dir-path-list)))
-    (if (eq up-dir-path "") nil up-dir-path)))
-
-;; Returns true if the `dir-path` contains `dependencies-file-name` and `nil` otherwise
-(defun contains-dependency-file (dir-path)
-  (let ((ls (directory-files-and-attributes dir-path nil dependencies-file-name)))
-    (not (null ls))))
-
-
+(defun elm-find-dependency-file-path ()
+  "Return the closest directory containing `elm-dependencies-file-name'.
+If neither the current directory of this buffer nor any parent
+directory contains such a file, return nil."
+  (locate-dominating-file default-directory elm-dependencies-file-name))
 
 (provide 'elm-util)
 
