@@ -52,6 +52,12 @@
   (set (make-local-variable 'comment-end) "")
 
   (use-local-map elm-mode-map)
+
+  ;; Elm is not generally suitable for electric indentation, since
+  ;; there is no unambiguously correct indent level for any given line.
+  (when (boundp 'electric-indent-inhibit)
+    (setq-local electric-indent-inhibit t))
+
   (elm-indent-mode)
   ;; TODO
   ;; This line makes tabs use spaces which is what
