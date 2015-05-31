@@ -1264,8 +1264,10 @@ We stay in the cycle as long as the TAB key is pressed."
       (unless (and (eq last-command this-command)
                    (eq bol (car elm-indent-last-info)))
         (save-excursion
-          (setq elm-indent-last-info
-                (list bol (elm-indent-indentation-info) 0 0))))
+          (let* ((li (elm-indent-indentation-info))
+                 (default-index (if (> (length li) 1) 1 0)))
+            (setq elm-indent-last-info
+                  (list bol li default-index 0)))))
 
       (let* ((il (nth 1 elm-indent-last-info))
              (index (nth 2 elm-indent-last-info))
