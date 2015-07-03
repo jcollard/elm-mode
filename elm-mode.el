@@ -33,9 +33,6 @@
 (require 'elm-compile)
 (require 'elm-preview)
 
-(defvar elm-mode-hook nil
-  "Elm mode hook for user defined functionality.")
-
 
 ;;;###autoload
 (define-derived-mode elm-mode prog-mode "Elm"
