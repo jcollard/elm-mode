@@ -1,8 +1,8 @@
-;;; elm-font-lock.el --- Font locking module for Elm mode
+;;; elm-font-lock.el --- Font locking module for Elm mode.
 
-;; Copyright (C) 2013, 2014  Joseph Collard
+;; Copyright (C) 2013, 2014 Joseph Collard; 2015 Bogdan Popa
 
-;; Author: Joseph Collard
+;; Authors: Joseph Collard
 ;; URL: https://github.com/jcollard/elm-mode
 
 ;; This file is not part of GNU Emacs.
@@ -23,77 +23,69 @@
 ;;; Commentary:
 
 ;;; Code:
-
 (require 'font-lock)
-(with-no-warnings (require 'cl))
 
-(defconst elm-keywords
+(with-no-warnings
+  (require 'cl))
+
+(defconst elm--keywords
   '("let" "case" "in" "if" "of" "then" "else" "otherwise"
     "module" "import" "as" "exposing"  "type" "where"
     "alias" "port" "infixr" "infixl")
   "Reserved keywords.")
 
-(defconst elm-regexp-keywords
-  (concat (concat "\\<" (regexp-opt elm-keywords t)) "\\>")
+(defconst elm--regexp-keywords
+  (concat (concat "\\<" (regexp-opt elm--keywords t)) "\\>")
   "A regular expression representing the reserved keywords.")
 
-(defconst elm-font-lock-keywords
-   (cons elm-regexp-keywords font-lock-keyword-face)
+(defconst elm--font-lock-keywords
+   (cons elm--regexp-keywords font-lock-keyword-face)
   "Highlighting for keywords.")
 
-;; the syntax propertize function for setting single line comments
-(defun elm-syntax-propertize (start end)
+(defun elm--syntax-propertize (start end)
+  "The syntax propertize function for setting single line comments over START to END."
   (goto-char start)
-  (funcall
-   (syntax-propertize-rules
-           ("^[[:space:]]*\\(--\\).*\\(
-\\)"
-            (1 "< b")
-            (2 "> b")
-            )
-           )
-   start end))
+  (funcall (syntax-propertize-rules
+            ("^[[:space:]]*\\(--\\).*\\(\n\\)"
+             (1 "< b")
+             (2 "> b")))
+           start end))
 
-(defvar elm-mode-syntax-table
+(defvar elm--syntax-table
   (let ((st (make-syntax-table)))
     (modify-syntax-entry ?{ "(} 1n" st)
     (modify-syntax-entry ?- ". 23n" st)
     (modify-syntax-entry ?} "){ 4n" st)
    st))
 
-;; Function names
-(defconst regexp-function
-  "^[a-z][^[:space:][:punct:]]*")
-;  "^[a-z][^[:space:]]*")
+(defconst elm--regexp-function
+  "^[a-z][^[:space:][:punct:]]*"
+  "A regular expression representing function names.")
 
-(defconst elm-font-lock-functions
-   (cons regexp-function font-lock-function-name-face)
-  "Highlighting for function names")
+(defconst elm--font-lock-functions
+   (cons elm--regexp-function font-lock-function-name-face)
+  "Highlighting for function names.")
 
-;; Types and Modules
-(defconst regexp-type
-  "\\<[A-Z][^[:space:].]*\\>")
+(defconst elm--regexp-type
+  "\\<[A-Z][^[:space:].]*\\>"
+  "A regular expression representing modules and types.")
 
-(defconst elm-font-lock-types
-   (cons regexp-type font-lock-type-face)
-  "Highlighting for module names and types")
+(defconst elm--font-lock-types
+   (cons elm--regexp-type font-lock-type-face)
+  "Highlighting for module names and types.")
 
-(defconst elm-font-lock-highlighting
-  (list (list
-         elm-font-lock-keywords
-         elm-font-lock-functions
-         elm-font-lock-types
-      ; nil turns off string/comment highlighting
-      ; t turns off capital letter matching
-         ) nil nil))
+(defconst elm--font-lock-highlighting
+  (list (list elm--font-lock-keywords
+              elm--font-lock-functions
+              elm--font-lock-types) nil nil))
 
 (defun turn-on-elm-font-lock ()
+  "Turn on Elm font lock."
   (setq font-lock-multiline t)
-  (set-syntax-table elm-mode-syntax-table)
-  (set (make-local-variable 'syntax-propertize-function) #'elm-syntax-propertize)
-  (set (make-local-variable 'font-lock-defaults) elm-font-lock-highlighting))
+  (set-syntax-table elm--syntax-table)
+  (set (make-local-variable 'syntax-propertize-function) #'elm--syntax-propertize)
+  (set (make-local-variable 'font-lock-defaults) elm--font-lock-highlighting))
 
 
 (provide 'elm-font-lock)
-
 ;;; elm-font-lock.el ends here
