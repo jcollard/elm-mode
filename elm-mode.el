@@ -1,6 +1,7 @@
 ;;; elm-mode.el --- Major mode for Elm
 
 ;; Copyright (C) 2013, 2014  Joseph Collard
+;; Copyright (C) 2015  Bogdan Popa
 
 ;; Author: Joseph Collard
 ;; URL: https://github.com/jcollard/elm-mode
@@ -24,10 +25,6 @@
 
 ;;; Code:
 
-;; Elm mode hook for user defined functionality
-(defvar elm-mode-hook nil)
-
-
 (require 'elm-indent)
 (require 'elm-indentation)
 (require 'elm-font-lock)
@@ -36,39 +33,35 @@
 (require 'elm-compile)
 (require 'elm-preview)
 
+(defvar elm-mode-hook nil
+  "Elm mode hook for user defined functionality.")
+
+
+;;;###autoload
+(define-derived-mode elm-mode prog-mode "Elm"
+  "Major mode for editing Elm source code."
+  (use-local-map elm-mode-map)
+
+  ;; Elm is not generally suitable for electric indentation, since
+  ;; there is no unambiguously correct indent level for any given
+  ;; line.
+  (when (boundp 'electric-indent-inhibit)
+    (setq-local electric-indent-inhibit t))
+
+  (setq-default indent-tabs-mode nil)
+
+  (set (make-local-variable 'comment-start) "--")
+  (set (make-local-variable 'comment-end) "")
+
+  (turn-on-elm-font-lock)
+  (turn-on-elm-indentation)
+
+  (run-hooks 'elm-mode-hook))
+
+
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.elm\\'" . elm-mode))
 
 
-;;;###autoload
-(defun elm-mode ()
-  "Major mode for editing Elm source code"
-  (interactive)
-  (setq indent-tabs-mode nil)
-  (kill-all-local-variables)
-
-  ;; Set single line comments
-  (set (make-local-variable 'comment-start) "--")
-  (set (make-local-variable 'comment-end) "")
-
-  (use-local-map elm-mode-map)
-
-  ;; Elm is not generally suitable for electric indentation, since
-  ;; there is no unambiguously correct indent level for any given line.
-  (when (boundp 'electric-indent-inhibit)
-    (setq-local electric-indent-inhibit t))
-
-  (elm-indent-mode)
-  ;; TODO
-  ;; This line makes tabs use spaces which is what
-  ;; we need for elm. However, I think it overrides behavior
-  ;; outside of elm-mode
-  (setq-default indent-tabs-mode nil)
-  (turn-on-elm-font-lock)
-  (setq major-mode 'elm-mode)
-  (setq mode-name "Elm")
-  (run-hooks 'elm-mode-hook))
-
 (provide 'elm-mode)
-
 ;;; elm-mode.el ends here
