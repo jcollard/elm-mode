@@ -40,7 +40,7 @@
 ;;;###autoload
 (define-derived-mode elm-mode prog-mode "Elm"
   "Major mode for editing Elm source code."
-  (use-local-map elm-mode-map)
+  (setq-default indent-tabs-mode nil)
 
   ;; Elm is not generally suitable for electric indentation, since
   ;; there is no unambiguously correct indent level for any given
@@ -48,15 +48,11 @@
   (when (boundp 'electric-indent-inhibit)
     (setq-local electric-indent-inhibit t))
 
-  (setq-default indent-tabs-mode nil)
-
   (set (make-local-variable 'comment-start) "--")
   (set (make-local-variable 'comment-end) "")
 
   (turn-on-elm-font-lock)
-  (turn-on-elm-indentation)
-
-  (run-hooks 'elm-mode-hook))
+  (turn-on-elm-indentation))
 
 
 ;;;###autoload

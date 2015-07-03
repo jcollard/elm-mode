@@ -49,15 +49,15 @@ ARG specifies the number of lines to comment or uncomment."
 
 (define-key elm-mode-map [menu-bar] (make-sparse-keymap))
 
-(let ((menuMap (make-sparse-keymap "Elm")))
-    (define-key elm-mode-map [menu-bar elm] (cons "Elm" menuMap))
-    (define-key menuMap [elm-repl]
+(let ((menu-map (make-sparse-keymap "Elm")))
+    (define-key elm-mode-map [menu-bar elm] (cons "Elm" menu-map))
+    (define-key menu-map [elm-repl]
       '("elm-repl: Load Buffer" . load-elm-repl))
-    (define-key menuMap [elm-push]
+    (define-key menu-map [elm-push]
       '("elm-repl: Push Region" . push-elm-repl))
-    (define-key menuMap [elm-compile]
+    (define-key menu-map [elm-compile]
       '("Compile Buffer" . elm-compile-buffer))
-    (define-key menuMap [elm-preview]
+    (define-key menu-map [elm-preview]
       '("Preview Buffer" . elm-preview-buffer)))
 
 (provide 'elm-map)
