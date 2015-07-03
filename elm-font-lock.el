@@ -1,6 +1,7 @@
 ;;; elm-font-lock.el --- Font locking module for Elm mode.
 
-;; Copyright (C) 2013, 2014 Joseph Collard; 2015 Bogdan Popa
+;; Copyright (C) 2013, 2014 Joseph Collard
+;; Copyright (C) 2015 Bogdan Popa
 
 ;; Authors: Joseph Collard
 ;; URL: https://github.com/jcollard/elm-mode
