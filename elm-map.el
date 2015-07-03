@@ -1,4 +1,4 @@
-;;; elm-map.el ---
+;;; elm-map.el --- Elm-mode keyboard mappings.
 
 ;; Copyright (C) 2013, 2014  Joseph Collard
 
@@ -30,15 +30,13 @@
 
 (defun elm-comment-dwim (arg)
   "Comment or uncomment current line or region in a smart way.
-For detail, see `comment-dwim'."
+ARG specifies the number of lines to comment or uncomment."
   (interactive "*P")
   (require 'newcomment)
-  (let (
-        (comment-start "--") (comment-end "")
-        )
+  (let ((comment-start "--")
+        (comment-end ""))
     (comment-dwim arg)))
 
-;; Elm mode keyboard short cuts
 (defvar elm-mode-map
   (let ((map (make-keymap)))
     (define-key map [remap comment-dwim] 'elm-comment-dwim)
@@ -47,9 +45,8 @@ For detail, see `comment-dwim'."
     (define-key map "\C-c\C-c" 'elm-compile-buffer)
     (define-key map "\C-c\C-n" 'elm-preview-buffer)
     map)
-  "Keymap for Elm major mode")
+  "Keymap for Elm major mode.")
 
-;; Elm Menu
 (define-key elm-mode-map [menu-bar] (make-sparse-keymap))
 
 (let ((menuMap (make-sparse-keymap "Elm")))
@@ -64,5 +61,4 @@ For detail, see `comment-dwim'."
       '("Preview Buffer" . elm-preview-buffer)))
 
 (provide 'elm-map)
-
 ;;; elm-map.el ends here
