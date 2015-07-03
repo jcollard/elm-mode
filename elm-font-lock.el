@@ -27,22 +27,19 @@
 (require 'font-lock)
 (with-no-warnings (require 'cl))
 
-
-;; Reserved Keywords
-
-(defconst keywords 
-  '("let" "case" "in" "if" "of"
-    "then" "else" "otherwise" "module" 
-    "import" "as" "type" "where"
+(defconst elm-keywords
+  '("let" "case" "in" "if" "of" "then" "else" "otherwise"
+    "module" "import" "as" "exposing"  "type" "where"
     "alias" "port" "infixr" "infixl")
-  "Special Keywords")
+  "Reserved keywords.")
 
-(defconst regexp-keywords         
-  (concat (concat "\\<" (regexp-opt keywords t)) "\\>"))
+(defconst elm-regexp-keywords
+  (concat (concat "\\<" (regexp-opt elm-keywords t)) "\\>")
+  "A regular expression representing the reserved keywords.")
 
 (defconst elm-font-lock-keywords
-   (cons regexp-keywords font-lock-keyword-face)
-  "Highlighting for keywords")
+   (cons elm-regexp-keywords font-lock-keyword-face)
+  "Highlighting for keywords.")
 
 ;; the syntax propertize function for setting single line comments
 (defun elm-syntax-propertize (start end)
