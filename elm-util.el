@@ -29,17 +29,6 @@
   "elm-package.json"
   "The name of the package JSON configuration file.")
 
-(defun elm--intelligent-split-window ()
-  "Split the current window intelligently.
-If splitting right would not half the width of the current buffer,
-splits right.  Otherwise, splits below."
-  (if (not (fboundp 'window-total-width)) (split-window)
-    (let ((width (window-total-width))
-	  (height (window-total-height)))
-      (if (> (/ width 2) height)
-	  (split-window-right)
-        (split-window-below)))))
-
 (defun elm--get-module-name ()
   "Return the qualified name of the module in the current buffer."
   (save-excursion
