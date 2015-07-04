@@ -43,7 +43,8 @@ splits right.  Otherwise, splits below."
 (defun elm--get-module-name ()
   "Return the qualified name of the module in the current buffer."
   (save-excursion
-    (re-search-backward "module +\\([A-Z][A-Za-z0-9.]*\\)" nil t)
+    (goto-char (point-min))
+    (re-search-forward "module +\\([A-Z][A-Za-z0-9.]*\\)" nil t)
     (buffer-substring-no-properties (match-beginning 1) (match-end 1))))
 
 (defun elm--get-open-import (module)
