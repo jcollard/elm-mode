@@ -1,6 +1,7 @@
 ;;; elm-map.el --- Elm-mode keyboard mappings.
 
 ;; Copyright (C) 2013, 2014  Joseph Collard
+;; Copyright (C) 2015  Bogdan Popa
 
 ;; Author: Joseph Collard
 ;; URL: https://github.com/jcollard/elm-mode
@@ -21,9 +22,7 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-
 ;;; Code:
-
 (require 'elm-compile)
 (require 'elm-interactive)
 (require 'elm-preview)
