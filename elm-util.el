@@ -1,4 +1,4 @@
-;;; elm-utils.el --- General utility functions used by Elm mode modules
+;;; elm-utils.el --- General utility functions used by Elm mode modules.
 
 ;; Copyright (C) 2013, 2014  Joseph Collard
 ;; Copyright (C) 2015  Bogdan Popa
@@ -25,7 +25,7 @@
 ;;; Code:
 (require 'f)
 
-(defconst elm--package-json
+(defconst elm-package-json
   "elm-package.json"
   "The name of the package JSON configuration file.")
 
@@ -54,7 +54,7 @@
   "Recursively search for a directory containing a package JSON file."
   (let ((p (f-traverse-upwards
             (lambda (path)
-              (f-exists? (f-expand elm--package-json path))))))
+              (f-exists? (f-expand elm-package-json path))))))
     (concat p "/")))
 
 (provide 'elm-util)
