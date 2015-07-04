@@ -20,18 +20,18 @@ Add this repo to your load-path and `(require elm-mode)`. Ensure that
 The following bindings are available in `elm-mode`:
 
 <dl>
-  <dt>`C-c C-l`</dt>
+  <dt><code>C-c C-l</code></dt>
   <dd>Load the current file in a REPL.</dd>
 
-  <dt>`C-c C-p`</dt>
+  <dt><code>C-c C-p</code></dt>
   <dd>Push the current region to a REPL.</dd>
 
-  <dt>`C-c C-e`</dt>
-  <dd>Push the current declaration to a REPL (requires `haskell-mode` to be available -- highly experimental).</dd>
+  <dt><code>C-c C-e</code></dt>
+  <dd>Push the current declaration to a REPL (requires <code>haskell-mode<code> to be available -- highly experimental).</dd>
 
-  <dt>`C-c C-c`</dt>
+  <dt><code>C-c C-c</code></dt>
   <dd>Compile the current buffer.</dd>
 
-  <dt>`C-c C-n`</dt>
+  <dt><code>C-c C-n</code></dt>
   <dd>Preview the current buffer in a browser.</dd>
 </dl>
