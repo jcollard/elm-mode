@@ -24,8 +24,8 @@
 
 ;;; Code:
 
-(require 'elm-repl)
 (require 'elm-compile)
+(require 'elm-interactive)
 (require 'elm-preview)
 
 (defun elm-comment-dwim (arg)

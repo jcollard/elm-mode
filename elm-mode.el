@@ -22,13 +22,11 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-
 ;;; Code:
-
 (require 'elm-indent)
 (require 'elm-indentation)
+(require 'elm-interactive)
 (require 'elm-font-lock)
-(require 'elm-repl)
 (require 'elm-map)
 (require 'elm-compile)
 (require 'elm-preview)
