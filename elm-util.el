@@ -59,7 +59,6 @@ Relies on `haskell-mode' stuff."
           (cdr lines)
         lines))))
 
-(split-string "a\nb" "\n")
 (defun elm--build-import-statement ()
   "Generate a statement that will import the current module."
   (concat "import " (elm--get-module-name) " exposing (..) \n"))
