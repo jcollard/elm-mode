@@ -40,6 +40,10 @@
   "Generate a statement that will import MODULE."
   (concat "import " module " exposing (..) \n"))
 
+(defun elm--get-buffer-dirname ()
+  "Return the absolute dirname of the current buffer."
+  (concat (f-dirname (buffer-file-name)) "/"))
+
 (defun elm--buffer-local-file-name ()
   "Return the current file name relative to the dependency file."
   (let ((dirname (buffer-file-name))

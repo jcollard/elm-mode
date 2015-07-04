@@ -23,14 +23,14 @@
 
 ;;; Commentary:
 ;;; Code:
-(require 'elm-util)
 (require 'elm-compile)
+(require 'elm-util)
 
 (defun elm-preview-buffer ()
   "Compiles the current buffer and opens it in the default browser."
   (interactive)
   (let* ((d-file (elm--find-dependency-file-path))
-	 (dir (if d-file d-file (get-file-directory)))
+	 (dir (if d-file d-file (elm--get-buffer-dirname)))
 	 (path-html (concat dir "preview.html")))
     (elm-compile-buffer "preview.html")
     (browse-url (concat "file:///" path-html))))
