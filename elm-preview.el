@@ -1,6 +1,7 @@
-;;; elm-preview.el ---
+;;; elm-preview.el --- Compile and view a buffer in the default browser.
 
 ;; Copyright (C) 2013, 2014  Joseph Collard
+;; Copyright (C) 2015  Bogdan Popa
 
 ;; Author: Joseph Collard
 ;; URL: https://github.com/jcollard/elm-mode
@@ -21,22 +22,18 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-
 ;;; Code:
-
 (require 'elm-util)
 (require 'elm-compile)
 
-
-;; Compiles the current buffer and opens it in the default browser
 (defun elm-preview-buffer ()
+  "Compiles the current buffer and opens it in the default browser."
   (interactive)
-  (let* ((d-file (find-dependency-file-path))
+  (let* ((d-file (elm--find-dependency-file-path))
 	 (dir (if d-file d-file (get-file-directory)))
 	 (path-html (concat dir "preview.html")))
     (elm-compile-buffer "preview.html")
     (browse-url (concat "file:///" path-html))))
-  
-(provide 'elm-preview)
 
+(provide 'elm-preview)
 ;;; elm-preview.el ends here
