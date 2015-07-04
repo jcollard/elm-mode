@@ -42,6 +42,7 @@ ARG specifies the number of lines to comment or uncomment."
     (define-key map [remap comment-dwim] 'elm-comment-dwim)
     (define-key map "\C-c\C-l" 'load-elm-repl)
     (define-key map "\C-c\C-p" 'push-elm-repl)
+    (define-key map "\C-c\C-e" 'push-decl-elm-repl)
     (define-key map "\C-c\C-c" 'elm-compile-buffer)
     (define-key map "\C-c\C-n" 'elm-preview-buffer)
     map)

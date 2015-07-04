@@ -25,6 +25,9 @@
 ;;; Code:
 (require 'f)
 
+(require 'haskell-decl-scan nil 'noerror)
+(require 'inf-haskell nil 'noerror)
+
 (defconst elm-package-json
   "elm-package.json"
   "The name of the package JSON configuration file.")
@@ -36,6 +39,27 @@
     (re-search-forward "module +\\([A-Z][A-Za-z0-9.]*\\)" nil t)
     (buffer-substring-no-properties (match-beginning 1) (match-end 1))))
 
+(defun elm--get-decl ()
+  "Return the current declaration.
+
+Relies on `haskell-mode' stuff."
+  (when (not (fboundp #'haskell-ds-backward-decl))
+    (error "This functionality requires haskell-mode"))
+
+  (save-excursion
+    (goto-char (1+ (point)))
+    (let* ((start (or (haskell-ds-backward-decl) (point-min)))
+           (end (or (haskell-ds-forward-decl) (point-max)))
+           (raw-decl (s-trim-right (buffer-substring start end)))
+           (lines (split-string raw-decl "\n"))
+           (first-line (car lines)))
+
+      (inferior-haskell-flash-decl start end)
+      (if (string-match-p "^[a-z].*:" first-line)
+          (cdr lines)
+        lines))))
+
+(split-string "a\nb" "\n")
 (defun elm--build-import-statement ()
   "Generate a statement that will import the current module."
   (concat "import " (elm--get-module-name) " exposing (..) \n"))

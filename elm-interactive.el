@@ -88,7 +88,7 @@ Stolen from haskell-mode."
   "Send a COMMAND to the REPL."
   (let ((proc (elm-interactive--get-process-buffer)))
     (with-current-buffer (process-buffer proc)
-      (elm-interactive--wait-for-prompt proc 1)
+      (elm-interactive--wait-for-prompt proc 10)
       (goto-char (process-mark proc))
       (insert-before-markers command)
       (move-marker comint-last-input-end (point))
@@ -148,9 +148,20 @@ of the file specified."
   "Push the selected region to an interactive REPL."
   (interactive)
   (let* ((to-push (buffer-substring-no-properties (mark) (point)))
-         (format-tp (replace-regexp-in-string "\n" "\\\\\n" to-push)))
+         (lines (split-string (s-trim-right to-push) "\n")))
     (run-elm-interactive)
-    (elm-interactive--send-command (concat format-tp "\n"))))
+    (dolist (line lines)
+      (elm-interactive--send-command (concat line " \\\n")))
+    (elm-interactive--send-command "\n")))
+
+(defun push-decl-elm-repl ()
+  "Push the current top level declaration to the REPL."
+  (interactive)
+  (let ((lines (elm--get-decl)))
+    (run-elm-interactive)
+    (dolist (line lines)
+      (elm-interactive--send-command (concat line " \\\n")))
+    (elm-interactive--send-command "\n")))
 
 (provide 'elm-interactive)
 ;;; elm-interactive.el ends here
