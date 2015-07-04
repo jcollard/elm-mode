@@ -10,10 +10,6 @@ Elm mode for EMACS.
 
 ## Installation
 
-### MELPA
-
-1. `M-x package-install RET elm-mode RET`
-
 ### From source
 
 Add this repo to your load-path and `(require elm-mode)`. Ensure that
