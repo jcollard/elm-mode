@@ -25,11 +25,13 @@
 ;;; Code:
 (require 'elm-util)
 
-(defvar elm--compiler-command "elm-make")
+(defvar elm--compiler-command
+  "elm-make"
+  "The command that is used to compile Elm files.")
 
 (defun elm--compile-command (file &optional output)
-  "Compile FILE into OUTPUT."
-  (let* ((output-command (if output (concat " --output=" output) "")))
+  "Generate a command that will compile FILE into OUTPUT."
+  (let ((output-command (if output (concat " --output=" output) "")))
     (concat elm--compiler-command " " file output-command " --yes")))
 
 (defun elm-compile (file &optional output)

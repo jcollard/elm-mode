@@ -26,9 +26,6 @@
 ;;; Code:
 (require 'font-lock)
 
-(with-no-warnings
-  (require 'cl))
-
 (defconst elm--keywords
   '("let" "case" "in" "if" "of" "then" "else" "otherwise"
     "module" "import" "as" "exposing"  "type" "where"

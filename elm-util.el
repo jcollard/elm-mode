@@ -23,10 +23,11 @@
 
 ;;; Commentary:
 ;;; Code:
-(require 'dash)
 (require 'f)
 
-(defvar elm--project-json "elm-package.json")
+(defconst elm--package-json
+  "elm-package.json"
+  "The name of the package JSON configuration file.")
 
 (defun elm--intelligent-split-window ()
   "Split the current window intelligently.
@@ -56,10 +57,10 @@ splits right.  Otherwise, splits below."
     (f-relative dirname deppath)))
 
 (defun elm--find-dependency-file-path ()
-  "Recursively search for a directory containing a project json file."
+  "Recursively search for a directory containing a package JSON file."
   (let ((p (f-traverse-upwards
             (lambda (path)
-              (f-exists? (f-expand elm--project-json path))))))
+              (f-exists? (f-expand elm--package-json path))))))
     (concat p "/")))
 
 (provide 'elm-util)
