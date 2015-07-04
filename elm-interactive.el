@@ -26,6 +26,10 @@
 (require 'elm-font-lock)
 (require 'elm-util)
 
+(defvar elm-interactive--seen-prompt nil
+  "Non-nil represents the fact that a prompt has been spotted.")
+(make-variable-buffer-local 'elm-interactive--seen-prompt)
+
 (defvar elm-interactive--buffer-simple-name "elm")
 (defvar elm-interactive--buffer-name "*elm*")
 
@@ -35,32 +39,82 @@
 (defvar elm-interactive-arguments '()
   "Command line arguments to pass to the Elm REPL command.")
 
-(defvar elm-interactive-mode-map
-  (let ((map (nconc (make-sparse-keymap) comint-mode-map)))
-    (define-key map "\t" 'completion-at-point)
-    map)
-  "Basic mode map for `run-elm-interactive'.")
-
-(defvar elm-interactive-prompt-regexp "^> *"
+(defvar elm-interactive-prompt-regexp "^[>|] *"
   "Prompt for `run-elm-interactive'.")
+
+(defvar elm-interactive-mode-map
+  (let ((map (make-keymap)))
+    (define-key map "\t" #'completion-at-point)
+    (define-key map (kbd "C-a") #'elm-interactive-mode-beginning)
+    map)
+  "Keymap for Elm interactive mode.")
+
+(defun elm-interactive-mode-beginning ()
+  "Go to the start of the line."
+  (interactive)
+  (beginning-of-line)
+  (goto-char (+ 2 (point))))
+
+(defun elm-interactive--get-process-buffer ()
+  "Get the REPL process buffer."
+  (get-buffer-process elm-interactive--buffer-name))
+
+(defun elm-interactive--spot-prompt (string)
+  "Spot the prompt, STRING is ignored."
+  (let ((proc (elm-interactive--get-process-buffer)))
+    (when proc
+      (save-excursion
+        (goto-char (process-mark proc))
+        (if (re-search-backward comint-prompt-regexp
+                                (line-beginning-position) t)
+            (setq elm-interactive--seen-prompt t))))))
+
+(defun elm-interactive--wait-for-prompt (proc &optional timeout)
+  "Wait until PROC sends us a prompt or TIMEOUT.
+The process PROC should be associated to a comint buffer.
+
+Stolen from haskell-mode."
+  (with-current-buffer (process-buffer proc)
+    (while (progn
+             (goto-char comint-last-input-end)
+             (not (or elm-interactive--seen-prompt
+                      (setq elm-interactive--seen-prompt
+                            (re-search-forward comint-prompt-regexp nil t))
+                      (not (accept-process-output proc timeout))))))
+    (unless elm-interactive--seen-prompt
+      (error "Can't find the prompt"))))
+
+(defun elm-interactive--send-command (command)
+  "Send a COMMAND to the REPL."
+  (let ((proc (elm-interactive--get-process-buffer)))
+    (with-current-buffer (process-buffer proc)
+      (elm-interactive--wait-for-prompt proc 1)
+      (goto-char (process-mark proc))
+      (insert-before-markers command)
+      (move-marker comint-last-input-end (point))
+      (setq elm-interactive--seen-prompt nil)
+      (comint-send-string proc command))))
 
 (defun elm-interactive--initialize ()
   "Helper function to initialize the Elm REPL."
   (setq comint-use-prompt-regexp t))
 
+;;;###autoload
 (define-derived-mode elm-interactive-mode comint-mode "Elm Interactive"
   "Major mode for `run-elm-interactive'.
 
-\\<elm-interactive-mode-map>"
-  nil "Elm Interactive"
+\\{elm-interactive-mode-map}"
 
   (setq comint-prompt-regexp elm-interactive-prompt-regexp)
   (setq comint-prompt-read-only t)
 
+  (add-hook 'comint-output-filter-functions #'elm-interactive--spot-prompt nil t)
+
   (turn-on-elm-font-lock))
 
-(add-hook 'elm-interactive-mode-hook 'elm-interactive--initialize)
+(add-hook 'elm-interactive-mode-hook #'elm-interactive--initialize)
 
+;;;###autoload
 (defun run-elm-interactive ()
   "Run an inferior instance of `elm-repl' inside Emacs."
   (interactive)
@@ -87,8 +141,8 @@ of the file specified."
   (interactive)
   (let ((import-statement (elm--build-import-statement)))
     (run-elm-interactive)
-    (comint-send-string (current-buffer) ":reset\n")
-    (comint-send-string (current-buffer) import-statement)))
+    (elm-interactive--send-command ":reset\n")
+    (elm-interactive--send-command import-statement)))
 
 (defun push-elm-repl ()
   "Push the selected region to an interactive REPL."
@@ -96,8 +150,7 @@ of the file specified."
   (let* ((to-push (buffer-substring-no-properties (mark) (point)))
          (format-tp (replace-regexp-in-string "\n" "\\\\\n" to-push)))
     (run-elm-interactive)
-    (comint-send-string (current-buffer) format-tp)
-    (comint-send-string (current-buffer) "\n")))
+    (elm-interactive--send-command (concat format-tp "\n"))))
 
 (provide 'elm-interactive)
 ;;; elm-interactive.el ends here
