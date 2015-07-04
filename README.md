@@ -27,7 +27,7 @@ The following bindings are available in `elm-mode`:
   <dd>Push the current region to a REPL.</dd>
 
   <dt><code>C-c C-e</code></dt>
-  <dd>Push the current declaration to a REPL (requires <code>haskell-mode<code> to be available -- highly experimental).</dd>
+  <dd>Push the current declaration to a REPL (requires <code>haskell-mode</code> to be available -- highly experimental).</dd>
 
   <dt><code>C-c C-c</code></dt>
   <dd>Compile the current buffer.</dd>
