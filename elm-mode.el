@@ -24,7 +24,6 @@
 ;;; Commentary:
 ;;; Code:
 (require 'elm-indent)
-(require 'elm-indentation)
 (require 'elm-interactive)
 (require 'elm-font-lock)
 (require 'elm-map)
@@ -46,7 +45,7 @@
   (set (make-local-variable 'comment-end) "")
 
   (turn-on-elm-font-lock)
-  (turn-on-elm-indentation))
+  (turn-on-elm-indent))
 
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.elm\\'" . elm-mode))

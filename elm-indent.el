@@ -91,7 +91,7 @@
 (require 'elm-string)
 (with-no-warnings (require 'cl))
 
-(defvar elm-literate)
+(defvar elm-literate nil)
 
 (defgroup elm-indent nil
   "Elm indentation."
