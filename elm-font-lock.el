@@ -36,7 +36,7 @@
   "A regular expression representing the reserved keywords.")
 
 (defconst elm--font-lock-keywords
-   (cons elm--regexp-keywords font-lock-keyword-face)
+  (cons elm--regexp-keywords font-lock-keyword-face)
   "Highlighting for keywords.")
 
 (defun elm--syntax-propertize (start end)
@@ -53,14 +53,14 @@
     (modify-syntax-entry ?{ "(} 1n" st)
     (modify-syntax-entry ?- ". 23n" st)
     (modify-syntax-entry ?} "){ 4n" st)
-   st))
+    st))
 
 (defconst elm--regexp-function
   "^[a-z][^[:space:][:punct:]]*"
   "A regular expression representing function names.")
 
 (defconst elm--font-lock-functions
-   (cons elm--regexp-function font-lock-function-name-face)
+  (cons elm--regexp-function font-lock-function-name-face)
   "Highlighting for function names.")
 
 (defconst elm--regexp-type
@@ -68,7 +68,7 @@
   "A regular expression representing modules and types.")
 
 (defconst elm--font-lock-types
-   (cons elm--regexp-type font-lock-type-face)
+  (cons elm--regexp-type font-lock-type-face)
   "Highlighting for module names and types.")
 
 (defconst elm--font-lock-highlighting
