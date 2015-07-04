@@ -33,7 +33,6 @@
 (require 'elm-compile)
 (require 'elm-preview)
 
-
 ;;;###autoload
 (define-derived-mode elm-mode prog-mode "Elm"
   "Major mode for editing Elm source code."
@@ -51,10 +50,8 @@
   (turn-on-elm-font-lock)
   (turn-on-elm-indentation))
 
-
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.elm\\'" . elm-mode))
-
 
 (provide 'elm-mode)
 ;;; elm-mode.el ends here

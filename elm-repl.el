@@ -1,6 +1,7 @@
 ;;; elm-repl.el --- Run Elm repl
 
 ;; Copyright (C) 2013, 2014  Joseph Collard
+;; Copyright (C) 2015  Bogdan Popa
 
 ;; Author: Joseph Collard
 ;; URL: https://github.com/jcollard/elm-mode
@@ -21,75 +22,57 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-
 ;;; Code:
-
 (require 'comint)
 (require 'elm-util)
 
-(defconst elm-repl-buffer
-  "*elm-repl*")
-
-;; The current directory where elm-repl is running
-(defvar working-directory nil)
+(defconst elm--repl-command "elm-repl")
+(defconst elm--repl-buffer "*elm-repl*")
 
 (defun run-elm-repl ()
+  "Run an Elm REPL."
   (interactive)
-  (let*
-      
-      ;; The *elm-repl* buffer
-      ((buffer (get-buffer-create elm-repl-buffer))
-       ;; The window that should hold elm-repl
-       (target_window (get-buffer-window buffer))
-       ;; The current window
-       (selected_window (selected-window)))
-    
+  (let* ((default-directory (elm--find-dependency-file-path))
+         (buffer (get-buffer-create elm--repl-buffer))
+         (target-window (get-buffer-window buffer))
+         (current-window (selected-window)))
+
     ;; If the target window does not exist, create it and set the buffer
     ;; then select that window so elm-repl will be running there
-    (if target_window      
-	(select-window target_window)
-      (let ((split_window (intelligent-split-window)))
-	(set-window-buffer split_window buffer)
-	(select-window split_window)))
-    
+    (if target-window
+	(select-window target-window)
+      (let ((split-window (elm--intelligent-split-window)))
+	(set-window-buffer split-window buffer)
+	(select-window split-window)))
+
     ;; Start elm-repl if it is not already running
-    (comint-run "elm-repl")
-    
+    (make-comint elm--repl-command elm--repl-command)
+
     ;; Switch focus back to the originally selected window
-    (select-window selected_window)))
+    (select-window current-window)))
 
-(defun get-crd (path)
-  (concat (concat ":flags add --src-dir=\"" path) "\"\n"))
-
-(defun get-open-import (module)
-  (concat "import " module " (..) \n"))
- 
-;; Loads an interactive version elm-repl if there isn't already one running
-;; Changes the current root directory to be the directory with the closest
-;; `dependencies-file-name` if one exists otherwise sets it to be the 
-;; working directory of the file specified
 (defun load-elm-repl ()
+  "Load an interactive version elm-repl if there isn't already one running.
+Changes the current root directory to be the directory with the closest
+package json if one exists otherwise sets it to be the working directory
+of the file specified."
   (interactive)
   (run-elm-repl)
-  (let* ((elm-repl (get-process "elm-repl"))
-	 (dependency-file-path (find-dependency-file-path))
-	 (change-root-directory-command
-	  (if dependency-file-path (get-crd dependency-file-path)
-	    (get-crd (get-file-directory)))))
-    (send-string elm-repl ":reset\n")
-    (send-string elm-repl change-root-directory-command)
-    (send-string elm-repl (get-open-import (get-module-name)))))
+  (let ((elm-repl (get-process elm--repl-command)))
+    (comint-send-string elm-repl ":reset\n")
+    (comint-send-string elm-repl (elm--get-open-import (elm--get-module-name)))))
 
-;; Pushes the selected region to elm-repl
 (defun push-elm-repl ()
+  "Push the selected region to elm-repl."
   (interactive)
   (run-elm-repl)
-  (let* ((to-push (buffer-substring-no-properties (mark) (point)))
+  (let* ((elm-repl (get-process elm--repl-command))
+         (to-push (buffer-substring-no-properties (mark) (point)))
 	 (format-tp (replace-regexp-in-string "\n" "\\\\\n" to-push)))
-    (send-string (get-process "elm-repl") format-tp)
-    (send-string (get-process "elm-repl") "\n")))
+    (comint-send-string elm-repl format-tp)
+    (comint-send-string elm-repl "\n")))
 
-;; TODO: Add an load-elm-repl that searches for the nearest 
+;; TODO: Add an load-elm-repl that searches for the nearest
 ;; elm_dependencies.json. It should use that directory as the root directory
 ;; for loading the current buffer. This requires elm-repl to have a
 ;; `cd` command for switching directories. elm-repl should also use the
@@ -100,5 +83,4 @@
 ;; it was echoed in the process buffer
 
 (provide 'elm-repl)
-
 ;;; elm-repl.el ends here

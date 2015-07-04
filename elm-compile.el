@@ -1,6 +1,7 @@
 ;;; elm-compile.el --- Elm compilation sub-mode
 
 ;; Copyright (C) 2013, 2014  Joseph Collard
+;; Copyright (C) 2015  Bogdan Popa
 
 ;; Author: Joseph Collard
 ;; URL: https://github.com/jcollard/elm-mode
@@ -21,30 +22,27 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-
 ;;; Code:
-
 (require 'elm-util)
 
-;; Compilation
-(defvar elm-compiler
-  "elm-make")
+(defvar elm--compiler-command "elm-make")
 
-(defun elm-compile-command (file &optional output)
-  (let* ((output-command (if output (concat " --output=" output) ""))
-         (ls (list elm-compiler " " file output-command " --yes")))
-    (reduce 'concat ls)))
+(defun elm--compile-command (file &optional output)
+  "Compile FILE into OUTPUT."
+  (let* ((output-command (if output (concat " --output=" output) "")))
+    (concat elm--compiler-command " " file output-command " --yes")))
 
 (defun elm-compile (file &optional output)
-  (let* ((d-file (find-dependency-file-path))
+  "Compile FILE into OUTPUT."
+  (let* ((d-file (elm--find-dependency-file-path))
 	 (default-directory (if d-file d-file (get-file-directory)))
-	 (command (elm-compile-command file output)))
+	 (command (elm--compile-command file output)))
     (print (shell-command-to-string command))))
 
 (defun elm-compile-buffer (&optional output)
+  "Compile the current buffer into OUTPUT."
   (interactive)
-  (elm-compile (buffer-local-file-name) output))
+  (elm-compile (elm--buffer-local-file-name) output))
 
 (provide 'elm-compile)
-
 ;;; elm-compile.el ends here
