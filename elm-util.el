@@ -36,9 +36,9 @@
     (re-search-forward "module +\\([A-Z][A-Za-z0-9.]*\\)" nil t)
     (buffer-substring-no-properties (match-beginning 1) (match-end 1))))
 
-(defun elm--get-open-import (module)
-  "Generate a statement that will import MODULE."
-  (concat "import " module " exposing (..) \n"))
+(defun elm--build-import-statement ()
+  "Generate a statement that will import the current module."
+  (concat "import " (elm--get-module-name) " exposing (..) \n"))
 
 (defun elm--get-buffer-dirname ()
   "Return the absolute dirname of the current buffer."

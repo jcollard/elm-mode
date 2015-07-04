@@ -85,7 +85,7 @@ Changes the current root directory to be the directory with the closest
 package json if one exists otherwise sets it to be the working directory
 of the file specified."
   (interactive)
-  (let ((import-statement (elm--get-open-import (elm--get-module-name))))
+  (let ((import-statement (elm--build-import-statement)))
     (run-elm-interactive)
     (comint-send-string (current-buffer) ":reset\n")
     (comint-send-string (current-buffer) import-statement)))
