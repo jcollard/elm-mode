@@ -4,7 +4,7 @@
 ;; Copyright (C) 2015  Bogdan Popa
 
 ;; Author: Joseph Collard
-;; Package-Requires: ((f "0.17") (s "20140910.334") (emacs "24"))
+;; Package-Requires: ((f "0.17") (let-alist "1.0.7") (s "20140910.334") (emacs "24"))
 ;; URL: https://github.com/jcollard/elm-mode
 
 ;; This file is not part of GNU Emacs.

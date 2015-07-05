@@ -25,6 +25,7 @@
 ;;; Code:
 (require 'f)
 (require 'json)
+(require 'let-alist)
 (require 's)
 
 (require 'haskell-decl-scan nil 'noerror)
