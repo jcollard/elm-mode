@@ -52,7 +52,10 @@
 (defvar elm-reactor-port "8000"
   "The Elm Reactor port.")
 
-(defvar elm-reactor-arguments `("-p" ,elm-reactor-port)
+(defvar elm-reactor-address "127.0.0.1"
+  "The Elm Reactor address.")
+
+(defvar elm-reactor-arguments `("-p" ,elm-reactor-port "-a" ,elm-reactor-address)
   "Command line arguments to pass to the Elm Reactor command.")
 
 (defvar elm-interactive-mode-map
@@ -193,7 +196,7 @@ of the file specified."
 (defun elm-reactor--browse (path)
   "Open PATH in browser after running Elm reactor."
   (run-elm-reactor)
-  (browse-url (concat "http://127.0.0.1:" elm-reactor-port "/" path)))
+  (browse-url (concat "http://" elm-reactor-address ":" elm-reactor-port "/" path)))
 
 ;;;###autoload
 (defun elm-preview-buffer ()
