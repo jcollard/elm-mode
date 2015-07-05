@@ -26,10 +26,10 @@
 ;;; Code:
 (require 'elm-indent)
 (require 'elm-interactive)
+(require 'elm-reactor)
 (require 'elm-font-lock)
 (require 'elm-map)
 (require 'elm-compile)
-(require 'elm-preview)
 
 ;;;###autoload
 (define-derived-mode elm-mode prog-mode "Elm"

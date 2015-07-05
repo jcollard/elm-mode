@@ -33,5 +33,5 @@ The following bindings are available in `elm-mode`:
   <dd>Compile the current buffer.</dd>
 
   <dt><code>C-c C-n</code></dt>
-  <dd>Preview the current buffer in a browser.</dd>
+  <dd>Preview the current buffer in a browser (requires `elm-reactor`).</dd>
 </dl>
