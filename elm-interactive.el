@@ -131,7 +131,7 @@ Stolen from haskell-mode."
 
     (unless buffer
       (apply #'make-comint-in-buffer elm-interactive--buffer-simple-name buffer
-             elm-interactive-command elm-interactive-arguments)
+             elm-interactive-command nil elm-interactive-arguments)
       (elm-interactive-mode))))
 
 (defun load-elm-repl ()
