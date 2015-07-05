@@ -24,6 +24,7 @@
 ;;; Commentary:
 ;;; Code:
 (require 'f)
+(require 'json)
 (require 's)
 
 (require 'haskell-decl-scan nil 'noerror)
@@ -80,6 +81,19 @@ Relies on `haskell-mode' stuff."
             (lambda (path)
               (f-exists? (f-expand elm-package-json path))))))
     (concat p "/")))
+
+(defun elm--read-dependency-file ()
+  "Find and read the JSON dependency file into an object."
+  (let ((dep-file (f-join (elm--find-dependency-file-path) elm-package-json)))
+    (json-read-file dep-file)))
+
+(defun elm--find-main-file ()
+  "Find the Main.elm file."
+  (let-alist (elm--read-dependency-file)
+    (let ((source-dir (aref .source-directories 0)))
+      (if (equal "." source-dir)
+          "Main.elm"
+        (f-join source-dir "Main.elm")))))
 
 (provide 'elm-util)
 ;;; elm-util.el ends here

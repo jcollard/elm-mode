@@ -49,6 +49,11 @@
       (apply #'start-process elm-reactor--process-name elm-reactor--buffer-name
              elm-reactor-command elm-reactor-arguments))))
 
+(defun elm-reactor--browse (path)
+  "Open PATH in browser after running Elm reactor."
+  (run-elm-reactor)
+  (browse-url (concat "http://127.0.0.1:" elm-reactor-port "/" path)))
+
 ;;;###autoload
 (defun elm-preview-buffer ()
   "Preview the current buffer using Elm reactor."
@@ -56,8 +61,13 @@
   (let* ((fname (buffer-file-name))
          (deppath (elm--find-dependency-file-path))
          (path (f-relative fname deppath)))
-    (run-elm-reactor)
-    (browse-url (concat "http://127.0.0.1:" elm-reactor-port "/" path))))
+    (elm-reactor--browse path)))
+
+;;;###autoload
+(defun elm-preview-main ()
+  "Preview the Main.elm file using Elm reactor."
+  (interactive)
+  (elm-reactor--browse (elm--find-main-file)))
 
 (provide 'elm-reactor)
 ;;; elm-reactor.el ends here
