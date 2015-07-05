@@ -34,4 +34,7 @@ The following bindings are available in `elm-mode`:
 
   <dt><code>C-c C-n</code></dt>
   <dd>Preview the current buffer in a browser (requires `elm-reactor`).</dd>
+
+  <dt><code>C-c C-m</code></dt>
+  <dd>Preview the `Main.elm` file in a browser (requires `elm-reactor`).</dd>
 </dl>
