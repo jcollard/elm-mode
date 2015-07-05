@@ -26,7 +26,6 @@
 ;;; Code:
 (require 'elm-indent)
 (require 'elm-interactive)
-(require 'elm-reactor)
 (require 'elm-font-lock)
 (require 'elm-map)
 (require 'elm-compile)

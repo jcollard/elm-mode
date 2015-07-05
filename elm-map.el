@@ -25,7 +25,6 @@
 ;;; Code:
 (require 'elm-compile)
 (require 'elm-interactive)
-(require 'elm-reactor)
 
 (defun elm-comment-dwim (arg)
   "Comment or uncomment current line or region in a smart way.
