@@ -10,6 +10,16 @@ Elm mode for EMACS.
 1. Integration with [elm-repl](https://github.com/elm-lang/elm-repl).
 1. Integration with [elm-reactor](https://github.com/elm-lang/elm-reactor).
 
+## Indentation
+
+`elm-mode` indentation is based on cycling: every time you insert a new
+line there will be one or more indentation levels available for you to
+choose from. The exact number is printed in the minibuffer either as
+`Sole indentation` or `Indent cycle (n)...` where `n` is the number of
+available indentations to choose from. If the automatic indentation
+level was not the one you expected simply hit `TAB` to cycle through the
+list (note that hitting any other key will cancel the cycle).
+
 ## Installation
 
 ### MELPA
@@ -20,7 +30,7 @@ for Emacs >= 24), you can install `elm-mode` from the package in
 
 ### From source
 
-Add this repo to your load-path and `(require elm-mode)`. Ensure that
+Add this repo to your load-path and `(require 'elm-mode)`. Ensure that
 the following dependencies are available:
 
 * [f](https://github.com/rejeep/f.el)
