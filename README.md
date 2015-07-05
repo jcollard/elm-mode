@@ -6,7 +6,9 @@ Elm mode for EMACS.
 
 1. Syntax highlighting.
 1. Intelligent indentation.
+1. Integration with [elm-make](https://github.com/elm-lang/elm-make).
 1. Integration with [elm-repl](https://github.com/elm-lang/elm-repl).
+1. Integration with [elm-reactor](https://github.com/elm-lang/elm-reactor).
 
 ## Installation
 
@@ -40,6 +42,9 @@ The following bindings are available in `elm-mode`:
 
   <dt><code>C-c C-c</code></dt>
   <dd>Compile the current buffer.</dd>
+
+  <dt><code>C-c M-c</code></dt>
+  <dd>Compile the `Main.elm` file.</dd>
 
   <dt><code>C-c C-n</code></dt>
   <dd>Preview the current buffer in a browser (requires `elm-reactor`).</dd>
