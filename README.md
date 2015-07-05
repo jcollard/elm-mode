@@ -10,6 +10,12 @@ Elm mode for EMACS.
 
 ## Installation
 
+### MELPA
+
+If your Emacs has `package.el` (which is automatically the case
+for Emacs >= 24), you can install `elm-mode` from the package in
+[MELPA](http://melpa.milkbox.net/).
+
 ### From source
 
 Add this repo to your load-path and `(require elm-mode)`. Ensure that
@@ -27,7 +33,10 @@ The following bindings are available in `elm-mode`:
   <dd>Push the current region to a REPL.</dd>
 
   <dt><code>C-c C-e</code></dt>
-  <dd>Push the current declaration to a REPL (requires <code>haskell-mode</code> to be available -- highly experimental).</dd>
+  <dd>
+    Push the current declaration to a REPL (requires <code>haskell-mode</code>
+    to be available -- highly experimental).
+  </dd>
 
   <dt><code>C-c C-c</code></dt>
   <dd>Compile the current buffer.</dd>
