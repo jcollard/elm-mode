@@ -39,7 +39,7 @@
 (defvar elm-interactive-arguments '()
   "Command line arguments to pass to the Elm REPL command.")
 
-(defvar elm-interactive-prompt-regexp "^[>|] *"
+(defvar elm-interactive-prompt-regexp "^[>|] "
   "Prompt for `run-elm-interactive'.")
 
 (defvar elm-interactive-mode-map
