@@ -87,11 +87,12 @@
 ;;
 
 ;;; Code:
+(require 's)
 
-(require 'elm-string)
-(with-no-warnings (require 'cl))
+(with-no-warnings
+  (require 'cl))
 
-(defvar elm-literate)
+(defvar elm-literate nil)
 
 (defgroup elm-indent nil
   "Elm indentation."
@@ -655,8 +656,8 @@ Returns the location of the start of the comment, nil otherwise."
           (string-match "where[ \t]*" elm-indent-current-line-first-ident))
          (diff-first                 ; not a function def with the same name
           (or (null valname-string)
-              (not (string= (elm-trim valname-string)
-                            (elm-trim elm-indent-current-line-first-ident)))))
+              (not (string= (s-trim valname-string)
+                            (s-trim elm-indent-current-line-first-ident)))))
 
          ;; (is-type-def
          ;;  (and rhs-sign (eq (char-after rhs-sign) ?\:)))
