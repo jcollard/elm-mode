@@ -78,10 +78,14 @@ Relies on `haskell-mode' stuff."
 
 (defun elm--find-dependency-file-path ()
   "Recursively search for a directory containing a package JSON file."
-  (let ((p (f-traverse-upwards
-            (lambda (path)
-              (f-exists? (f-expand elm-package-json path))))))
-    (concat p "/")))
+  (let* ((path (f-traverse-upwards
+                (lambda (path)
+                  (f-exists? (f-expand elm-package-json path)))))
+         (path (if (not path)
+                   (f-dirname (buffer-file-name))
+                 path)))
+
+    (concat path "/")))
 
 (defun elm--read-dependency-file ()
   "Find and read the JSON dependency file into an object."
