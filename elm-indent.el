@@ -72,6 +72,8 @@
           (regexp-opt '("let"))
           "\\>[ \t]*"))
 
+(defvar elm-indent-last-info nil)
+
 ;; Customizations for different kinds of environments
 ;; in which dealing with low-level events are different.
 (defun elm-indent-mark-active ()
@@ -83,7 +85,7 @@
 
 ;;  for pushing indentation information
 
-(defvar elm-indent-info)            ;Used with dynamic scoping.
+(defvar elm-indent-info)            ; Used with dynamic scoping.
 
 (defun elm-indent-push-col (col &optional name)
   "Push indentation information for the column COL.
@@ -114,8 +116,8 @@ Uses free var `elm-indent-info'."
 followed by an OFFSET (if present use its value otherwise use
 `elm-indent-offset')."
   (elm-indent-push-col (elm-indent-column+offset
-                            (elm-indent-point-to-col pos)
-                            offset)))
+                        (elm-indent-point-to-col pos)
+                        offset)))
 
 (defun elm-indent-empty-line-p ()
   "Checks if the current line is empty; deals with Bird style scripts."
@@ -197,12 +199,11 @@ Returns the location of the start of the comment, nil otherwise."
    ((looking-at "\\(\\([[:alpha:]]\\(\\sw\\|'\\)*\\)\\|_\\)[ \t\n]*")
     'ident)
    ((looking-at "\\(|[^|]\\)[ \t\n]*") 'guard)
-   ((looking-at "\\(=[^>=]\\|::\\|->\\|<-\\)[ \t\n]*") 'rhs)
+   ((looking-at "\\(=[^>=]\\|:[^:]\\|->\\|<-\\)[ \t\n]*") 'rhs)
    (t 'other)))
 
 (defvar elm-indent-current-line-first-ident ""
   "Global variable that keeps track of the first ident of the line to indent.")
-
 
 (defun elm-indent-contour-line (start end)
   "Generate contour information between START and END points."
@@ -380,7 +381,7 @@ Returns the location of the start of the comment, nil otherwise."
             (if (string-match "\\<type\\>" valname-string)
                 (if rhs-sign (elm-indent-push-pos rhs-sign)
                   (elm-indent-push-pos-offset valname))
-              (elm-indent-push-pos-offset valname)))
+              (elm-indent-push-pos-offset valname 0)))
         (case                           ; general case
             (elm-indent-find-case test)
           ;; "1.1.11"   1= vn gd rh arh
@@ -620,7 +621,7 @@ than an identifier, a guard or rhs."
       elm-indent-info)))
 
 (defun elm-indent-valdef-indentation (start end end-visible curr-line-type
-                                                indent-info)
+                                            indent-info)
   "Find indentation information for a value definition."
   (let ((elm-indent-info indent-info))
     (if (< start end-visible)
@@ -634,7 +635,7 @@ than an identifier, a guard or rhs."
       elm-indent-info)))
 
 (defun elm-indent-line-indentation (line-start line-end end-visible
-                                                   curr-line-type indent-info)
+                                               curr-line-type indent-info)
   "Compute indentation info between LINE-START and END-VISIBLE.
 Separate a line of program into valdefs between offside keywords
 and find indentation info for each part."
@@ -661,16 +662,16 @@ and find indentation info for each part."
                   (eq (char-after beg-match) ?l))
               (setq elm-indent-info
                     (elm-indent-valdef-indentation line-start beg-match
-                                                       end-visible
-                                                       curr-line-type
-                                                       elm-indent-info)))
+                                                   end-visible
+                                                   curr-line-type
+                                                   elm-indent-info)))
           ;; ...but keep the start of the line if keyword alone on the line
           (if (= line-end end-match)
               (elm-indent-push-pos beg-match))
           (setq line-start end-match)
           (goto-char line-start)))
       (elm-indent-valdef-indentation line-start line-end end-visible
-                                         curr-line-type elm-indent-info))))
+                                     curr-line-type elm-indent-info))))
 
 
 (defun elm-indent-layout-indent-info (start contour-line)
@@ -690,7 +691,7 @@ and find indentation info for each part."
                       (nth 1 sep)
                     (if (nth 5 sep)              ; is there a rhs-sign
                         (if (= (char-after (nth 5 sep)) ?\:) ;is it a typdef
-                            "::" (nth 1 sep))
+                            ":" (nth 1 sep))
                       "")))))
       (while contour-line               ; explore the contour points
         (setq line-start (pop contour-line))
@@ -707,8 +708,8 @@ and find indentation info for each part."
                     (elm-indent-in-comment start line-start))
           (setq elm-indent-info
                 (elm-indent-line-indentation line-start line-end
-                                                 end-visible curr-line-type
-                                                 elm-indent-info)))))
+                                             end-visible curr-line-type
+                                             elm-indent-info)))))
     elm-indent-info))
 
 (defun elm-indent-find-matching-start (regexp limit &optional pred start)
@@ -847,11 +848,7 @@ See http://hackage.elm.org/trac/elm-prime/wiki/DoAndIfThenElse"
                    (elm-indent-point-to-col open))))))
 
 (defcustom elm-indent-after-keywords
-  '(("where" 2 0)
-    ("of" 2)
-    ("do" 2)
-    ("mdo" 2)
-    ("rec" 2)
+  '(("of" 2)
     ("in" 2 0)
     ("{" 2)
     "if"
@@ -920,7 +917,7 @@ is at the end of an otherwise-non-empty line."
         (if elm-indent-inhibit-after-offset '(0) (cdr-safe offset-info)))
   (if (not (elm-indent-hanging-p))
       (elm-indent-column+offset (current-column)
-                                    (or (car offset-info) default))
+                                (or (car offset-info) default))
     ;; The keyword is hanging at the end of the line.
     (elm-indent-column+offset
      (elm-indent-virtual-indentation start)
@@ -1041,9 +1038,6 @@ START if non-nil is a presumed start pos of the current definition."
      (t
       ;; simple contour just one indentation at start
       (list (list (elm-indent-point-to-col start)))))))
-
-(defvar elm-indent-last-info nil)
-
 
 (defun elm-indent-cycle ()
   "Indentation cycle.
