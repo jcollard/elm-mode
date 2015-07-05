@@ -27,7 +27,28 @@
 (require 'elm-indent)
 (require 'elm-interactive)
 (require 'elm-font-lock)
-(require 'elm-map)
+
+(defun elm-comment-dwim (arg)
+  "Comment or uncomment current line or region in a smart way.
+ARG specifies the number of lines to comment or uncomment."
+  (interactive "*P")
+  (require 'newcomment)
+  (let ((comment-start "--")
+        (comment-end ""))
+    (comment-dwim arg)))
+
+(defvar elm-mode-map
+  (let ((map (make-keymap)))
+    (define-key map [remap comment-dwim] 'elm-comment-dwim)
+    (define-key map "\C-c\C-l" 'load-elm-repl)
+    (define-key map "\C-c\C-p" 'push-elm-repl)
+    (define-key map "\C-c\C-e" 'push-decl-elm-repl)
+    (define-key map "\C-c\C-c" 'elm-compile-buffer)
+    (define-key map "\C-c\M-c" 'elm-compile-main)
+    (define-key map "\C-c\C-n" 'elm-preview-buffer)
+    (define-key map "\C-c\C-m" 'elm-preview-main)
+    map)
+  "Keymap for Elm major mode.")
 
 ;;;###autoload
 (define-derived-mode elm-mode prog-mode "Elm"
