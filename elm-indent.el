@@ -2,6 +2,7 @@
 
 ;; Copyright 2004, 2005, 2007, 2008, 2009  Free Software Foundation, Inc.
 ;; Copyright 1997-1998  Guy Lapalme
+;; Copyright 2015  Bogdan Popa
 
 ;; Author: 1997-1998 Guy Lapalme <lapalme@iro.umontreal.ca>
 
@@ -10,6 +11,8 @@
 ;; URL: http://www.iro.umontreal.ca/~lapalme/layout/index.html
 
 ;; This file is not part of GNU Emacs.
+
+;; This file was adapted from `haskell-indent.el'.
 
 ;; This file is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -25,74 +28,11 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-
-;; Purpose:
-;;
-;; To support automatic indentation of Elm programs using
-;; the layout rule described in section 1.5 and appendix B.3 of the
-;; the Elm report.  The rationale and the implementation principles
-;; are described in an article to appear in Journal of Functional Programming.
-;;   "Dynamic tabbing for automatic indentation with the layout rule"
-;;
-;; It supports literate scripts.
-;; Elm indentation is performed
-;;     within \begin{code}...\end{code} sections of a literate script
-;;     and in lines beginning with > with Bird style literate script
-;; TAB aligns to the left column outside of these sections.
-;;
-;; Installation:
-;;
-;; To turn indentation on for all Elm buffers under the Elm
-;; mode of Moss&Thorn <http://www.elm.org/elm-mode/>
-;; add this to .emacs:
-;;
-;;    (add-hook 'elm-mode-hook 'turn-on-elm-indent)
-;;
-;; Otherwise, call `turn-on-elm-indent'.
-;;
-;;
-;; Customisation:
-;;       The "standard" offset for statements is 4 spaces.
-;;       It can be changed by setting the variable "elm-indent-offset" to
-;;       another value
-;;
-;;       The default number of blanks after > in a Bird style literate script
-;;       is 1; it can be changed by setting the variable
-;;       "elm-indent-literate-Bird-default-offset"
-;;
-;;       `elm-indent-hook' is invoked if not nil.
-;;
-;; All functions/variables start with
-;; `(turn-(on/off)-)elm-indent' or `elm-indent-'.
-
-;; This file can also be used as a hook for the Hugs Mode developed by
-;;         Chris Van Humbeeck <chris.vanhumbeeck@cs.kuleuven.ac.be>
-;; It can be obtained at:
-;; http://www-i2.informatik.rwth-aachen.de/Forschung/FP/Elm/hugs-mode.el
-;;
-;; For the Hugs mode put the following in your .emacs
-;;
-;;(setq auto-mode-alist (append auto-mode-alist '(("\\.hs\\'" . hugs-mode))))
-;;(autoload 'hugs-mode "hugs-mode" "Go into hugs mode" t)
-;;
-;; If only the indentation mode is used then replace the two
-;; preceding lines with
-;;(setq auto-mode-alist (append auto-mode-alist
-;;                              '(("\\.hs\\'" . turn-on-elm-indent))))
-;;(autoload 'turn-on-elm-indent "hindent" "Indentation mode for Elm" t)
-;;
-;; For indentation in both cases then add the following to your .emacs
-;;(add-hook 'hugs-mode-hook 'turn-on-elm-indent)
-;;(autoload 'elm-indent-cycle "hindent" "Indentation cycle for Elm" t)
-;;
-
 ;;; Code:
 (require 's)
 
 (with-no-warnings
   (require 'cl))
-
-(defvar elm-literate nil)
 
 (defgroup elm-indent nil
   "Elm indentation."
@@ -105,15 +45,15 @@
   :type 'integer
   :group 'elm-indent)
 
-(defcustom elm-indent-literate-Bird-default-offset 1
-  "Default number of blanks after > in a Bird style literate script."
-  :type 'integer
-  :group 'elm-indent)
-
 (defcustom elm-indent-rhs-align-column 0
   "Column on which to align right-hand sides (use 0 for ad-hoc alignment)."
   :type 'integer
   :group 'elm-indent)
+
+(defcustom elm-indent-look-past-empty-line t
+  "If nil, indentation engine will not look past an empty line for layout points."
+  :group 'elm-indent
+  :type 'boolean)
 
 (defun elm-indent-point-to-col (apoint)
   "Return the column number of APOINT."
@@ -123,11 +63,9 @@
 
 (defconst elm-indent-start-keywords-re
   (concat "\\<"
-          (regexp-opt '("class" "data" "import" "infix" "infixl" "infixr"
-                        "instance" "module" "newtype" "primitive" "type") t)
+          (regexp-opt '("module" "import" "infix" "infixl" "infixr" "type") t)
           "\\>")
   "Regexp for keywords to complete when standing at the first word of a line.")
-
 
 ;; Customizations for different kinds of environments
 ;; in which dealing with low-level events are different.
@@ -174,158 +112,19 @@ followed by an OFFSET (if present use its value otherwise use
                             (elm-indent-point-to-col pos)
                             offset)))
 
-;; redefinition of some Emacs function for dealing with
-;; Bird Style literate scripts
-
-(defun elm-indent-bolp ()
-  "`bolp' but dealing with Bird-style literate scripts."
-  (or (bolp)
-      (and (eq elm-literate 'bird)
-           (<= (current-column) (1+ elm-indent-literate-Bird-default-offset))
-           (eq (char-after (line-beginning-position)) ?\>))))
-
 (defun elm-indent-empty-line-p ()
   "Checks if the current line is empty; deals with Bird style scripts."
   (save-excursion
     (beginning-of-line)
-    (if (and (eq elm-literate 'bird)
-             (eq (following-char) ?\>))
-        (forward-char 1))
     (looking-at "[ \t]*$")))
 
-(defun elm-indent-back-to-indentation ()
-  "`back-to-indentation' function but dealing with Bird-style literate scripts."
-  (if (and (eq elm-literate 'bird)
-           (progn (beginning-of-line) (eq (following-char) ?\>)))
-      (progn
-        (forward-char 1)
-        (skip-chars-forward " \t"))
-    (back-to-indentation)))
-
-(defun elm-indent-current-indentation ()
-  "`current-indentation' function dealing with Bird-style literate scripts."
-  (if (eq elm-literate 'bird)
-      (save-excursion
-        (elm-indent-back-to-indentation)
-        (current-column))
-    (current-indentation)))
-
-(defun elm-indent-backward-to-indentation (n)
-  "`backward-to-indentation' function dealing with Bird-style literate scripts."
-  (if (eq elm-literate 'bird)
-      (progn
-        (forward-line (- n))
-        (elm-indent-back-to-indentation))
-    (backward-to-indentation n)))
-
-(defun elm-indent-forward-line (&optional n)
-  "`forward-line' function but dealing with Bird-style literate scripts."
-  (prog1
-      (forward-line n)
-    (if (and (eq elm-literate 'bird) (eq (following-char) ?\>))
-        (progn (forward-char 1)                ; skip > and initial blanks...
-               (skip-chars-forward " \t")))))
-
-(defun elm-indent-line-to (n)
-  "`indent-line-to' function but dealing with Bird-style literate scripts."
-  (if (eq elm-literate 'bird)
-      (progn
-        (beginning-of-line)
-        (if (eq (following-char) ?\>)
-            (delete-char 1))
-        (delete-horizontal-space)       ; remove any starting TABs so
-        (indent-line-to n)              ; that indent-line only adds spaces
-        (save-excursion
-          (beginning-of-line)
-          (if (> n 0) (delete-char 1))  ; delete the first space before
-          (insert ?\>)))                ; inserting a >
-    (indent-line-to n)))
-
 (defun elm-indent-skip-blanks-and-newlines-forward (end)
-  "Skip forward blanks, tabs and newlines until END.
-Take account of Bird-style literate scripts."
-  (skip-chars-forward " \t\n" end)
-  (if (eq elm-literate 'bird)
-      (while (and (bolp) (eq (following-char) ?\>))
-        (forward-char 1)                ; skip >
-        (skip-chars-forward " \t\n" end))))
+  "Skip forward blanks, tabs and newlines until END."
+  (skip-chars-forward " \t\n" end))
 
 (defun elm-indent-skip-blanks-and-newlines-backward (start)
-  "Skip backward blanks, tabs and newlines up to START.
-Take account of Bird-style literate scripts."
-  (skip-chars-backward " \t\n" start)
-  (if (eq elm-literate 'bird)
-      (while (and (eq (current-column) 1)
-                  (eq (preceding-char) ?\>))
-        (forward-char -1)               ; skip back >
-        (skip-chars-backward " \t\n" start))))
-
-;; specific functions for literate code
-
-(defun elm-indent-within-literate-code ()
-  "Check if point is within a part of literate Elm code.
-If so, return its start; otherwise return nil:
-If it is Bird-style, then return the position of the >;
-otherwise return the ending position of \\begin{code}."
-  (save-excursion
-    (case elm-literate
-      (bird
-       (beginning-of-line)
-       (if (or (eq (following-char) ?\>)
-               (and (bolp) (forward-line -1) (eq (following-char) ?\>)))
-           (progn
-             (while (and (zerop (forward-line -1))
-                         (eq (following-char) ?\>)))
-             (if (not (eq (following-char) ?\>))
-                 (forward-line))
-             (point))))
-      ;;  Look for a \begin{code} or \end{code} line.
-      ((latex tex)
-       (if (re-search-backward
-            "^\\(\\\\begin{code}$\\)\\|\\(\\\\end{code}$\\)" nil t)
-           ;; within a literate code part if it was a \\begin{code}.
-           (match-end 1)))
-      (t (error "elm-indent-within-literate-code: should not happen!")))))
-
-(defun elm-indent-put-region-in-literate (beg end &optional arg)
-  "Put lines of the region as a piece of literate code.
-With prefix arg, remove indication that the region is literate code.
-It deals with both Bird style and non Bird-style scripts."
-  (interactive "r\nP")
-  (unless elm-literate
-    (error "Cannot put a region in literate in a non literate script"))
-  (if (eq elm-literate 'bird)
-      (let ((comment-start "> ")        ; Change dynamic bindings for
-            (comment-start-skip "^> ?") ; comment-region.
-            (comment-end "")
-            (comment-end-skip "\n")
-            (comment-style 'plain))
-        (comment-region beg end arg))
-    ;; Not Bird style.
-    (if arg                             ; Remove the literate indication.
-        (save-excursion
-          (goto-char end)               ; Remove end.
-          (if (re-search-backward "^\\\\end{code}[ \t\n]*\\="
-                                  (line-beginning-position -2) t)
-              (delete-region (point) (line-beginning-position 2)))
-          (goto-char beg)               ; Remove end.
-          (beginning-of-line)
-          (if (looking-at "\\\\begin{code}")
-              (kill-line 1)))
-      (save-excursion                   ; Add the literate indication.
-        (goto-char end)
-        (unless (bolp) (newline))
-        (insert "\\end{code}\n")
-        (goto-char beg)
-        (unless (bolp) (newline))
-        (insert "\\begin{code}\n")))))
-
-;;; Start of indentation code
-
-(defcustom elm-indent-look-past-empty-line t
-  "If nil, indentation engine will not look past an empty line for layout points."
-  :group 'elm-indent
-  :type 'boolean)
+  "Skip backward blanks, tabs and newlines up to START."
+  (skip-chars-backward " \t\n" start))
 
 (defun elm-indent-start-of-def ()
   "Return the position of the start of a definition.
@@ -333,24 +132,23 @@ The start of a def is expected to be recognizable by starting in column 0,
 unless `elm-indent-look-past-empty-line' is nil, in which case we
 take a coarser approximation and stop at the first empty line."
   (save-excursion
-    (let ((start-code (and elm-literate
-                           (elm-indent-within-literate-code)))
-          (top-col (if (eq elm-literate 'bird) 2 0))
+    (let ((start-code nil)
+          (top-col 0)
           (save-point (point)))
       ;; determine the starting point of the current piece of code
       (setq start-code (if start-code (1+ start-code) (point-min)))
       ;; go backward until the first preceding empty line
-      (elm-indent-forward-line -1)
+      (forward-line -1)
       (while (and (if elm-indent-look-past-empty-line
-                      (or (> (elm-indent-current-indentation) top-col)
+                      (or (> (current-indentation) top-col)
                           (elm-indent-empty-line-p))
-                    (and (> (elm-indent-current-indentation) top-col)
+                    (and (> (current-indentation) top-col)
                          (not (elm-indent-empty-line-p))))
                   (> (point) start-code)
-                  (= 0 (elm-indent-forward-line -1))))
+                  (= 0 (forward-line -1))))
       ;; go forward after the empty line
       (if (elm-indent-empty-line-p)
-          (elm-indent-forward-line 1))
+          (forward-line 1))
       (setq start-code (point))
       ;; find the first line of code which is not a comment
       (forward-comment (point-max))
@@ -414,14 +212,14 @@ Returns the location of the start of the comment, nil otherwise."
               (fl 0) ; number of lines that forward-line could not advance
               contour)
           (while (and (> cur-col 0) (= fl 0) (>= (point) start))
-            (elm-indent-back-to-indentation)
+            (back-to-indentation)
             (if (< (point) start) (goto-char start))
             (and (not (member (elm-indent-type-at-point)
                               '(empty comment))) ; skip empty and comment lines
                  (< (current-column) cur-col) ; less indented column found
                  (push (point) contour) ; new contour point found
                  (setq cur-col (current-column)))
-            (setq fl (elm-indent-forward-line -1)))
+            (setq fl (forward-line -1)))
           contour))))
 
 (defun elm-indent-next-symbol (end)
@@ -576,8 +374,8 @@ Returns the location of the start of the comment, nil otherwise."
                (string-match elm-indent-start-keywords-re valname-string))
           (progn
             (elm-indent-push-pos valname)
-            ;; very special for data keyword
-            (if (string-match "\\<data\\>" valname-string)
+            ;; very special for data (type in Elm's case) keyword
+            (if (string-match "\\<type\\>" valname-string)
                 (if rhs-sign (elm-indent-push-pos rhs-sign)
                   (elm-indent-push-pos-offset valname))
               (elm-indent-push-pos-offset valname)))
@@ -672,8 +470,8 @@ Returns the location of the start of the comment, nil otherwise."
                (string-match elm-indent-start-keywords-re valname-string))
           (progn
             (elm-indent-push-pos valname)
-            (if (string-match "\\<data\\>" valname-string)
-                ;; very special for data keyword
+            (if (string-match "\\<type\\>" valname-string)
+                ;; very special for data (type in Elm's case) keyword
                 (if aft-rhs-sign (elm-indent-push-pos aft-rhs-sign)
                   (elm-indent-push-pos-offset valname))
               (if (not (string-match
@@ -948,7 +746,7 @@ START is the position of the presumed `in'."
           ;; Use the layout rule to see whether this let is already closed
           ;; without an `in'.
           (let ((col (current-column)))
-            (while (progn (forward-line 1) (elm-indent-back-to-indentation)
+            (while (progn (forward-line 1) (back-to-indentation)
                           (< (point) start))
               (when (< (current-column) col)
                 (setq col nil)
@@ -1007,7 +805,7 @@ OPEN is the start position of the comment in which point is."
         (let ((offset (if (looking-at "--?")
                           (- (match-beginning 0) (match-end 0)))))
           (forward-line -1)             ;Go to previous line.
-          (elm-indent-back-to-indentation)
+          (back-to-indentation)
           (if (< (point) start) (goto-char start))
 
           (list (list (if (looking-at comment-start-skip)
@@ -1102,7 +900,7 @@ is at the end of an otherwise-non-empty line."
 (defun elm-indent-hanging-p ()
   ;; A Hanging keyword is one that's at the end of a line except it's not at
   ;; the beginning of a line.
-  (not (or (= (current-column) (elm-indent-current-indentation))
+  (not (or (= (current-column) (current-indentation))
            (save-excursion
              (let ((lexeme
                     (buffer-substring
@@ -1240,12 +1038,7 @@ START if non-nil is a presumed start pos of the current definition."
 
      (t
       ;; simple contour just one indentation at start
-      (list (list (if (and (eq elm-literate 'bird)
-                           (eq (elm-indent-point-to-col start) 1))
-                      ;; for a Bird style literate script put default offset
-                      ;; in the case of no indentation
-                      (1+ elm-indent-literate-Bird-default-offset)
-                    (elm-indent-point-to-col start))))))))
+      (list (list (elm-indent-point-to-col start)))))))
 
 (defvar elm-indent-last-info nil)
 
@@ -1254,43 +1047,39 @@ START if non-nil is a presumed start pos of the current definition."
   "Indentation cycle.
 We stay in the cycle as long as the TAB key is pressed."
   (interactive "*")
-  (if (and elm-literate
-           (not (elm-indent-within-literate-code)))
-      ;; use the ordinary tab for text...
-      (funcall (default-value 'indent-line-function))
-    (let ((marker (if (> (current-column) (elm-indent-current-indentation))
-                      (point-marker)))
-          (bol (progn (beginning-of-line) (point))))
-      (elm-indent-back-to-indentation)
-      (unless (and (eq last-command this-command)
-                   (eq bol (car elm-indent-last-info)))
-        (save-excursion
-          (setq elm-indent-last-info
-                (list bol (elm-indent-indentation-info) 0 0))))
-
-      (let* ((il (nth 1 elm-indent-last-info))
-             (index (nth 2 elm-indent-last-info))
-             (last-insert-length (nth 3 elm-indent-last-info))
-             (indent-info (nth index il)))
-
-        (elm-indent-line-to (car indent-info)) ; insert indentation
-        (delete-char last-insert-length)
-        (setq last-insert-length 0)
-        (let ((text (cdr indent-info)))
-          (if text
-              (progn
-                (insert text)
-                (setq last-insert-length (length text)))))
-
+  (let ((marker (if (> (current-column) (current-indentation))
+                    (point-marker)))
+        (bol (progn (beginning-of-line) (point))))
+    (back-to-indentation)
+    (unless (and (eq last-command this-command)
+                 (eq bol (car elm-indent-last-info)))
+      (save-excursion
         (setq elm-indent-last-info
-              (list bol il (% (1+ index) (length il)) last-insert-length))
+              (list bol (elm-indent-indentation-info) 0 0))))
 
-        (if (= (length il) 1)
-            (message "Sole indentation")
-          (message "Indent cycle (%d)..." (length il)))
+    (let* ((il (nth 1 elm-indent-last-info))
+           (index (nth 2 elm-indent-last-info))
+           (last-insert-length (nth 3 elm-indent-last-info))
+           (indent-info (nth index il)))
 
-        (if marker
-            (goto-char (marker-position marker)))))))
+      (indent-line-to (car indent-info)) ; insert indentation
+      (delete-char last-insert-length)
+      (setq last-insert-length 0)
+      (let ((text (cdr indent-info)))
+        (if text
+            (progn
+              (insert text)
+              (setq last-insert-length (length text)))))
+
+      (setq elm-indent-last-info
+            (list bol il (% (1+ index) (length il)) last-insert-length))
+
+      (if (= (length il) 1)
+          (message "Sole indentation")
+        (message "Indent cycle (%d)..." (length il)))
+
+      (if marker
+          (goto-char (marker-position marker))))))
 
 (defun elm-indent-region (start end)
   (error "Auto-reindentation of a region is not supported"))
@@ -1338,8 +1127,8 @@ TYPE is either 'guard or 'rhs."
                         (goto-char (mark))
                         (line-beginning-position)))
                 (setq end-block
-                      (progn (if (elm-indent-bolp)
-                                 (elm-indent-forward-line -1))
+                      (progn (if (bolp)
+                                 (forward-line -1))
                              (line-end-position))))
             (error "The mark is not set for aligning definitions"))
         ;; aligning the current definition
@@ -1372,7 +1161,7 @@ TYPE is either 'guard or 'rhs."
             (catch 'top-of-buffer
               (while (and (not start-found)
                           (>= (point) start-block))
-                (if (<= (elm-indent-current-indentation) defcol)
+                (if (<= (current-indentation) defcol)
                     (progn
                       (move-to-column defcol)
                       (if (and (looking-at defname) ; start of equation
@@ -1381,13 +1170,13 @@ TYPE is either 'guard or 'rhs."
                         ;; found a less indented point not starting an equation
                         (setq start-found t)))
                   ;; more indented line
-                  (elm-indent-back-to-indentation)
+                  (back-to-indentation)
                   (if (and (eq (elm-indent-type-at-point) 'guard) ; start of a guard
                            (not (elm-indent-open-structure start-block (point))))
                       (push (cons (point) 'gd) eqns-start)))
                 (if (bobp)
                     (throw 'top-of-buffer nil)
-                  (elm-indent-backward-to-indentation 1))))
+                  (backward-to-indentation 1))))
             ;; remove the spurious guards before the first equation
             (while (and eqns-start (eq (cdar eqns-start) 'gd))
               (pop eqns-start))
@@ -1397,7 +1186,7 @@ TYPE is either 'guard or 'rhs."
                 (setq lastpos (if (cdr eqns-start)
                                   (save-excursion
                                     (goto-char (caadr eqns-start))
-                                    (elm-indent-forward-line -1)
+                                    (forward-line -1)
                                     (line-end-position))
                                 end-block))
                 (setq sep (elm-indent-separate-valdef eqn lastpos)))
@@ -1421,7 +1210,7 @@ TYPE is either 'guard or 'rhs."
                                  (skip-chars-backward
                                   " \t"
                                   (line-beginning-position))
-                                 (if (elm-indent-bolp)
+                                 (if (bolp)
                                      ;;if on an empty prefix
                                      (elm-indent-point-to-col pos) ;keep original indent
                                    (1+ (elm-indent-point-to-col (point)))))))))
@@ -1443,7 +1232,7 @@ TYPE is either 'guard or 'rhs."
 (defun elm-indent-insert-equal ()
   "Insert an = sign and align the previous rhs of the current function."
   (interactive "*")
-  (if (or (elm-indent-bolp)
+  (if (or (bolp)
           (/= (preceding-char) ?\ ))
       (insert ?\ ))
   (insert "= ")
@@ -1453,7 +1242,7 @@ TYPE is either 'guard or 'rhs."
   "Insert and align a guard sign (|) followed by optional TEXT.
 Alignment works only if all guards are to the south-east of their |."
   (interactive "*")
-  (let ((pc (if (elm-indent-bolp) ?\012
+  (let ((pc (if (bolp) ?\012
               (preceding-char)))
         (pc1 (or (char-after (- (point) 2)) 0)))
     ;; check what guard to insert depending on the previous context
@@ -1504,7 +1293,6 @@ One indentation cycle is used."
     (define-key map [?\C-c ?\C-o] 'elm-indent-insert-otherwise)
     (define-key map [?\C-c ?\C-w] 'elm-indent-insert-where)
     (define-key map [?\C-c ?\C-.] 'elm-indent-align-guards-and-rhs)
-    (define-key map [?\C-c ?\C->] 'elm-indent-put-region-in-literate)
     map))
 
 ;;;###autoload
@@ -1548,17 +1336,21 @@ One indentation cycle is used."
 (or (assq 'elm-indent-mode (default-value 'minor-mode-alist))
     (setq-default minor-mode-alist
                   (append (default-value 'minor-mode-alist)
-                          '((elm-indent-mode " Ind")))))
+                          '((elm-indent-mode " Elm Indent")))))
 
 ;;;###autoload
 (defun elm-indent-mode (&optional arg)
   "``Intelligent'' Elm indentation mode.
-This deals with the layout rule of Elm.
+
+This deals with the layout rules of Elm.
+
 \\[elm-indent-cycle] starts the cycle which proposes new
 possibilities as long as the TAB key is pressed.  Any other key
 or mouse click terminates the cycle and is interpreted except for
 RET which merely exits the cycle.
+
 Other special keys are:
+
     \\[elm-indent-insert-equal]
       inserts an =
     \\[elm-indent-insert-guard]
@@ -1570,22 +1362,16 @@ these functions also align the guards and rhs of the current definition
       inserts a where keyword
     \\[elm-indent-align-guards-and-rhs]
       aligns the guards and rhs of the region
-    \\[elm-indent-put-region-in-literate]
-      makes the region a piece of literate code in a literate script
 
 Invokes `elm-indent-hook' if not nil."
   (interactive "P")
   (setq elm-indent-mode
-        (if (null arg) (not elm-indent-mode)
+        (if (null arg)
+            (not elm-indent-mode)
           (> (prefix-numeric-value arg) 0)))
   (if elm-indent-mode
       (turn-on-elm-indent)
     (turn-off-elm-indent)))
 
 (provide 'elm-indent)
-
-;; Local Variables:
-;; byte-compile-warnings: (not cl-functions)
-;; End:
-
 ;;; elm-indent.el ends here
