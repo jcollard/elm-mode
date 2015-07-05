@@ -49,6 +49,7 @@
       (apply #'start-process elm-reactor--process-name elm-reactor--buffer-name
              elm-reactor-command elm-reactor-arguments))))
 
+;;;###autoload
 (defun elm-preview-buffer ()
   "Preview the current buffer using Elm reactor."
   (interactive)

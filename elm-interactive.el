@@ -134,6 +134,7 @@ Stolen from haskell-mode."
              elm-interactive-command nil elm-interactive-arguments)
       (elm-interactive-mode))))
 
+;;;###autoload
 (defun load-elm-repl ()
   "Load an interactive REPL if there isn't already one running.
 Changes the current root directory to be the directory with the closest
@@ -145,6 +146,7 @@ of the file specified."
     (elm-interactive--send-command ":reset\n")
     (elm-interactive--send-command import-statement)))
 
+;;;###autoload
 (defun push-elm-repl ()
   "Push the selected region to an interactive REPL."
   (interactive)
@@ -155,6 +157,7 @@ of the file specified."
       (elm-interactive--send-command (concat line " \\\n")))
     (elm-interactive--send-command "\n")))
 
+;;;###autoload
 (defun push-decl-elm-repl ()
   "Push the current top level declaration to the REPL."
   (interactive)
