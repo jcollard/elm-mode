@@ -22,7 +22,9 @@
 
 ;;; Commentary:
 ;;; Code:
+(require 'ansi-color)
 (require 'comint)
+(require 'compile)
 (require 'elm-font-lock)
 (require 'elm-util)
 (require 'f)
@@ -57,6 +59,27 @@
 
 (defvar elm-reactor-arguments `("-p" ,elm-reactor-port "-a" ,elm-reactor-address)
   "Command line arguments to pass to the Elm Reactor command.")
+
+(defvar elm-compile--buffer-name "*elm-make*")
+
+(defvar elm-compile-command "elm-make"
+  "The Elm compilation command.")
+
+(defvar elm-compile-arguments '("--yes")
+  "Command line arguments to pass to the Elm compilation command.")
+
+(defvar elm-compile-error-regexp-alist-alist
+  '((elm-file "^## ERRORS in \\([^ ]+\\)" 1 nil)
+    (elm-line "^\\([0-9]+\\)|\\(>\\|.*\n.*\\^\\)" nil 1))
+  "Regexps to match Elm compiler errors in compilation buffer.")
+
+(defvar elm-compile-error-regexp-alist '(elm-line elm-file))
+
+(dolist (alist elm-compile-error-regexp-alist-alist)
+  (add-to-list 'compilation-error-regexp-alist-alist alist))
+
+(dolist (symbol elm-compile-error-regexp-alist)
+  (add-to-list 'compilation-error-regexp-alist symbol))
 
 (defvar elm-interactive-mode-map
   (let ((map (make-keymap)))
@@ -194,7 +217,7 @@ of the file specified."
              elm-reactor-command elm-reactor-arguments))))
 
 (defun elm-reactor--browse (path)
-  "Open PATH in browser after running Elm reactor."
+  "Open (reactor-relative) PATH in browser after running Elm reactor."
   (run-elm-reactor)
   (browse-url (concat "http://" elm-reactor-address ":" elm-reactor-port "/" path)))
 
@@ -212,6 +235,37 @@ of the file specified."
   "Preview the Main.elm file using Elm reactor."
   (interactive)
   (elm-reactor--browse (elm--find-main-file)))
+
+(defun elm-compile--command (file &optional output)
+  "Generate a command that will compile FILE into OUTPUT."
+  (let ((output-command (if output (concat " --output=" output) "")))
+    (concat elm-compile-command " " file output-command " " (s-join " " elm-compile-arguments))))
+
+(defun elm-compile--colorize-compilation-buffer ()
+  "Handle ANSI escape sequences in compilation buffer."
+  (read-only-mode)
+  (ansi-color-apply-on-region (point-min) (point-max))
+  (read-only-mode))
+
+(add-hook 'compilation-filter-hook #'elm-compile--colorize-compilation-buffer)
+
+(defun elm-compile--file (file &optional output)
+  "Compile FILE into OUTPUT."
+  (let ((default-directory (elm--find-dependency-file-path))
+        (compilation-buffer-name-function (lambda (_) elm-compile--buffer-name)))
+    (compile (elm-compile--command file output))))
+
+;;;###autoload
+(defun elm-compile-buffer (&optional output)
+  "Compile the current buffer into OUTPUT."
+  (interactive)
+  (elm-compile--file (elm--buffer-local-file-name)))
+
+;;;###autoload
+(defun elm-compile-main (&optional output)
+  "Compile the Main.elm file into OUTPUT."
+  (interactive)
+  (elm-compile--file (elm--find-main-file)))
 
 (provide 'elm-interactive)
 ;;; elm-interactive.el ends here

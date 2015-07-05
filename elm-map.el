@@ -23,7 +23,6 @@
 
 ;;; Commentary:
 ;;; Code:
-(require 'elm-compile)
 (require 'elm-interactive)
 
 (defun elm-comment-dwim (arg)
@@ -42,6 +41,7 @@ ARG specifies the number of lines to comment or uncomment."
     (define-key map "\C-c\C-p" 'push-elm-repl)
     (define-key map "\C-c\C-e" 'push-decl-elm-repl)
     (define-key map "\C-c\C-c" 'elm-compile-buffer)
+    (define-key map "\C-c\C-C" 'elm-compile-buffer)
     (define-key map "\C-c\C-n" 'elm-preview-buffer)
     (define-key map "\C-c\C-m" 'elm-preview-main)
     map)

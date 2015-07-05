@@ -28,7 +28,6 @@
 (require 'elm-interactive)
 (require 'elm-font-lock)
 (require 'elm-map)
-(require 'elm-compile)
 
 ;;;###autoload
 (define-derived-mode elm-mode prog-mode "Elm"
