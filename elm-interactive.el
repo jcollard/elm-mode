@@ -31,7 +31,7 @@
   "Non-nil represents the fact that a prompt has been spotted.")
 (make-variable-buffer-local 'elm-interactive--seen-prompt)
 
-(defvar elm-interactive--buffer-simple-name "elm")
+(defvar elm-interactive--process-name "elm")
 (defvar elm-interactive--buffer-name "*elm*")
 
 (defvar elm-interactive-command "elm-repl"
@@ -121,7 +121,7 @@ Stolen from haskell-mode."
   (interactive)
   (let* ((default-directory (elm--find-dependency-file-path))
          (prog elm-interactive-command)
-         (buffer (comint-check-proc elm-interactive--buffer-simple-name)))
+         (buffer (comint-check-proc elm-interactive--process-name)))
 
     (pop-to-buffer
      (if (or buffer (not (derived-mode-p 'elm-interactive-mode))
@@ -130,7 +130,7 @@ Stolen from haskell-mode."
        (current-buffer)))
 
     (unless buffer
-      (apply #'make-comint-in-buffer elm-interactive--buffer-simple-name buffer
+      (apply #'make-comint-in-buffer elm-interactive--process-name buffer
              elm-interactive-command nil elm-interactive-arguments)
       (elm-interactive-mode))))
 
