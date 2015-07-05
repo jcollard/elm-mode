@@ -21,7 +21,13 @@ for Emacs >= 24), you can install `elm-mode` from the package in
 ### From source
 
 Add this repo to your load-path and `(require elm-mode)`. Ensure that
-[f](https://github.com/rejeep/f.el) is loaded prior to doing this.
+the following dependencies are available:
+
+* [f](https://github.com/rejeep/f.el)
+* [let-alist](https://github.com/Malabarba/let-alist)
+* [s](https://github.com/magnars/s.el)
+
+This package assumes you are runing Emacs 24 or later.
 
 ## Bindings
 
@@ -44,11 +50,11 @@ The following bindings are available in `elm-mode`:
   <dd>Compile the current buffer.</dd>
 
   <dt><code>C-c M-c</code></dt>
-  <dd>Compile the `Main.elm` file.</dd>
+  <dd>Compile the <code>Main.elm</code> file.</dd>
 
   <dt><code>C-c C-n</code></dt>
-  <dd>Preview the current buffer in a browser (requires `elm-reactor`).</dd>
+  <dd>Preview the current buffer in a browser (requires <code>elm-reactor</code>).</dd>
 
   <dt><code>C-c C-m</code></dt>
-  <dd>Preview the `Main.elm` file in a browser (requires `elm-reactor`).</dd>
+  <dd>Preview the <code>Main.elm</code> file in a browser (requires <code>elm-reactor</code>).</dd>
 </dl>
