@@ -216,25 +216,28 @@ of the file specified."
       (apply #'start-process elm-reactor--process-name elm-reactor--buffer-name
              elm-reactor-command elm-reactor-arguments))))
 
-(defun elm-reactor--browse (path)
-  "Open (reactor-relative) PATH in browser after running Elm reactor."
+(defun elm-reactor--browse (path &optional debug)
+  "Open (reactor-relative) PATH in browser with optional DEBUG.
+
+Runs `elm-reactor' first."
   (run-elm-reactor)
-  (browse-url (concat "http://" elm-reactor-address ":" elm-reactor-port "/" path)))
+  (let ((qs (if debug "?debug" "")))
+    (browse-url (concat "http://" elm-reactor-address ":" elm-reactor-port "/" path qs))))
 
 ;;;###autoload
-(defun elm-preview-buffer ()
-  "Preview the current buffer using Elm reactor."
-  (interactive)
+(defun elm-preview-buffer (debug)
+  "Preview the current buffer using Elm reactor (in debug mode if DEBUG is truthy)."
+  (interactive "P")
   (let* ((fname (buffer-file-name))
          (deppath (elm--find-dependency-file-path))
          (path (f-relative fname deppath)))
-    (elm-reactor--browse path)))
+    (elm-reactor--browse path debug)))
 
 ;;;###autoload
-(defun elm-preview-main ()
-  "Preview the Main.elm file using Elm reactor."
-  (interactive)
-  (elm-reactor--browse (elm--find-main-file)))
+(defun elm-preview-main (debug)
+  "Preview the Main.elm file using Elm reactor (in debug mode if DEBUG is truthy)."
+  (interactive "P")
+  (elm-reactor--browse (elm--find-main-file) debug))
 
 (defun elm-compile--command (file &optional output)
   "Generate a command that will compile FILE into OUTPUT."
