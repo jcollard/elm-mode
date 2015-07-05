@@ -67,6 +67,11 @@
           "\\>")
   "Regexp for keywords to complete when standing at the first word of a line.")
 
+(defvar elm-indent-off-side-keywords-re
+  (concat "\\<"
+          (regexp-opt '("let"))
+          "\\>[ \t]*"))
+
 ;; Customizations for different kinds of environments
 ;; in which dealing with low-level events are different.
 (defun elm-indent-mark-active ()
@@ -183,9 +188,6 @@ Returns the location of the start of the comment, nil otherwise."
                 (nth 4 (save-excursion
                          (setq pps (parse-partial-sexp end (+ end 2))))))
            (nth 8 pps)))))
-
-(defvar elm-indent-off-side-keywords-re
-  "\\<\\(do\\|let\\|of\\|where\\|mdo\\|rec\\)\\>[ \t]*")
 
 (defun elm-indent-type-at-point ()
   "Return the type of the line (also puts information in `match-data')."
@@ -1045,9 +1047,11 @@ START if non-nil is a presumed start pos of the current definition."
 
 (defun elm-indent-cycle ()
   "Indentation cycle.
+
 We stay in the cycle as long as the TAB key is pressed."
   (interactive "*")
-  (let ((marker (if (> (current-column) (current-indentation))
+  (let ((marker (if (> (current-column)
+                       (current-indentation))
                     (point-marker)))
         (bol (progn (beginning-of-line) (point))))
     (back-to-indentation)
@@ -1082,7 +1086,12 @@ We stay in the cycle as long as the TAB key is pressed."
           (goto-char (marker-position marker))))))
 
 (defun elm-indent-region (start end)
-  (error "Auto-reindentation of a region is not supported"))
+  "Apply `elm-indent-cycle' to every line between START and END."
+  (save-excursion
+    (goto-char start)
+    (while (< (point) end)
+      (elm-indent-cycle)
+      (forward-line))))
 
 ;;; alignment functions
 
