@@ -65,11 +65,11 @@
 (defvar elm-compile-command "elm-make"
   "The Elm compilation command.")
 
-(defvar elm-compile-arguments '("--yes")
+(defvar elm-compile-arguments '("--yes" "--warn")
   "Command line arguments to pass to the Elm compilation command.")
 
 (defvar elm-compile-error-regexp-alist-alist
-  '((elm-file "^## ERRORS in \\([^ ]+\\)" 1 nil)
+  '((elm-file "^## \\(WARNINGS\\|ERRORS\\) in \\([^ ]+\\)" 2 nil)
     (elm-line "^\\([0-9]+\\)|\\(>\\|.*\n.*\\^\\)" nil 1))
   "Regexps to match Elm compiler errors in compilation buffer.")
 
