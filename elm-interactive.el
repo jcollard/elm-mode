@@ -25,6 +25,7 @@
 (require 'comint)
 (require 'elm-font-lock)
 (require 'elm-util)
+(require 's)
 
 (defvar elm-interactive--seen-prompt nil
   "Non-nil represents the fact that a prompt has been spotted.")
@@ -129,7 +130,7 @@ Stolen from haskell-mode."
        (current-buffer)))
 
     (unless buffer
-      (apply 'make-comint-in-buffer elm-interactive--buffer-simple-name buffer
+      (apply #'make-comint-in-buffer elm-interactive--buffer-simple-name buffer
              elm-interactive-command elm-interactive-arguments)
       (elm-interactive-mode))))
 

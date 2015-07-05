@@ -24,6 +24,7 @@
 ;;; Commentary:
 ;;; Code:
 (require 'f)
+(require 's)
 
 (require 'haskell-decl-scan nil 'noerror)
 (require 'inf-haskell nil 'noerror)
