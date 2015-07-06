@@ -83,6 +83,5 @@
   (set (make-local-variable 'syntax-propertize-function) #'elm--syntax-propertize)
   (set (make-local-variable 'font-lock-defaults) elm--font-lock-highlighting))
 
-
 (provide 'elm-font-lock)
 ;;; elm-font-lock.el ends here
