@@ -39,7 +39,8 @@
   "Return the qualified name of the module in the current buffer."
   (save-excursion
     (goto-char (point-min))
-    (re-search-forward "module +\\([A-Z][A-Za-z0-9.]*\\)" nil t)
+    (unless (re-search-forward "module +\\([A-Z][A-Za-z0-9.]*\\)" nil t)
+      (error "Module declaration not found"))
     (buffer-substring-no-properties (match-beginning 1) (match-end 1))))
 
 (defun elm--get-decl ()
