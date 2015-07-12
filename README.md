@@ -9,6 +9,7 @@ Elm mode for EMACS.
 1. Integration with [elm-make](https://github.com/elm-lang/elm-make).
 1. Integration with [elm-repl](https://github.com/elm-lang/elm-repl).
 1. Integration with [elm-reactor](https://github.com/elm-lang/elm-reactor).
+1. Integration with [elm-package](https://github.com/elm-lang/elm-package).
 
 ## Indentation
 
@@ -43,44 +44,49 @@ This package assumes you are runing Emacs 24 or later.
 
 The following bindings are available in `elm-mode`:
 
-`elm-make` bindings:
+#### `elm-make`
 
-<dl>
-  <dt><code>C-c C-c</code></dt>
-  <dd>Compile the current buffer.</dd>
+| Keybinding         | Description                             |
+| ------------------ | --------------------------------------- |
+| <kbd>C-c C-c</kbd> | Compile the current buffer.             |
+| <kbd>C-c M-c</kbd> | Compile the <code>Main.elm</code> file. |
 
-  <dt><code>C-c M-c</code></dt>
-  <dd>Compile the <code>Main.elm</code> file.</dd>
-</dl>
 
-`elm-repl` bindings:
+#### `elm-repl`
 
-<dl>
-  <dt><code>C-c C-l</code></dt>
-  <dd>Load the current file in a REPL.</dd>
+| Keybinding         | Description                                                            |
+| ------------------ | ---------------------------------------------------------------------- |
+| <kbd>C-c C-l</kbd> | Load the current file in a REPL.                                       |
+| <kbd>C-c C-p</kbd> | Push the current region to a REPL.                                     |
+| <kbd>C-c C-e</kbd> | Push the current decl. to a REPL (requires <code>haskell-mode</code>). |
 
-  <dt><code>C-c C-p</code></dt>
-  <dd>Push the current region to a REPL.</dd>
+#### `elm-reactor`
 
-  <dt><code>C-c C-e</code></dt>
-  <dd>
-    Push the current declaration to a REPL (requires <code>haskell-mode</code>
-    to be available -- highly experimental).
-  </dd>
-</dl>
+| Keybinding             | Description                                                        |
+| ---------------------- | ------------------------------------------------------------------ |
+| <kbd>C-c C-n</kbd>     | Preview the current buffer in a browser.                           |
+| <kbd>C-u C-c C-n</kbd> | Preview the current buffer in a browser in debug mode.             |
+| <kbd>C-c C-m</kbd>     | Preview the <code>Main.elm</code> file in a browser.               |
+| <kbd>C-u C-c C-m</kbd> | Preview the <code>Main.elm</code> file in a browser in debug mode. |
 
-`elm-reactor` bindings:
+#### `elm-package`
 
-<dl>
-  <dt><code>C-c C-n</code></dt>
-  <dd>Preview the current buffer in a browser.</dd>
+| Keybinding             | Description                                                  |
+| ---------------------- | ------------------------------------------------------------ |
+| <kbd>C-c C-d</kbd>     | View a function's documentation in a browser.                |
+| <kbd>C-c C-i</kbd>     | Import a module from one of the dependencies.                |
+| <kbd>C-c C-k</kbd>     | Open the package catalog.                                    |
+| <kbd>C-u C-c C-k</kbd> | Open the package catalog, refreshing the package list first. |
 
-  <dt><code>C-c C-m</code></dt>
-  <dd>Preview the <code>Main.elm</code> file in a browser.</dd>
+The following bindings are available in the package list buffer:
 
-  <dt><code>C-u C-c C-n</code></dt>
-  <dd>Preview the current buffer in a browser in debug mode.</dd>
-
-  <dt><code>C-u C-c C-m</code></dt>
-  <dd>Preview the <code>Main.elm</code> file in a browser in debug mode.</dd>
-</dl>
+| Keybinding   | Description                    |
+| ------------ | ------------------------------ |
+| <kbd>g</kbd> | Refresh package list.          |
+| <kbd>n</kbd> | Next package.                  |
+| <kbd>p</kbd> | Previous package.              |
+| <kbd>v</kbd> | View package in browser.       |
+| <kbd>m</kbd> | Mark package for installation. |
+| <kbd>i</kbd> | Mark package for installation. |
+| <kbd>u</kbd> | Unmark package.                |
+| <kbd>x</kbd> | Install marked packages.       |

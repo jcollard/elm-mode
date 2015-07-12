@@ -39,7 +39,8 @@
   "Return the qualified name of the module in the current buffer."
   (save-excursion
     (goto-char (point-min))
-    (re-search-forward "module +\\([A-Z][A-Za-z0-9.]*\\)" nil t)
+    (unless (re-search-forward "module +\\([A-Z][A-Za-z0-9.]*\\)" nil t)
+      (error "Module declaration not found"))
     (buffer-substring-no-properties (match-beginning 1) (match-end 1))))
 
 (defun elm--get-decl ()
@@ -87,8 +88,14 @@ Relies on `haskell-mode' stuff."
 
     (concat path "/")))
 
+(defun elm--has-dependency-file ()
+  "Check if a dependency file exists."
+  (f-exists? (f-join (elm--find-dependency-file-path) elm-package-json)))
+
 (defun elm--read-dependency-file ()
   "Find and read the JSON dependency file into an object."
+  (when (not (elm--has-dependency-file))
+    (error "Dependency file not found"))
   (let ((dep-file (f-join (elm--find-dependency-file-path) elm-package-json)))
     (json-read-file dep-file)))
 
