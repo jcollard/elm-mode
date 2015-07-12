@@ -512,11 +512,12 @@ Runs `elm-reactor' first."
   (elm-package--read-dependencies)
   (let* ((package (elm-package--read-package))
          (module (elm-package--read-module package))
-         (statement (concat "import " module "\n")))
+         (statement (concat "import " module))
+         (statement (read-string "Import statement: " statement)))
     (save-excursion
       (goto-char (point-min))
       (forward-line 1)
-      (insert statement))))
+      (insert (concat statement "\n")))))
 
 ;;;###autoload
 (defun elm-documentation-lookup (refresh)
