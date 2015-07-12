@@ -91,6 +91,9 @@
 (defvar elm-package--dependencies nil
   "The package dependencies for the current Elm package.")
 
+(defvar elm-package--cache nil
+  "A cache for extended package information.")
+
 (defvar elm-package--marked-contents nil)
 
 (defvar elm-package--working-dir nil)
@@ -364,6 +367,36 @@ Runs `elm-reactor' first."
     (setq elm-package--dependencies (-map (lambda (dep) (symbol-name (car dep)))
                                           .dependencies))))
 
+(defun elm-package-refresh-package (package version)
+  "Refresh the cache for PACKAGE with VERSION."
+  (let* ((description (elm-package--build-uri "description"))
+         (package-uri (concat description "?name=" package "&version=" version)))
+    (with-current-buffer (url-retrieve-synchronously package-uri)
+      (goto-char (point-min))
+      (re-search-forward "^ *$")
+      (setq elm-package--cache
+            (cons `(,package . ,(json-read))
+                  elm-package--cache)))))
+
+(defun elm-package-latest-version (package)
+  "Get the latest version of PACKAGE."
+  (let ((package (-find (lambda (p)
+                          (let-alist p
+                            (equal .name package)))
+                        elm-package--contents)))
+
+    (if (not package)
+        (error "Package not found")
+      (let-alist package
+        (elt .versions 0)))))
+
+(defun elm-package-modules (package)
+  "Get PACKAGE's module list."
+  (when (not (assoc package elm-package--cache))
+    (elm-package-refresh-package package (elm-package-latest-version package)))
+  (let-alist (cdr (assoc package elm-package--cache))
+    (append .exposed-modules nil)))
+
 (defun elm-package-refresh ()
   "Refresh the package catalog's contents."
   (interactive)
@@ -455,6 +488,8 @@ Runs `elm-reactor' first."
     (error "Elm package file not found"))
   (let* ((all-packages (elm-package--build-uri "all-packages")))
     (with-current-buffer (url-retrieve-synchronously all-packages)
+      (goto-char (point-min))
+      (re-search-forward "^ *$")
       (setq elm-package--marked-contents nil)
       (setq elm-package--contents (append (json-read) nil)))))
 
@@ -475,6 +510,25 @@ Runs `elm-reactor' first."
   (tabulated-list-print)
 
   (use-local-map elm-package-mode-map))
+
+
+;;; Documentation:
+;;;###autoload
+(defun elm-documentation-lookup (refresh)
+  "Lookup the documentation for a function, refreshing if REFRESH is truthy."
+  (interactive "P")
+  (when (not (elm--has-dependency-file))
+    (error "Elm package file not found"))
+  (when (or refresh (not elm-package--contents))
+      (elm-package-refresh-contents))
+  (elm-package--read-dependencies)
+  (let* ((package (completing-read "Package: " elm-package--dependencies nil t))
+         (version (elm-package-latest-version package))
+         (module (completing-read "Module: " (elm-package-modules package) nil t))
+         (function (read-string "Function: " (thing-at-point 'word t)))
+         (uri (elm-package--build-uri "packages" package version module))
+         (uri (concat uri "#" function)))
+    (browse-url uri)))
 
 (provide 'elm-interactive)
 ;;; elm-interactive.el ends here

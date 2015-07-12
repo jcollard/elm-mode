@@ -48,6 +48,7 @@ ARG specifies the number of lines to comment or uncomment."
     (define-key map "\C-c\M-k" 'elm-package-catalog)
     (define-key map "\C-c\C-n" 'elm-preview-buffer)
     (define-key map "\C-c\C-m" 'elm-preview-main)
+    (define-key map "\C-c\C-d" 'elm-documentation-lookup)
     map)
   "Keymap for Elm major mode.")
 
