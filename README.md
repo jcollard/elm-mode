@@ -44,7 +44,7 @@ This package assumes you are runing Emacs 24 or later.
 
 The following bindings are available in `elm-mode`:
 
-### `elm-make` bindings:
+#### `elm-make`
 
 | Keybinding         | Description                             |
 | ------------------ | --------------------------------------- |
@@ -52,7 +52,7 @@ The following bindings are available in `elm-mode`:
 | <kbd>C-c M-c</kbd> | Compile the <code>Main.elm</code> file. |
 
 
-### `elm-repl` bindings:
+#### `elm-repl`
 
 | Keybinding         | Description                                                            |
 | ------------------ | ---------------------------------------------------------------------- |
@@ -60,7 +60,7 @@ The following bindings are available in `elm-mode`:
 | <kbd>C-c C-p</kbd> | Push the current region to a REPL.                                     |
 | <kbd>C-c C-e</kbd> | Push the current decl. to a REPL (requires <code>haskell-mode</code>). |
 
-### `elm-reactor` bindings:
+#### `elm-reactor`
 
 | Keybinding             | Description                                                        |
 | ---------------------- | ------------------------------------------------------------------ |
@@ -69,7 +69,7 @@ The following bindings are available in `elm-mode`:
 | <kbd>C-c C-m</kbd>     | Preview the <code>Main.elm</code> file in a browser.               |
 | <kbd>C-u C-c C-m</kbd> | Preview the <code>Main.elm</code> file in a browser in debug mode. |
 
-### `elm-package` bindings:
+#### `elm-package`
 
 | Keybinding             | Description                                                  |
 | ---------------------- | ------------------------------------------------------------ |
