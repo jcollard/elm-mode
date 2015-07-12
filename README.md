@@ -73,6 +73,7 @@ The following bindings are available in `elm-mode`:
 
 | Keybinding             | Description                                                  |
 | ---------------------- | ------------------------------------------------------------ |
+| <kbd>C-c C-d</kbd>     | View a function's documentation in a browser.                |
 | <kbd>C-c C-k</kbd>     | Open the package catalog.                                    |
 | <kbd>C-u C-c C-k</kbd> | Open the package catalog, refreshing the package list first. |
 
