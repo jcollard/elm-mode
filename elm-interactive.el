@@ -525,6 +525,7 @@ Runs `elm-reactor' first."
   (let* ((package (completing-read "Package: " elm-package--dependencies nil t))
          (version (elm-package-latest-version package))
          (module (completing-read "Module: " (elm-package-modules package) nil t))
+         (module (s-replace "." "-" module))
          (function (read-string "Function: " (thing-at-point 'word t)))
          (uri (elm-package--build-uri "packages" package version module))
          (uri (concat uri "#" function)))
