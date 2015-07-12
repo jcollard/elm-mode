@@ -28,7 +28,11 @@
 (require 'elm-font-lock)
 (require 'elm-util)
 (require 'f)
+(require 'json)
+(require 'let-alist)
 (require 's)
+(require 'tabulated-list)
+(require 'url)
 
 (defvar elm-interactive--seen-prompt nil
   "Non-nil represents the fact that a prompt has been spotted.")
@@ -81,12 +85,40 @@
 (dolist (symbol elm-compile-error-regexp-alist)
   (add-to-list 'compilation-error-regexp-alist symbol))
 
+(defvar elm-package--contents nil
+  "The contents of the Elm package catalog.")
+
+(defvar elm-package--marked-contents nil)
+
+(defvar elm-package-buffer-name "*elm-package*")
+
+(defvar elm-package-catalog-root
+  "http://package.elm-lang.org/"
+  "The root URI for the Elm package catalog.")
+
+(defvar elm-package-catalog-format
+  [(" " 1 nil)
+   ("Name" 30 t)
+   ("Version" 7 nil)
+   ("Summary" 80 nil)]
+  "The format of the package list header.")
+
 (defvar elm-interactive-mode-map
   (let ((map (make-keymap)))
     (define-key map "\t" #'completion-at-point)
     (define-key map (kbd "C-a") #'elm-interactive-mode-beginning)
     map)
   "Keymap for Elm interactive mode.")
+
+(defvar elm-package-mode-map
+  (let ((map (make-keymap)))
+    (define-key map "n" #'elm-package-next)
+    (define-key map "p" #'elm-package-prev)
+    (define-key map "v" #'elm-package-view)
+    (define-key map "m" #'elm-package-mark)
+    (define-key map "u" #'elm-package-unmark)
+    map)
+  "Keymap for Elm package mode.")
 
 (defun elm-interactive-mode-beginning ()
   "Go to the start of the line."
@@ -205,6 +237,7 @@ of the file specified."
       (elm-interactive--send-command (concat line " \\\n")))
     (elm-interactive--send-command "\n")))
 
+;;; Reactor:
 ;;;###autoload
 (defun run-elm-reactor ()
   "Run the Elm reactor process."
@@ -239,6 +272,8 @@ Runs `elm-reactor' first."
   (interactive "P")
   (elm-reactor--browse (elm--find-main-file) debug))
 
+
+;;; Make:
 (defun elm-compile--command (file &optional output)
   "Generate a command that will compile FILE into OUTPUT."
   (let ((output-command (if output (concat " --output=" output) "")))
@@ -269,6 +304,110 @@ Runs `elm-reactor' first."
   "Compile the Main.elm file into OUTPUT."
   (interactive)
   (elm-compile--file (elm--find-main-file)))
+
+
+;;; Package:
+(defun elm-package--build-uri (&rest segments)
+  "Build a URI by combining the package catalog root and SEGMENTS."
+  (concat elm-package-catalog-root (s-join "/" segments)))
+
+;;;###autoload
+(defun elm-package-refresh-contents ()
+  "Refresh the package list."
+  (interactive)
+  (let* ((all-packages (elm-package--build-uri "all-packages")))
+    (with-current-buffer (url-retrieve-synchronously all-packages)
+      (setq elm-package--contents (append (json-read) nil)))))
+
+(defun elm-package--format-entry (index entry)
+  "Format a package '(INDEX ENTRY) for display in the package listing."
+  (let-alist entry
+    (let ((mark (if (-contains? elm-package--marked-contents index)
+                    "*" ""))
+          (button (list .name . ())))
+      (list index (vector mark button (elt .versions 0) .summary)))))
+
+(defun elm-package--entries ()
+  "Return the formatted package list."
+  (-map-indexed #'elm-package--format-entry elm-package--contents))
+
+;;;###autoload
+(define-derived-mode elm-package-mode tabulated-list-mode "Elm Package"
+  "Special mode for elm-package.
+
+\\{elm-package-mode-map}"
+
+  (buffer-disable-undo)
+
+  (setq truncate-lines t
+
+        tabulated-list-format elm-package-catalog-format
+        tabulated-list-entries #'elm-package--entries)
+
+  (tabulated-list-init-header)
+  (tabulated-list-print)
+
+  (use-local-map elm-package-mode-map))
+
+(defun elm-package-refresh ()
+  "Refresh the package catalog's contents."
+  (interactive)
+  (with-current-buffer elm-package-buffer-name
+    (tabulated-list-print :remember-pos)))
+
+(defun elm-package-prev (&optional n)
+  "Goto (Nth) previous package."
+  (interactive "p")
+  (elm-package-next (- n))
+  (forward-line 0)
+  (forward-button 1))
+
+(defun elm-package-next (&optional n)
+  "Goto (Nth) next package."
+  (interactive "p")
+  (dotimes (_ (abs n))
+    (let ((d (cl-signum n)))
+      (forward-line (if (> n 0) 1 0))
+      (if (eobp) (forward-line -1))
+      (forward-button d))))
+
+(defun elm-package-mark ()
+  "Mark the package at point."
+  (interactive)
+  (let ((id (tabulated-list-get-id)))
+    (when id
+      (setq elm-package--marked-contents (cons id elm-package--marked-contents))
+      (elm-package-next 1)
+      (elm-package-refresh))))
+
+(defun elm-package-unmark ()
+  "Unmark the package at point."
+  (interactive)
+  (let ((id (tabulated-list-get-id)))
+    (when id
+      (setq elm-package--marked-contents
+            (-reject (lambda (x) (= id x))
+                     elm-package--marked-contents))
+      (elm-package-next 1)
+      (elm-package-refresh))))
+
+(defun elm-package-view ()
+  "View the package at point in a browser."
+  (interactive)
+  (let ((id (tabulated-list-get-id)))
+    (when id
+      (let-alist (nth id elm-package--contents)
+        (browse-url (elm-package--build-uri "packages" .name (elt .versions 0)))))))
+
+;;;###autoload
+(defun elm-package-catalog (refresh)
+  "Show the package catalog, refreshing the list if REFRESH is truthy."
+  (interactive "P")
+  (when (or refresh (not elm-package--contents))
+      (elm-package-refresh-contents))
+  (let ((buffer (get-buffer-create elm-package-buffer-name)))
+    (pop-to-buffer buffer)
+    (elm-package-mode)))
 
 (provide 'elm-interactive)
 ;;; elm-interactive.el ends here
