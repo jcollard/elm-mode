@@ -88,9 +88,22 @@
 (defvar elm-package--contents nil
   "The contents of the Elm package catalog.")
 
+(defvar elm-package--dependencies nil
+  "The package dependencies for the current Elm package.")
+
 (defvar elm-package--marked-contents nil)
 
+(defvar elm-package--working-dir nil)
+
+(defvar elm-package-compile-buffer-name "*elm-package-compile*")
+
 (defvar elm-package-buffer-name "*elm-package*")
+
+(defvar elm-package-command "elm-package"
+  "The Elm package command.")
+
+(defvar elm-package-arguments '("install" "--yes")
+  "Command line arguments to pass to the Elm package command.")
 
 (defvar elm-package-catalog-root
   "http://package.elm-lang.org/"
@@ -100,6 +113,7 @@
   [(" " 1 nil)
    ("Name" 30 t)
    ("Version" 7 nil)
+   ("Status" 10 t)
    ("Summary" 80 nil)]
   "The format of the package list header.")
 
@@ -112,11 +126,14 @@
 
 (defvar elm-package-mode-map
   (let ((map (make-keymap)))
+    (define-key map "g" #'elm-package-refresh)
     (define-key map "n" #'elm-package-next)
     (define-key map "p" #'elm-package-prev)
     (define-key map "v" #'elm-package-view)
     (define-key map "m" #'elm-package-mark)
+    (define-key map "i" #'elm-package-mark)
     (define-key map "u" #'elm-package-unmark)
+    (define-key map "x" #'elm-package-install)
     map)
   "Keymap for Elm package mode.")
 
@@ -311,48 +328,47 @@ Runs `elm-reactor' first."
   "Build a URI by combining the package catalog root and SEGMENTS."
   (concat elm-package-catalog-root (s-join "/" segments)))
 
-;;;###autoload
-(defun elm-package-refresh-contents ()
-  "Refresh the package list."
-  (interactive)
-  (let* ((all-packages (elm-package--build-uri "all-packages")))
-    (with-current-buffer (url-retrieve-synchronously all-packages)
-      (setq elm-package--contents (append (json-read) nil)))))
-
 (defun elm-package--format-entry (index entry)
   "Format a package '(INDEX ENTRY) for display in the package listing."
   (let-alist entry
     (let ((mark (if (-contains? elm-package--marked-contents index)
-                    "*" ""))
-          (button (list .name . ())))
-      (list index (vector mark button (elt .versions 0) .summary)))))
+                    "*"
+                  ""))
+          (button (list .name . ()))
+          (status (if (-contains? elm-package--dependencies .name)
+                      "dependency"
+                    "available")))
+      (list index (vector mark button (elt .versions 0) status .summary)))))
 
 (defun elm-package--entries ()
   "Return the formatted package list."
   (-map-indexed #'elm-package--format-entry elm-package--contents))
 
-;;;###autoload
-(define-derived-mode elm-package-mode tabulated-list-mode "Elm Package"
-  "Special mode for elm-package.
+(defun elm-package--get-marked-packages ()
+  "Get packages that are marked for installation."
+  (-map (lambda (id)
+          (let-alist (nth id elm-package--contents)
+            (concat .name " " (elt .versions 0))))
+        elm-package--marked-contents))
 
-\\{elm-package-mode-map}"
+(defun elm-package--get-marked-install-commands ()
+  "Get a list of the commands required to install the marked packages."
+  (-map (lambda (package)
+          (concat elm-package-command " " (s-join " " elm-package-arguments) " " package))
+        (elm-package--get-marked-packages)))
 
-  (buffer-disable-undo)
-
-  (setq truncate-lines t
-
-        tabulated-list-format elm-package-catalog-format
-        tabulated-list-entries #'elm-package--entries)
-
-  (tabulated-list-init-header)
-  (tabulated-list-print)
-
-  (use-local-map elm-package-mode-map))
+(defun elm-package--read-dependencies ()
+  "Read the current package's dependencies."
+  (setq elm-package--working-dir (elm--find-dependency-file-path))
+  (let-alist (elm--read-dependency-file)
+    (setq elm-package--dependencies (-map (lambda (dep) (symbol-name (car dep)))
+                                          .dependencies))))
 
 (defun elm-package-refresh ()
   "Refresh the package catalog's contents."
   (interactive)
   (with-current-buffer elm-package-buffer-name
+    (elm-package--read-dependencies)
     (tabulated-list-print :remember-pos)))
 
 (defun elm-package-prev (&optional n)
@@ -368,7 +384,8 @@ Runs `elm-reactor' first."
   (dotimes (_ (abs n))
     (let ((d (cl-signum n)))
       (forward-line (if (> n 0) 1 0))
-      (if (eobp) (forward-line -1))
+      (when (eobp)
+        (forward-line -1))
       (forward-button d))))
 
 (defun elm-package-mark ()
@@ -399,15 +416,65 @@ Runs `elm-reactor' first."
       (let-alist (nth id elm-package--contents)
         (browse-url (elm-package--build-uri "packages" .name (elt .versions 0)))))))
 
+(defun elm-package--install-sentinel (proc msg)
+  "Refreshes the package buffer on PROC exit, ignoring MSG."
+  (elm-package-refresh))
+
+(defun elm-package-install ()
+  "Install the marked packages."
+  (interactive)
+  (when (not elm-package--marked-contents)
+    (error "Nothing to install"))
+  (let ((command-to-run (s-join " && " (elm-package--get-marked-install-commands))))
+    (when (yes-or-no-p (concat "Install " (s-join ", " (elm-package--get-marked-packages)) " ?"))
+      (let* ((default-directory elm-package--working-dir)
+             (compilation-buffer-name-function (lambda (_) elm-package-compile-buffer-name))
+             (compilation-buffer (compile command-to-run)))
+        (setq elm-package--marked-contents nil)
+        (set-process-sentinel (get-buffer-process compilation-buffer)
+                              #'elm-package--install-sentinel)))))
+
 ;;;###autoload
 (defun elm-package-catalog (refresh)
   "Show the package catalog, refreshing the list if REFRESH is truthy."
   (interactive "P")
+  (when (not (elm--has-dependency-file))
+    (error "Elm package file not found"))
   (when (or refresh (not elm-package--contents))
       (elm-package-refresh-contents))
   (let ((buffer (get-buffer-create elm-package-buffer-name)))
     (pop-to-buffer buffer)
+    (elm-package--read-dependencies)
     (elm-package-mode)))
+
+;;;###autoload
+(defun elm-package-refresh-contents ()
+  "Refresh the package list."
+  (interactive)
+  (when (not (elm--has-dependency-file))
+    (error "Elm package file not found"))
+  (let* ((all-packages (elm-package--build-uri "all-packages")))
+    (with-current-buffer (url-retrieve-synchronously all-packages)
+      (setq elm-package--marked-contents nil)
+      (setq elm-package--contents (append (json-read) nil)))))
+
+;;;###autoload
+(define-derived-mode elm-package-mode tabulated-list-mode "Elm Package"
+  "Special mode for elm-package.
+
+\\{elm-package-mode-map}"
+
+  (buffer-disable-undo)
+
+  (setq truncate-lines t
+
+        tabulated-list-format elm-package-catalog-format
+        tabulated-list-entries #'elm-package--entries)
+
+  (tabulated-list-init-header)
+  (tabulated-list-print)
+
+  (use-local-map elm-package-mode-map))
 
 (provide 'elm-interactive)
 ;;; elm-interactive.el ends here
