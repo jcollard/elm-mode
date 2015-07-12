@@ -367,6 +367,14 @@ Runs `elm-reactor' first."
     (setq elm-package--dependencies (-map (lambda (dep) (symbol-name (car dep)))
                                           .dependencies))))
 
+(defun elm-package--read-package ()
+  "Read a package from the minibuffer."
+  (completing-read "Package: " elm-package--dependencies nil t))
+
+(defun elm-package--read-module (package)
+  "Read a module from PACKAGE from the minibuffer."
+  (completing-read "Module: " (elm-package-modules package) nil t))
+
 (defun elm-package-refresh-package (package version)
   "Refresh the cache for PACKAGE with VERSION."
   (let* ((description (elm-package--build-uri "description"))
@@ -494,6 +502,41 @@ Runs `elm-reactor' first."
       (setq elm-package--contents (append (json-read) nil)))))
 
 ;;;###autoload
+(defun elm-import (refresh)
+  "Import a module, refreshing if REFRESH is truthy."
+  (interactive "P")
+  (when (not (elm--has-dependency-file))
+    (error "Elm package file not found"))
+  (when (or refresh (not elm-package--contents))
+    (elm-package-refresh-contents))
+  (elm-package--read-dependencies)
+  (let* ((package (elm-package--read-package))
+         (module (elm-package--read-module package))
+         (statement (concat "import " module "\n")))
+    (save-excursion
+      (goto-char (point-min))
+      (forward-line 1)
+      (insert statement))))
+
+;;;###autoload
+(defun elm-documentation-lookup (refresh)
+  "Lookup the documentation for a function, refreshing if REFRESH is truthy."
+  (interactive "P")
+  (when (not (elm--has-dependency-file))
+    (error "Elm package file not found"))
+  (when (or refresh (not elm-package--contents))
+    (elm-package-refresh-contents))
+  (elm-package--read-dependencies)
+  (let* ((package (elm-package--read-package))
+         (version (elm-package-latest-version package))
+         (module (elm-package--read-module package))
+         (module (s-replace "." "-" module))
+         (function (read-string "Function: " (thing-at-point 'word t)))
+         (uri (elm-package--build-uri "packages" package version module))
+         (uri (concat uri "#" function)))
+    (browse-url uri)))
+
+;;;###autoload
 (define-derived-mode elm-package-mode tabulated-list-mode "Elm Package"
   "Special mode for elm-package.
 
@@ -510,26 +553,6 @@ Runs `elm-reactor' first."
   (tabulated-list-print)
 
   (use-local-map elm-package-mode-map))
-
-
-;;; Documentation:
-;;;###autoload
-(defun elm-documentation-lookup (refresh)
-  "Lookup the documentation for a function, refreshing if REFRESH is truthy."
-  (interactive "P")
-  (when (not (elm--has-dependency-file))
-    (error "Elm package file not found"))
-  (when (or refresh (not elm-package--contents))
-    (elm-package-refresh-contents))
-  (elm-package--read-dependencies)
-  (let* ((package (completing-read "Package: " elm-package--dependencies nil t))
-         (version (elm-package-latest-version package))
-         (module (completing-read "Module: " (elm-package-modules package) nil t))
-         (module (s-replace "." "-" module))
-         (function (read-string "Function: " (thing-at-point 'word t)))
-         (uri (elm-package--build-uri "packages" package version module))
-         (uri (concat uri "#" function)))
-    (browse-url uri)))
 
 (provide 'elm-interactive)
 ;;; elm-interactive.el ends here
