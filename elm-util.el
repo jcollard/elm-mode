@@ -88,8 +88,14 @@ Relies on `haskell-mode' stuff."
 
     (concat path "/")))
 
+(defun elm--has-dependency-file ()
+  "Check if a dependency file exists."
+  (f-exists? (f-join (elm--find-dependency-file-path) elm-package-json)))
+
 (defun elm--read-dependency-file ()
   "Find and read the JSON dependency file into an object."
+  (when (not (elm--has-dependency-file))
+    (error "Dependency file not found"))
   (let ((dep-file (f-join (elm--find-dependency-file-path) elm-package-json)))
     (json-read-file dep-file)))
 
