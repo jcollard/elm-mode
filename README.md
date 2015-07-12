@@ -44,47 +44,47 @@ This package assumes you are runing Emacs 24 or later.
 
 The following bindings are available in `elm-mode`:
 
-`elm-make` bindings:
+### `elm-make` bindings:
 
-Keybinding         | Description
------------------- | ---------------------------------------
-<kbd>C-c C-c</kbd> | Compile the current buffer.
-<kbd>C-c M-c</kbd> | Compile the <code>Main.elm</code> file.
+| Keybinding         | Description                             |
+| ------------------ | --------------------------------------- |
+| <kbd>C-c C-c</kbd> | Compile the current buffer.             |
+| <kbd>C-c M-c</kbd> | Compile the <code>Main.elm</code> file. |
 
 
-`elm-repl` bindings:
+### `elm-repl` bindings:
 
-Keybinding         | Description
------------------- | ----------------------------------------------------------------------
-<kbd>C-c C-l</kbd> | Load the current file in a REPL.
-<kbd>C-c C-p</kbd> | Push the current region to a REPL.
-<kbd>C-c C-e</kbd> | Push the current decl. to a REPL (requires <code>haskell-mode</code>).
+| Keybinding         | Description                                                            |
+| ------------------ | ---------------------------------------------------------------------- |
+| <kbd>C-c C-l</kbd> | Load the current file in a REPL.                                       |
+| <kbd>C-c C-p</kbd> | Push the current region to a REPL.                                     |
+| <kbd>C-c C-e</kbd> | Push the current decl. to a REPL (requires <code>haskell-mode</code>). |
 
-`elm-reactor` bindings:
+### `elm-reactor` bindings:
 
-Keybinding             | Description
----------------------- | ------------------------------------------------------------------
-<kbd>C-c C-n</kbd>     | Preview the current buffer in a browser.
-<kbd>C-u C-c C-n</kbd> | Preview the current buffer in a browser in debug mode.
-<kbd>C-c C-m</kbd>     | Preview the <code>Main.elm</code> file in a browser.
-<kbd>C-u C-c C-m</kbd> | Preview the <code>Main.elm</code> file in a browser in debug mode.
+| Keybinding             | Description                                                        |
+| ---------------------- | ------------------------------------------------------------------ |
+| <kbd>C-c C-n</kbd>     | Preview the current buffer in a browser.                           |
+| <kbd>C-u C-c C-n</kbd> | Preview the current buffer in a browser in debug mode.             |
+| <kbd>C-c C-m</kbd>     | Preview the <code>Main.elm</code> file in a browser.               |
+| <kbd>C-u C-c C-m</kbd> | Preview the <code>Main.elm</code> file in a browser in debug mode. |
 
-`elm-package` bindings:
+### `elm-package` bindings:
 
-Keybinding             | Description
----------------------- | ------------------------------------------------------------
-<kbd>C-c C-k</kbd>     | Open the package catalog.
-<kbd>C-u C-c C-k</kbd> | Open the package catalog, refreshing the package list first.
+| Keybinding             | Description                                                  |
+| ---------------------- | ------------------------------------------------------------ |
+| <kbd>C-c C-k</kbd>     | Open the package catalog.                                    |
+| <kbd>C-u C-c C-k</kbd> | Open the package catalog, refreshing the package list first. |
 
 The following bindings are available in the package list buffer:
 
-Keybinding   | Description
------------- | ------------------------------
-<kbd>g</kbd> | Refresh package list.
-<kbd>n</kbd> | Next package.
-<kbd>p</kbd> | Previous package.
-<kbd>v</kbd> | View package in browser.
-<kbd>m</kbd> | Mark package for installation.
-<kbd>i</kbd> | Mark package for installation.
-<kbd>u</kbd> | Unmark package.
-<kbd>x</kbd> | Install marked packages.
+| Keybinding   | Description                    |
+| ------------ | ------------------------------ |
+| <kbd>g</kbd> | Refresh package list.          |
+| <kbd>n</kbd> | Next package.                  |
+| <kbd>p</kbd> | Previous package.              |
+| <kbd>v</kbd> | View package in browser.       |
+| <kbd>m</kbd> | Mark package for installation. |
+| <kbd>i</kbd> | Mark package for installation. |
+| <kbd>u</kbd> | Unmark package.                |
+| <kbd>x</kbd> | Install marked packages.       |
