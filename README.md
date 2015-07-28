@@ -1,6 +1,6 @@
 # elm-mode
 
-Elm mode for EMACS.
+Elm mode for Emacs.
 
 ## Features
 
@@ -10,6 +10,7 @@ Elm mode for EMACS.
 1. Integration with [elm-repl](https://github.com/elm-lang/elm-repl).
 1. Integration with [elm-reactor](https://github.com/elm-lang/elm-reactor).
 1. Integration with [elm-package](https://github.com/elm-lang/elm-package).
+1. Integration with [elm-oracle](https://github.com/ElmCast/elm-oracle).
 
 ## Indentation
 
@@ -90,3 +91,39 @@ The following bindings are available in the package list buffer:
 | <kbd>i</kbd> | Mark package for installation. |
 | <kbd>u</kbd> | Unmark package.                |
 | <kbd>x</kbd> | Install marked packages.       |
+
+#### `elm-oracle`
+
+The following functionality requires [elm-oracle][elm-oracle] to be
+installed. `elm-oracle` does not come with the Elm installer so you
+will have to install it manually.
+
+| Keybinding          | Description                                               |
+| ------------------- | --------------------------------------------------------- |
+| <kbd>C-c C-t</kbd>  | Show the type of the function at point in the minibuffer. |
+
+`elm-mode` supports auto completion through `elm-oracle`. To
+enable basic completion (either with `company-mode` or Emacs'
+`completion-at-point`) add `elm-oracle-setup-completion` to the
+`elm-mode-hook` like so:
+
+```elisp
+(add-hook 'elm-mode-hook #'elm-oracle-setup-completion)
+```
+
+If you prefer to use `auto-complete` as your completion backend you
+can instead do:
+
+```elisp
+(add-hook 'elm-mode-hook #'elm-oracle-setup-ac)
+```
+
+Note that the completion process is synchronous so you should set
+`ac-auto-start` to a large value or to `nil` otherwise you will
+experience slowdown. This will be improved in the future.
+
+Here's a screenshot of `auto-complete` in action:
+
+![auto-complete](/screenshots/auto-complete.png)
+
+[elm-oracle]: https://github.com/ElmCast/elm-oracle#installation
