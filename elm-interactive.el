@@ -127,6 +127,13 @@
     map)
   "Keymap for Elm interactive mode.")
 
+(defvar elm-oracle-command "elm-oracle"
+  "The Elm Oracle command.")
+
+(defvar elm-oracle--pattern
+  "\\(?:[^A-Za-z0-9_.']\\)\\(\\(?:[A-Za-z_][A-Za-z0-9_']*[.]\\)?[A-Za-z0-9_']*\\)"
+  "The prefix pattern used for completion.")
+
 (defvar elm-package-mode-map
   (let ((map (make-keymap)))
     (define-key map "g" #'elm-package-refresh)
@@ -554,6 +561,82 @@ Runs `elm-reactor' first."
   (tabulated-list-print)
 
   (use-local-map elm-package-mode-map))
+
+;;;###autoload
+(defun elm-oracle-get-completions (prefix)
+  "Get elm-oracle completions for PREFIX."
+  (let* ((default-directory (elm--find-dependency-file-path))
+         (current-file (buffer-file-name))
+         (command (s-join " " (list elm-oracle-command current-file prefix)))
+         (candidates (json-read-from-string (shell-command-to-string command)))
+         (candidates
+          (-map (lambda (candidate)
+                  (let-alist candidate
+                    .fullName))
+                candidates)))
+    candidates))
+
+(defun elm-oracle--get-first-completion (item)
+  "Get the first completion for ITEM."
+  (let* ((default-directory (elm--find-dependency-file-path))
+         (current-file (buffer-file-name))
+         (command (s-join " " (list elm-oracle-command current-file item)))
+         (candidates (json-read-from-string (shell-command-to-string command))))
+    (if (> (length candidates) 0)
+        (elt candidates 0)
+      nil)))
+
+;;;###autoload
+(defun elm-oracle-get-documentation (item)
+  "Get elm-oracle documentation for ITEM."
+  (let ((completion (elm-oracle--get-first-completion item)))
+    (when completion
+      (let-alist completion
+        (concat .signature "\n\n" .comment)))))
+
+;;;###autoload
+(defun elm-oracle-type-at-point ()
+  "Print the type of the function at point to the minibuffer."
+  (interactive)
+  (save-excursion
+    (forward-word)
+    (let* ((_ (re-search-backward elm-oracle--pattern nil t))
+           (beg (1+ (match-beginning 0)))
+           (end (match-end 0))
+           (item (s-trim (buffer-substring-no-properties beg end)))
+           (completion (elm-oracle--get-first-completion item)))
+      (if completion
+          (let-alist completion
+            (message .signature))
+        (message "Unknown type")))))
+
+;;;###autoload
+(defun elm-oracle-completion-at-point-function ()
+  "Completion at point function for elm-oracle."
+  (save-excursion
+    (let* ((_ (re-search-backward elm-oracle--pattern nil t))
+           (beg (1+ (match-beginning 0)))
+           (end (match-end 0))
+           (prefix (s-trim (buffer-substring-no-properties beg end)))
+           (completions (elm-oracle-get-completions prefix)))
+      (list beg end completions :exclusive 'no))))
+
+;;;###autoload
+(defun elm-oracle-setup-completion ()
+  "Setup standard completion."
+  (add-to-list 'completion-at-point-functions
+               #'elm-oracle-completion-at-point-function))
+
+;;;###autoload
+(defun elm-oracle-setup-ac ()
+  "Setup auto-complete support."
+  (when (not (boundp 'ac-source-elm))
+    (ac-define-source elm
+      `((candidates . (elm-oracle-get-completions ac-prefix))
+        (prefix . ,elm-oracle--pattern)
+        (document . elm-oracle-get-documentation))))
+
+  (add-to-list 'ac-sources 'ac-source-elm))
 
 (provide 'elm-interactive)
 ;;; elm-interactive.el ends here
