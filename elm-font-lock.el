@@ -24,6 +24,7 @@
 ;;; Commentary:
 ;;; Code:
 (require 'font-lock)
+(require 'rx)
 
 (defconst elm--keywords
   '("let" "case" "in" "if" "of" "then" "else" "otherwise"
@@ -41,15 +42,28 @@
 
 (defun elm--syntax-propertize (start end)
   "The syntax propertize function for setting single line comments over START to END."
-  (goto-char start)
-  (funcall (syntax-propertize-rules
-            ("^[[:space:]]*\\(--\\).*\\(\n\\)"
-             (1 "< b")
-             (2 "> b")))
-           start end))
+  (let ((case-fold-search nil))
+    (goto-char start)
+    (funcall
+     (syntax-propertize-rules
+      ;;; Syntax rule for -- comments
+      ((rx (and (0+ " ") (group "--")
+                (0+ any) (group "\n")))
+       (1 "< b")
+       (2 "> b"))
+
+      ;;; Syntax rule for char literals
+      ((rx (and (1+ " ")
+                (group "'")
+                (optional "\\") any
+                (group "'")))
+       (1 "\"")
+       (2 "\"")))
+     start end)))
 
 (defvar elm--syntax-table
   (let ((st (make-syntax-table)))
+    ;;; Syntax entry for {- -} type comments.
     (modify-syntax-entry ?{ "(} 1n" st)
     (modify-syntax-entry ?- ". 23n" st)
     (modify-syntax-entry ?} "){ 4n" st)
