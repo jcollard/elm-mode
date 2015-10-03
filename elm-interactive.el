@@ -630,6 +630,7 @@ Runs `elm-reactor' first."
 ;;;###autoload
 (defun elm-oracle-setup-ac ()
   "Setup auto-complete support."
+  (require 'auto-complete)
   (when (not (boundp 'ac-source-elm))
     (ac-define-source elm
       `((candidates . (elm-oracle-get-completions ac-prefix))
