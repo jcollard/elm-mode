@@ -111,8 +111,8 @@ enable basic completion (either with `company-mode` or Emacs'
 (add-hook 'elm-mode-hook #'elm-oracle-setup-completion)
 ```
 
-If you prefer to use `auto-complete` as your completion backend you
-can instead do:
+If you prefer to use `auto-complete` as your completion backend you can
+instead do after setting up `auto-complete` according to its manual:
 
 ```elisp
 (add-hook 'elm-mode-hook #'elm-oracle-setup-ac)
