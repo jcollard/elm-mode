@@ -134,6 +134,9 @@
   "\\(?:[^A-Za-z0-9_.']\\)\\(\\(?:[A-Za-z_][A-Za-z0-9_']*[.]\\)?[A-Za-z0-9_']*\\)"
   "The prefix pattern used for completion.")
 
+(defvar elm-oracle--completion-cache (make-hash-table)
+  "A cache for Oracle-based completions by prefix.")
+
 (defvar elm-package-mode-map
   (let ((map (make-keymap)))
     (define-key map "g" #'elm-package-refresh)
@@ -563,18 +566,33 @@ Runs `elm-reactor' first."
   (use-local-map elm-package-mode-map))
 
 ;;;###autoload
-(defun elm-oracle-get-completions (prefix)
-  "Get elm-oracle completions for PREFIX."
-  (let* ((default-directory (elm--find-dependency-file-path))
-         (current-file (buffer-file-name))
-         (command (s-join " " (list elm-oracle-command current-file prefix)))
-         (candidates (json-read-from-string (shell-command-to-string command)))
-         (candidates
-          (-map (lambda (candidate)
-                  (let-alist candidate
-                    .fullName))
-                candidates)))
-    candidates))
+(defun elm-oracle-get-completions (prefix &optional popup)
+  "Get elm-oracle completions for PREFIX with optional POPUP formatting."
+  (when (and popup
+             (not (fboundp #'popup-make-item)))
+    (require 'popup))
+
+  (let ((candidates (gethash prefix elm-oracle--completion-cache)))
+    (if (not candidates)
+        (let* ((default-directory (elm--find-dependency-file-path))
+               (current-file (buffer-file-name))
+               (current-file (if current-file
+                                 current-file
+                               (elm--find-main-file)))
+               (command (s-join " " (list elm-oracle-command current-file prefix)))
+               (candidates (json-read-from-string (shell-command-to-string command)))
+               (candidates
+                (-map (lambda (candidate)
+                        (let-alist candidate
+                          (if popup
+                              (popup-make-item .fullName
+                                               :document (concat .signature "\n\n" .comment)
+                                               :summary .signature)
+                            .fullName)))
+                      candidates)))
+          (puthash prefix candidates  elm-oracle--completion-cache)
+          candidates)
+      candidates)))
 
 (defun elm-oracle--get-first-completion (item)
   "Get the first completion for ITEM."
@@ -633,9 +651,8 @@ Runs `elm-reactor' first."
   (require 'auto-complete)
   (when (not (boundp 'ac-source-elm))
     (ac-define-source elm
-      `((candidates . (elm-oracle-get-completions ac-prefix))
-        (prefix . ,elm-oracle--pattern)
-        (document . elm-oracle-get-documentation))))
+      `((candidates . (elm-oracle-get-completions ac-prefix t))
+        (prefix . ,elm-oracle--pattern))))
 
   (add-to-list 'ac-sources 'ac-source-elm))
 
