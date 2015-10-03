@@ -36,7 +36,8 @@
   :group 'elm-font-lock)
 
 (defcustom elm-font-lock-multiline-list-delimiters-face 'elm-font-lock-multiline-list-delimiters
-  "The face used to highlight brackets and commas in multilist lists. To disable this highlighting, set this to nil."
+  "The face used to highlight brackets and commas in multilist lists.
+To disable this highlighting, set this to nil."
   :type '(choice (const nil)
                  face)
   :group 'elm-font-lock)
@@ -105,11 +106,13 @@
   "A regular expression representing commas and closing brackets in multiline lists and records.")
 
 (defconst elm--font-lock-multiline-list-comma-closing-brackets
-  (cons elm--regexp-multiline-list-comma-closing-brackets '(1 elm-font-lock-multiline-list-delimiters-face))
+  (cons elm--regexp-multiline-list-comma-closing-brackets
+        '(1 elm-font-lock-multiline-list-delimiters-face))
   "Highlighting for commas and closing brackets in multiline lists and records.")
 
 (defun elm--match-multiline-list-opening-bracket (limit)
-  "Highlighting search function for opening brackets in multiline lists and records. Also highlights opening brackets without a matching bracket."
+  "Highlighting search function for opening brackets in multiline lists and records.
+Also highlights opening brackets without a matching bracket."
   (when (elm--search-forward-opening-bracket limit)
     (let ((opening (point))
           (eol (line-end-position))
@@ -122,7 +125,7 @@
         (elm--match-multiline-list-opening-bracket limit)))))
 
 (defun elm--search-forward-opening-bracket (limit)
-  "Go to the next opening bracket."
+  "Go to the next opening bracket up to LIMIT."
   (if (search-forward-regexp (regexp-opt '("[" "{")) limit t)
       (progn
         (backward-char)
