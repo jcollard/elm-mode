@@ -134,8 +134,9 @@
   "\\(?:[^A-Za-z0-9_.']\\)\\(\\(?:[A-Za-z_][A-Za-z0-9_']*[.]\\)?[A-Za-z0-9_']*\\)"
   "The prefix pattern used for completion.")
 
-(defvar elm-oracle--completion-cache (make-hash-table)
+(defvar elm-oracle--completion-cache (make-hash-table :test 'equal)
   "A cache for Oracle-based completions by prefix.")
+(setq elm-oracle--completion-cache (make-hash-table :test 'equal))
 
 (defvar elm-package-mode-map
   (let ((map (make-keymap)))
@@ -573,26 +574,27 @@ Runs `elm-reactor' first."
     (require 'popup))
 
   (let ((candidates (gethash prefix elm-oracle--completion-cache)))
-    (if (not candidates)
-        (let* ((default-directory (elm--find-dependency-file-path))
-               (current-file (buffer-file-name))
-               (current-file (if current-file
-                                 current-file
-                               (elm--find-main-file)))
-               (command (s-join " " (list elm-oracle-command current-file prefix)))
-               (candidates (json-read-from-string (shell-command-to-string command)))
-               (candidates
-                (-map (lambda (candidate)
-                        (let-alist candidate
-                          (if popup
-                              (popup-make-item .fullName
-                                               :document (concat .signature "\n\n" .comment)
-                                               :summary .signature)
-                            .fullName)))
-                      candidates)))
-          (puthash prefix candidates  elm-oracle--completion-cache)
-          candidates)
-      candidates)))
+    (if candidates
+        candidates
+
+      (let* ((default-directory (elm--find-dependency-file-path))
+             (current-file (buffer-file-name))
+             (current-file (if current-file
+                               current-file
+                             (elm--find-main-file)))
+             (command (s-join " " (list elm-oracle-command current-file prefix)))
+             (candidates (json-read-from-string (shell-command-to-string command)))
+             (candidates
+              (-map (lambda (candidate)
+                      (let-alist candidate
+                        (if popup
+                            (popup-make-item .fullName
+                                             :document (concat .signature "\n\n" .comment)
+                                             :summary .signature)
+                          .fullName)))
+                    candidates)))
+        (puthash prefix candidates  elm-oracle--completion-cache)
+        candidates))))
 
 (defun elm-oracle--get-first-completion (item)
   "Get the first completion for ITEM."
