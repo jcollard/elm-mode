@@ -267,6 +267,7 @@ of the file specified."
       (elm-interactive--send-command (concat line " \\\n")))
     (elm-interactive--send-command "\n")))
 
+
 ;;; Reactor:
 ;;;###autoload
 (defun run-elm-reactor ()
@@ -592,8 +593,8 @@ Runs `elm-reactor' first."
                                              :summary .signature)
                           .fullName)))
                     candidates)))
-        (puthash prefix candidates  elm-oracle--completion-cache)
-        candidates))))
+
+        (puthash prefix candidates elm-oracle--completion-cache)))))
 
 (defun elm-oracle--get-first-completion (item)
   "Get the first completion for ITEM."
