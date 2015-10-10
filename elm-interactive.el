@@ -134,9 +134,8 @@
   "\\(?:[^A-Za-z0-9_.']\\)\\(\\(?:[A-Za-z_][A-Za-z0-9_']*[.]\\)?[A-Za-z0-9_']*\\)"
   "The prefix pattern used for completion.")
 
-(defvar elm-oracle--completion-cache (make-hash-table :test 'equal)
+(defvar elm-oracle--completion-cache (make-hash-table :test #'equal)
   "A cache for Oracle-based completions by prefix.")
-(setq elm-oracle--completion-cache (make-hash-table :test 'equal))
 
 (defvar elm-package-mode-map
   (let ((map (make-keymap)))
