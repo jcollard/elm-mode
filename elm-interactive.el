@@ -490,8 +490,7 @@ Runs `elm-reactor' first."
 (defun elm-package-catalog (refresh)
   "Show the package catalog, refreshing the list if REFRESH is truthy."
   (interactive "P")
-  (when (not (elm--has-dependency-file))
-    (error "Elm package file not found"))
+  (elm--assert-dependency-file)
   (when (or refresh (not elm-package--contents))
     (elm-package-refresh-contents))
   (let ((buffer (get-buffer-create elm-package-buffer-name)))
@@ -503,8 +502,7 @@ Runs `elm-reactor' first."
 (defun elm-package-refresh-contents ()
   "Refresh the package list."
   (interactive)
-  (when (not (elm--has-dependency-file))
-    (error "Elm package file not found"))
+  (elm--assert-dependency-file)
   (let* ((all-packages (elm-package--build-uri "all-packages")))
     (with-current-buffer (url-retrieve-synchronously all-packages)
       (goto-char (point-min))
@@ -516,8 +514,7 @@ Runs `elm-reactor' first."
 (defun elm-import (refresh)
   "Import a module, refreshing if REFRESH is truthy."
   (interactive "P")
-  (when (not (elm--has-dependency-file))
-    (error "Elm package file not found"))
+  (elm--assert-dependency-file)
   (when (or refresh (not elm-package--contents))
     (elm-package-refresh-contents))
   (elm-package--read-dependencies)
@@ -534,8 +531,7 @@ Runs `elm-reactor' first."
 (defun elm-documentation-lookup (refresh)
   "Lookup the documentation for a function, refreshing if REFRESH is truthy."
   (interactive "P")
-  (when (not (elm--has-dependency-file))
-    (error "Elm package file not found"))
+  (elm--assert-dependency-file)
   (when (or refresh (not elm-package--contents))
     (elm-package-refresh-contents))
   (elm-package--read-dependencies)
