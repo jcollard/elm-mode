@@ -33,6 +33,8 @@
 (require 's)
 (require 'tabulated-list)
 (require 'url)
+(eval-when-compile
+  (require 'auto-complete nil t))
 
 (defvar elm-interactive--seen-prompt nil
   "Non-nil represents the fact that a prompt has been spotted.")
@@ -130,7 +132,7 @@
 (defvar elm-oracle-command "elm-oracle"
   "The Elm Oracle command.")
 
-(defvar elm-oracle--pattern
+(defconst elm-oracle--pattern
   "\\(?:[^A-Za-z0-9_.']\\)\\(\\(?:[A-Za-z_][A-Za-z0-9_']*[.]\\)?[A-Za-z0-9_']*\\)"
   "The prefix pattern used for completion.")
 
@@ -636,19 +638,19 @@ Runs `elm-reactor' first."
 
 ;;;###autoload
 (defun elm-oracle-setup-completion ()
-  "Setup standard completion."
+  "Set up standard completion."
   (add-to-list 'completion-at-point-functions
                #'elm-oracle-completion-at-point-function))
 
+(eval-after-load 'auto-complete
+  '(ac-define-source elm
+     `((candidates . (elm-oracle-get-completions ac-prefix t))
+       (prefix . ,elm-oracle--pattern))))
+
 ;;;###autoload
 (defun elm-oracle-setup-ac ()
-  "Setup auto-complete support."
-  (require 'auto-complete)
-  (when (not (boundp 'ac-source-elm))
-    (ac-define-source elm
-      `((candidates . (elm-oracle-get-completions ac-prefix t))
-        (prefix . ,elm-oracle--pattern))))
-
+  "Set up auto-complete support.
+Add this function to your `elm-mode-hook'."
   (add-to-list 'ac-sources 'ac-source-elm))
 
 (provide 'elm-interactive)
