@@ -47,7 +47,7 @@
   "Return the current declaration.
 
 Relies on `haskell-mode' stuff."
-  (when (not (fboundp #'haskell-ds-backward-decl))
+  (unless (fboundp #'haskell-ds-backward-decl)
     (error "This functionality requires haskell-mode"))
 
   (save-excursion

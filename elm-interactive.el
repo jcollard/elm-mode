@@ -276,7 +276,7 @@ of the file specified."
   (let ((default-directory (elm--find-dependency-file-path))
         (process (get-process elm-reactor--process-name)))
 
-    (when (not process)
+    (unless process
       (apply #'start-process elm-reactor--process-name elm-reactor--buffer-name
              elm-reactor-command elm-reactor-arguments))))
 
@@ -411,7 +411,7 @@ Runs `elm-reactor' first."
 
 (defun elm-package-modules (package)
   "Get PACKAGE's module list."
-  (when (not (assoc package elm-package--cache))
+  (unless (assoc package elm-package--cache)
     (elm-package-refresh-package package (elm-package-latest-version package)))
   (let-alist (cdr (assoc package elm-package--cache))
     (append .exposed-modules nil)))
@@ -475,7 +475,7 @@ Runs `elm-reactor' first."
 (defun elm-package-install ()
   "Install the marked packages."
   (interactive)
-  (when (not elm-package--marked-contents)
+  (unless elm-package--marked-contents
     (error "Nothing to install"))
   (let ((command-to-run (s-join " && " (elm-package--get-marked-install-commands))))
     (when (yes-or-no-p (concat "Install " (s-join ", " (elm-package--get-marked-packages)) " ?"))
