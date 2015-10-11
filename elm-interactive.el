@@ -562,9 +562,7 @@ Runs `elm-reactor' first."
         tabulated-list-entries #'elm-package--entries)
 
   (tabulated-list-init-header)
-  (tabulated-list-print)
-
-  (use-local-map elm-package-mode-map))
+  (tabulated-list-print))
 
 ;;;###autoload
 (defun elm-oracle-get-completions (prefix &optional popup)
