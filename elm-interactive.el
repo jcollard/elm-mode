@@ -237,7 +237,7 @@ Stolen from haskell-mode."
       (elm-interactive-mode))))
 
 ;;;###autoload
-(defun load-elm-repl ()
+(defun elm-repl-load ()
   "Load an interactive REPL if there isn't already one running.
 Changes the current root directory to be the directory with the closest
 package json if one exists otherwise sets it to be the working directory
@@ -249,7 +249,7 @@ of the file specified."
     (elm-interactive--send-command import-statement)))
 
 ;;;###autoload
-(defun push-elm-repl ()
+(defun elm-repl-push ()
   "Push the selected region to an interactive REPL."
   (interactive)
   (let* ((to-push (buffer-substring-no-properties (mark) (point)))
@@ -260,7 +260,7 @@ of the file specified."
     (elm-interactive--send-command "\n")))
 
 ;;;###autoload
-(defun push-decl-elm-repl ()
+(defun elm-repl-push-decl ()
   "Push the current top level declaration to the REPL."
   (interactive)
   (let ((lines (elm--get-decl)))
