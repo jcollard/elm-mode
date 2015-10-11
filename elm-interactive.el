@@ -33,6 +33,8 @@
 (require 's)
 (require 'tabulated-list)
 (require 'url)
+(eval-when-compile
+  (require 'auto-complete nil t))
 
 (defvar elm-interactive--seen-prompt nil
   "Non-nil represents the fact that a prompt has been spotted.")
@@ -130,7 +132,7 @@
 (defvar elm-oracle-command "elm-oracle"
   "The Elm Oracle command.")
 
-(defvar elm-oracle--pattern
+(defconst elm-oracle--pattern
   "\\(?:[^A-Za-z0-9_.']\\)\\(\\(?:[A-Za-z_][A-Za-z0-9_']*[.]\\)?[A-Za-z0-9_']*\\)"
   "The prefix pattern used for completion.")
 
@@ -235,7 +237,7 @@ Stolen from haskell-mode."
       (elm-interactive-mode))))
 
 ;;;###autoload
-(defun load-elm-repl ()
+(defun elm-repl-load ()
   "Load an interactive REPL if there isn't already one running.
 Changes the current root directory to be the directory with the closest
 package json if one exists otherwise sets it to be the working directory
@@ -247,10 +249,10 @@ of the file specified."
     (elm-interactive--send-command import-statement)))
 
 ;;;###autoload
-(defun push-elm-repl ()
-  "Push the selected region to an interactive REPL."
-  (interactive)
-  (let* ((to-push (buffer-substring-no-properties (mark) (point)))
+(defun elm-repl-push (beg end)
+  "Push the region from BEG to END to an interactive REPL."
+  (interactive "r")
+  (let* ((to-push (buffer-substring-no-properties beg end))
          (lines (split-string (s-trim-right to-push) "\n")))
     (run-elm-interactive)
     (dolist (line lines)
@@ -258,7 +260,7 @@ of the file specified."
     (elm-interactive--send-command "\n")))
 
 ;;;###autoload
-(defun push-decl-elm-repl ()
+(defun elm-repl-push-decl ()
   "Push the current top level declaration to the REPL."
   (interactive)
   (let ((lines (elm--get-decl)))
@@ -276,7 +278,7 @@ of the file specified."
   (let ((default-directory (elm--find-dependency-file-path))
         (process (get-process elm-reactor--process-name)))
 
-    (when (not process)
+    (unless process
       (apply #'start-process elm-reactor--process-name elm-reactor--buffer-name
              elm-reactor-command elm-reactor-arguments))))
 
@@ -411,7 +413,7 @@ Runs `elm-reactor' first."
 
 (defun elm-package-modules (package)
   "Get PACKAGE's module list."
-  (when (not (assoc package elm-package--cache))
+  (unless (assoc package elm-package--cache)
     (elm-package-refresh-package package (elm-package-latest-version package)))
   (let-alist (cdr (assoc package elm-package--cache))
     (append .exposed-modules nil)))
@@ -475,7 +477,7 @@ Runs `elm-reactor' first."
 (defun elm-package-install ()
   "Install the marked packages."
   (interactive)
-  (when (not elm-package--marked-contents)
+  (unless elm-package--marked-contents
     (error "Nothing to install"))
   (let ((command-to-run (s-join " && " (elm-package--get-marked-install-commands))))
     (when (yes-or-no-p (concat "Install " (s-join ", " (elm-package--get-marked-packages)) " ?"))
@@ -490,8 +492,7 @@ Runs `elm-reactor' first."
 (defun elm-package-catalog (refresh)
   "Show the package catalog, refreshing the list if REFRESH is truthy."
   (interactive "P")
-  (when (not (elm--has-dependency-file))
-    (error "Elm package file not found"))
+  (elm--assert-dependency-file)
   (when (or refresh (not elm-package--contents))
     (elm-package-refresh-contents))
   (let ((buffer (get-buffer-create elm-package-buffer-name)))
@@ -503,8 +504,7 @@ Runs `elm-reactor' first."
 (defun elm-package-refresh-contents ()
   "Refresh the package list."
   (interactive)
-  (when (not (elm--has-dependency-file))
-    (error "Elm package file not found"))
+  (elm--assert-dependency-file)
   (let* ((all-packages (elm-package--build-uri "all-packages")))
     (with-current-buffer (url-retrieve-synchronously all-packages)
       (goto-char (point-min))
@@ -516,8 +516,7 @@ Runs `elm-reactor' first."
 (defun elm-import (refresh)
   "Import a module, refreshing if REFRESH is truthy."
   (interactive "P")
-  (when (not (elm--has-dependency-file))
-    (error "Elm package file not found"))
+  (elm--assert-dependency-file)
   (when (or refresh (not elm-package--contents))
     (elm-package-refresh-contents))
   (elm-package--read-dependencies)
@@ -534,8 +533,7 @@ Runs `elm-reactor' first."
 (defun elm-documentation-lookup (refresh)
   "Lookup the documentation for a function, refreshing if REFRESH is truthy."
   (interactive "P")
-  (when (not (elm--has-dependency-file))
-    (error "Elm package file not found"))
+  (elm--assert-dependency-file)
   (when (or refresh (not elm-package--contents))
     (elm-package-refresh-contents))
   (elm-package--read-dependencies)
@@ -562,17 +560,14 @@ Runs `elm-reactor' first."
         tabulated-list-entries #'elm-package--entries)
 
   (tabulated-list-init-header)
-  (tabulated-list-print)
+  (tabulated-list-print))
 
-  (use-local-map elm-package-mode-map))
+
+(autoload 'popup-make-item "popup")
 
 ;;;###autoload
 (defun elm-oracle-get-completions (prefix &optional popup)
   "Get elm-oracle completions for PREFIX with optional POPUP formatting."
-  (when (and popup
-             (not (fboundp #'popup-make-item)))
-    (require 'popup))
-
   (let ((candidates (gethash prefix elm-oracle--completion-cache)))
     (if candidates
         candidates
@@ -643,19 +638,19 @@ Runs `elm-reactor' first."
 
 ;;;###autoload
 (defun elm-oracle-setup-completion ()
-  "Setup standard completion."
+  "Set up standard completion."
   (add-to-list 'completion-at-point-functions
                #'elm-oracle-completion-at-point-function))
 
+(eval-after-load 'auto-complete
+  '(ac-define-source elm
+     `((candidates . (elm-oracle-get-completions ac-prefix t))
+       (prefix . ,elm-oracle--pattern))))
+
 ;;;###autoload
 (defun elm-oracle-setup-ac ()
-  "Setup auto-complete support."
-  (require 'auto-complete)
-  (when (not (boundp 'ac-source-elm))
-    (ac-define-source elm
-      `((candidates . (elm-oracle-get-completions ac-prefix t))
-        (prefix . ,elm-oracle--pattern))))
-
+  "Set up auto-complete support.
+Add this function to your `elm-mode-hook'."
   (add-to-list 'ac-sources 'ac-source-elm))
 
 (provide 'elm-interactive)

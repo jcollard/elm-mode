@@ -47,7 +47,7 @@
   "Return the current declaration.
 
 Relies on `haskell-mode' stuff."
-  (when (not (fboundp #'haskell-ds-backward-decl))
+  (unless (fboundp #'haskell-ds-backward-decl)
     (error "This functionality requires haskell-mode"))
 
   (save-excursion
@@ -92,10 +92,14 @@ Relies on `haskell-mode' stuff."
   "Check if a dependency file exists."
   (f-exists? (f-join (elm--find-dependency-file-path) elm-package-json)))
 
+(defun elm--assert-dependency-file ()
+  "Report an error unless there is a package file."
+  (unless (elm--has-dependency-file)
+    (error "Elm package file not found")))
+
 (defun elm--read-dependency-file ()
   "Find and read the JSON dependency file into an object."
-  (when (not (elm--has-dependency-file))
-    (error "Dependency file not found"))
+  (elm--assert-dependency-file)
   (let ((dep-file (f-join (elm--find-dependency-file-path) elm-package-json)))
     (json-read-file dep-file)))
 
