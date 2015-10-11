@@ -564,13 +564,12 @@ Runs `elm-reactor' first."
   (tabulated-list-init-header)
   (tabulated-list-print))
 
+
+(autoload 'popup-make-item "popup")
+
 ;;;###autoload
 (defun elm-oracle-get-completions (prefix &optional popup)
   "Get elm-oracle completions for PREFIX with optional POPUP formatting."
-  (when (and popup
-             (not (fboundp #'popup-make-item)))
-    (require 'popup))
-
   (let ((candidates (gethash prefix elm-oracle--completion-cache)))
     (if candidates
         candidates
