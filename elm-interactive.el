@@ -249,10 +249,10 @@ of the file specified."
     (elm-interactive--send-command import-statement)))
 
 ;;;###autoload
-(defun elm-repl-push ()
-  "Push the selected region to an interactive REPL."
-  (interactive)
-  (let* ((to-push (buffer-substring-no-properties (mark) (point)))
+(defun elm-repl-push (beg end)
+  "Push the region from BEG to END to an interactive REPL."
+  (interactive "r")
+  (let* ((to-push (buffer-substring-no-properties beg end))
          (lines (split-string (s-trim-right to-push) "\n")))
     (run-elm-interactive)
     (dolist (line lines)
