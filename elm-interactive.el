@@ -278,9 +278,11 @@ of the file specified."
   (let ((default-directory (elm--find-dependency-file-path))
         (process (get-process elm-reactor--process-name)))
 
-    (unless process
-      (apply #'start-process elm-reactor--process-name elm-reactor--buffer-name
-             elm-reactor-command elm-reactor-arguments))))
+    (when process
+      (delete-process process))
+
+    (apply #'start-process elm-reactor--process-name elm-reactor--buffer-name
+           elm-reactor-command elm-reactor-arguments)))
 
 (defun elm-reactor--browse (path &optional debug)
   "Open (reactor-relative) PATH in browser with optional DEBUG.
