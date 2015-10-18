@@ -317,7 +317,7 @@ Runs `elm-reactor' first."
 (defun elm-compile--colorize-compilation-buffer ()
   "Handle ANSI escape sequences in compilation buffer."
   (read-only-mode)
-  (ansi-color-apply-on-region (point-min) (point-max))
+  (ansi-color-apply-on-region compilation-filter-start (point))
   (read-only-mode))
 
 (add-hook 'compilation-filter-hook #'elm-compile--colorize-compilation-buffer)
