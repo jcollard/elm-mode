@@ -331,14 +331,18 @@ Runs `elm-reactor' first."
 ;;;###autoload
 (defun elm-compile-buffer (&optional output)
   "Compile the current buffer into OUTPUT."
-  (interactive)
-  (elm-compile--file (elm--buffer-local-file-name)))
+  (interactive
+   (when current-prefix-arg
+     (list (read-file-name "Output to: "))))
+  (elm-compile--file (elm--buffer-local-file-name) output))
 
 ;;;###autoload
 (defun elm-compile-main (&optional output)
   "Compile the Main.elm file into OUTPUT."
-  (interactive)
-  (elm-compile--file (elm--find-main-file)))
+  (interactive
+   (when current-prefix-arg
+     (list (read-file-name "Output to: "))))
+  (elm-compile--file (elm--find-main-file) output))
 
 
 ;;; Package:

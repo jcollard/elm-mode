@@ -47,10 +47,12 @@ The following bindings are available in `elm-mode`:
 
 #### `elm-make`
 
-| Keybinding         | Description                             |
-| ------------------ | --------------------------------------- |
-| <kbd>C-c C-c</kbd> | Compile the current buffer.             |
-| <kbd>C-c M-c</kbd> | Compile the <code>Main.elm</code> file. |
+| Keybinding             | Description                                                         |
+| ---------------------- | ------------------------------------------------------------------- |
+| <kbd>C-c C-c</kbd>     | Compile the current buffer.                                         |
+| <kbd>C-u C-c C-c</kbd> | Compile the current buffer, specifying the output file.             |
+| <kbd>C-c M-c</kbd>     | Compile the <code>Main.elm</code> file.                             |
+| <kbd>C-u C-c M-c</kbd> | Compile the <code>Main.elm</code> file, specifying the output file. |
 
 
 #### `elm-repl`
