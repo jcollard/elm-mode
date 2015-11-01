@@ -583,7 +583,9 @@ Runs `elm-reactor' first."
              (current-file (if current-file
                                current-file
                              (elm--find-main-file)))
-             (command (s-join " " (list elm-oracle-command current-file prefix)))
+             (command (s-join " " (list elm-oracle-command
+                                        (shell-quote-argument current-file)
+                                        (shell-quote-argument prefix))))
              (candidates (json-read-from-string (shell-command-to-string command)))
              (candidates
               (-map (lambda (candidate)
