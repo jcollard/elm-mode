@@ -575,6 +575,9 @@ Runs `elm-reactor' first."
 (defun elm-oracle-get-completions (prefix &optional popup)
   "Get elm-oracle completions for PREFIX with optional POPUP formatting."
   (when (and prefix (not (equal "" prefix)))
+    ;; TODO: the cache here does not take into account the popup argument,
+    ;;       so cached calls with different values of `popup' will interfere
+    ;;       with each other
     (or (gethash prefix elm-oracle--completion-cache)
         (let* ((default-directory (elm--find-dependency-file-path))
                (current-file (or (buffer-file-name) (elm--find-main-file)))
