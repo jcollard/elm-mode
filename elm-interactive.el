@@ -574,28 +574,28 @@ Runs `elm-reactor' first."
 ;;;###autoload
 (defun elm-oracle-get-completions (prefix &optional popup)
   "Get elm-oracle completions for PREFIX with optional POPUP formatting."
-  (let ((candidates (gethash prefix elm-oracle--completion-cache)))
-    (if candidates
-        candidates
+  (when (and prefix (not (equal "" prefix)))
+    ;; TODO: the cache here does not take into account the popup argument,
+    ;;       so cached calls with different values of `popup' will interfere
+    ;;       with each other
+    (or (gethash prefix elm-oracle--completion-cache)
+        (let* ((default-directory (elm--find-dependency-file-path))
+               (current-file (or (buffer-file-name) (elm--find-main-file)))
+               (command (s-join " " (list elm-oracle-command
+                                          (shell-quote-argument current-file)
+                                          (shell-quote-argument prefix))))
+               (candidates (json-read-from-string (shell-command-to-string command)))
+               (candidates
+                (-map (lambda (candidate)
+                        (let-alist candidate
+                          (if popup
+                              (popup-make-item .fullName
+                                               :document (concat .signature "\n\n" .comment)
+                                               :summary .signature)
+                            .fullName)))
+                      candidates)))
 
-      (let* ((default-directory (elm--find-dependency-file-path))
-             (current-file (buffer-file-name))
-             (current-file (if current-file
-                               current-file
-                             (elm--find-main-file)))
-             (command (s-join " " (list elm-oracle-command current-file prefix)))
-             (candidates (json-read-from-string (shell-command-to-string command)))
-             (candidates
-              (-map (lambda (candidate)
-                      (let-alist candidate
-                        (if popup
-                            (popup-make-item .fullName
-                                             :document (concat .signature "\n\n" .comment)
-                                             :summary .signature)
-                          .fullName)))
-                    candidates)))
-
-        (puthash prefix candidates elm-oracle--completion-cache)))))
+          (puthash prefix candidates elm-oracle--completion-cache)))))
 
 (defun elm-oracle--get-first-completion (item)
   "Get the first completion for ITEM."
@@ -644,9 +644,12 @@ Runs `elm-reactor' first."
 
 ;;;###autoload
 (defun elm-oracle-setup-completion ()
-  "Set up standard completion."
-  (add-to-list 'completion-at-point-functions
-               #'elm-oracle-completion-at-point-function))
+  "Set up standard completion.
+Add this function to your `elm-mode-hook' to enable an
+elm-specific `completion-at-point' function."
+  (add-hook 'completion-at-point-functions
+            #'elm-oracle-completion-at-point-function
+            nil t))
 
 (eval-after-load 'auto-complete
   '(ac-define-source elm
