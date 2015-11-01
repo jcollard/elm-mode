@@ -644,9 +644,12 @@ Runs `elm-reactor' first."
 
 ;;;###autoload
 (defun elm-oracle-setup-completion ()
-  "Set up standard completion."
-  (add-to-list 'completion-at-point-functions
-               #'elm-oracle-completion-at-point-function))
+  "Set up standard completion.
+Add this function to your `elm-mode-hook' to enable an
+elm-specific `completion-at-point' function."
+  (add-hook 'completion-at-point-functions
+            #'elm-oracle-completion-at-point-function
+            nil t))
 
 (eval-after-load 'auto-complete
   '(ac-define-source elm
