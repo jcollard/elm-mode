@@ -75,8 +75,8 @@
   "Command line arguments to pass to the Elm compilation command.")
 
 (defvar elm-compile-error-regexp-alist-alist
-  '((elm-file "^## \\(WARNINGS\\|ERRORS\\) in \\([^ ]+\\)" 2 nil)
-    (elm-line "^\\([0-9]+\\)|" nil 1))
+  '((elm-file "-- [^-]+ -+ \\(.+\\)$" 1 nil)
+    (elm-line "^\\([0-9]+\\)│" nil 1))
   "Regexps to match Elm compiler errors in compilation buffer.")
 
 (defvar elm-compile-error-regexp-alist '(elm-line elm-file))
