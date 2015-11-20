@@ -71,7 +71,7 @@
 (defvar elm-compile-command "elm-make"
   "The Elm compilation command.")
 
-(defvar elm-compile-arguments '("--yes" "--warn")
+(defvar elm-compile-arguments '("--yes" "--warn" "--output=elm.js")
   "Command line arguments to pass to the Elm compilation command.")
 
 (defvar elm-compile-error-regexp-alist-alist
