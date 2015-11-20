@@ -571,31 +571,66 @@ Runs `elm-reactor' first."
 
 (autoload 'popup-make-item "popup")
 
+
 ;;;###autoload
-(defun elm-oracle-get-completions (prefix &optional popup)
-  "Get elm-oracle completions for PREFIX with optional POPUP formatting."
+(defun elm-completion-prefix-at-point ()
+  "Return the completions prefix found at point"
+  (save-excursion
+    (let* ((_ (re-search-backward elm-oracle--pattern nil t))
+           (beg (1+ (match-beginning 0)))
+           (end (match-end 0)))
+      (s-trim (buffer-substring-no-properties beg end)))))
+
+
+;;;###autoload
+(defun elm-oracle-completion-namelist (completions)
+  "Extract a list of identifier names from the COMPLETIONS alists"
+  (-map (lambda (candidate)
+          (let-alist candidate
+            .fullName))
+        completions))
+
+
+;;;###autoload
+(defun elm-oracle-completion-docbuffer (completions selection)
+  "Return a company docbuffer containing the documentation of the SELECTION"
+  (company-doc-buffer
+    (let-alist (aref (remove-if-not (lambda (cand)
+                                      (let-alist cand
+                                        (equal .fullName selection)))
+                                    completions) 0)
+      (format "%s\n\n%s" .signature .comment))))
+
+
+;;;###autoload
+(defun elm-oracle-get-completions-cached (prefix)
+  "Cache and return the cached elm-oracle completions for PREFIX"
   (when (and prefix (not (equal "" prefix)))
-    ;; TODO: the cache here does not take into account the popup argument,
-    ;;       so cached calls with different values of `popup' will interfere
-    ;;       with each other
     (or (gethash prefix elm-oracle--completion-cache)
         (let* ((default-directory (elm--find-dependency-file-path))
                (current-file (or (buffer-file-name) (elm--find-main-file)))
                (command (s-join " " (list elm-oracle-command
                                           (shell-quote-argument current-file)
                                           (shell-quote-argument prefix))))
-               (candidates (json-read-from-string (shell-command-to-string command)))
-               (candidates
-                (-map (lambda (candidate)
-                        (let-alist candidate
-                          (if popup
-                              (popup-make-item .fullName
-                                               :document (concat .signature "\n\n" .comment)
-                                               :summary .signature)
-                            .fullName)))
-                      candidates)))
-
+               (candidates (json-read-from-string (shell-command-to-string command))))
           (puthash prefix candidates elm-oracle--completion-cache)))))
+
+
+;;;###autoload
+(defun elm-oracle-get-completions (prefix &optional popup)
+  "Get elm-oracle completions for PREFIX with optional POPUP formatting."
+  (let* ((candidates (elm-oracle-get-completions-cached prefix))
+         (candidates
+          (-map (lambda (candidate)
+                  (let-alist candidate
+                    (if popup
+                        (popup-make-item .fullName
+                                         :document (concat .signature "\n\n" .comment)
+                                         :summary .signature)
+                      .fullName)))
+                candidates)))
+    candidates))
+
 
 (defun elm-oracle--get-first-completion (item)
   "Get the first completion for ITEM."
@@ -661,6 +696,20 @@ elm-specific `completion-at-point' function."
   "Set up auto-complete support.
 Add this function to your `elm-mode-hook'."
   (add-to-list 'ac-sources 'ac-source-elm))
+
+
+;;;###autoload
+(defun company-elm (command &optional arg &rest ignored)
+  "Set up a company backend for elm"
+  (interactive (list 'interactive))
+  (let* ((prefix (elm-completion-prefix-at-point))
+         (completions (elm-oracle-get-completions-cached prefix)))
+    (case command
+      (interactive (company-begin-backend 'company-elm-backend))
+      (prefix prefix)
+      (doc-buffer (elm-oracle-completion-docbuffer completions arg))
+      (candidates (elm-oracle-completion-namelist completions))
+      (meta (format "This value is named %s" arg)))))
 
 (provide 'elm-interactive)
 ;;; elm-interactive.el ends here
