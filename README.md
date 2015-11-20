@@ -113,6 +113,16 @@ enable basic completion (either with `company-mode` or Emacs'
 (add-hook 'elm-mode-hook #'elm-oracle-setup-completion)
 ```
 
+If you want to use `company` for autocompletion all you need to do
+is add the provided backend to the provider list:
+
+```elisp
+(add-to-list 'company-backends 'company-elm)
+```
+
+The `company` backend supports `company-quickhelp` as well to display
+documentation snippets for the autocompletion candidates.
+
 If you prefer to use `auto-complete` as your completion backend you
 can instead do the following after setting up `auto-complete`
 according to its manual:
