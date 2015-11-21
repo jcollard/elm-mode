@@ -587,14 +587,23 @@ Runs `elm-reactor' first."
             .fullName))
         completions))
 
+(defun elm-oracle--completions-select (completions selection)
+  "Search COMPLETIONS for SELECTION and return it."
+  (aref (remove-if-not (lambda (cand)
+                         (let-alist cand
+                           (equal .fullName selection)))
+                       completions) 0))
+
 (defun elm-oracle--completion-docbuffer (completions selection)
-  "Return a docbuffer containing the documentation of the SELECTION."
+  "Search COMPLETIONS for SELECTION and return its documentation."
   (company-doc-buffer
-    (let-alist (aref (remove-if-not (lambda (cand)
-                                      (let-alist cand
-                                        (equal .fullName selection)))
-                                    completions) 0)
+    (let-alist (elm-oracle--completions-select completions selection)
       (format "%s\n\n%s" .signature .comment))))
+
+(defun elm-oracle--completion-signature (completions selection)
+  "Search COMPLETIONS for SELECTION and return its signature."
+  (let-alist (elm-oracle--completions-select completions selection)
+    (format "%s : %s" selection .signature)))
 
 (defun elm-oracle--get-completions-cached (prefix)
   "Cache and return the cached elm-oracle completions for PREFIX."
@@ -692,7 +701,7 @@ Add this function to your `elm-mode-hook'."
       (prefix prefix)
       (doc-buffer (elm-oracle--completion-docbuffer completions arg))
       (candidates (elm-oracle--completion-namelist completions))
-      (meta (format "This value is named %s" arg)))))
+      (meta (elm-oracle--completion-signature completions arg)))))
 
 
 (provide 'elm-interactive)
