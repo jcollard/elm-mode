@@ -580,6 +580,7 @@ Runs `elm-reactor' first."
            (end (match-end 0)))
       (s-trim (buffer-substring-no-properties beg end)))))
 
+
 (defun elm-oracle--completion-namelist (completions)
   "Extract a list of identifier names from the COMPLETIONS alists."
   (-map (lambda (candidate)
@@ -694,14 +695,17 @@ Add this function to your `elm-mode-hook'."
 (defun company-elm (command &optional arg &rest ignored)
   "Set up a company backend for elm."
   (interactive (list 'interactive))
-  (let* ((prefix (elm-oracle--completion-prefix-at-point))
-         (completions (elm-oracle--get-completions-cached prefix)))
-    (case command
-      (interactive (company-begin-backend 'company-elm-backend))
-      (prefix prefix)
-      (doc-buffer (elm-oracle--completion-docbuffer completions arg))
-      (candidates (elm-oracle--completion-namelist completions))
-      (meta (elm-oracle--completion-signature completions arg)))))
+  (case command
+    (init t)
+    (interactive (company-begin-backend 'company-elm))
+    (t
+     (let* ((prefix (elm-oracle--completion-prefix-at-point))
+            (completions (elm-oracle--get-completions-cached prefix)))
+       (case command
+         (prefix prefix)
+         (doc-buffer (elm-oracle--completion-docbuffer completions arg))
+         (candidates (elm-oracle--completion-namelist completions))
+         (meta (elm-oracle--completion-signature completions arg)))))))
 
 
 (provide 'elm-interactive)
