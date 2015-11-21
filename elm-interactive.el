@@ -572,28 +572,23 @@ Runs `elm-reactor' first."
 (autoload 'popup-make-item "popup")
 
 
-;;;###autoload
-(defun elm-completion-prefix-at-point ()
-  "Return the completions prefix found at point"
+(defun elm-oracle--completion-prefix-at-point ()
+  "Return the completions prefix found at point."
   (save-excursion
     (let* ((_ (re-search-backward elm-oracle--pattern nil t))
            (beg (1+ (match-beginning 0)))
            (end (match-end 0)))
       (s-trim (buffer-substring-no-properties beg end)))))
 
-
-;;;###autoload
-(defun elm-oracle-completion-namelist (completions)
-  "Extract a list of identifier names from the COMPLETIONS alists"
+(defun elm-oracle--completion-namelist (completions)
+  "Extract a list of identifier names from the COMPLETIONS alists."
   (-map (lambda (candidate)
           (let-alist candidate
             .fullName))
         completions))
 
-
-;;;###autoload
-(defun elm-oracle-completion-docbuffer (completions selection)
-  "Return a company docbuffer containing the documentation of the SELECTION"
+(defun elm-oracle--completion-docbuffer (completions selection)
+  "Return a docbuffer containing the documentation of the SELECTION."
   (company-doc-buffer
     (let-alist (aref (remove-if-not (lambda (cand)
                                       (let-alist cand
@@ -601,10 +596,8 @@ Runs `elm-reactor' first."
                                     completions) 0)
       (format "%s\n\n%s" .signature .comment))))
 
-
-;;;###autoload
-(defun elm-oracle-get-completions-cached (prefix)
-  "Cache and return the cached elm-oracle completions for PREFIX"
+(defun elm-oracle--get-completions-cached (prefix)
+  "Cache and return the cached elm-oracle completions for PREFIX."
   (when (and prefix (not (equal "" prefix)))
     (or (gethash prefix elm-oracle--completion-cache)
         (let* ((default-directory (elm--find-dependency-file-path))
@@ -615,11 +608,9 @@ Runs `elm-reactor' first."
                (candidates (json-read-from-string (shell-command-to-string command))))
           (puthash prefix candidates elm-oracle--completion-cache)))))
 
-
-;;;###autoload
-(defun elm-oracle-get-completions (prefix &optional popup)
+(defun elm-oracle--get-completions (prefix &optional popup)
   "Get elm-oracle completions for PREFIX with optional POPUP formatting."
-  (let* ((candidates (elm-oracle-get-completions-cached prefix))
+  (let* ((candidates (elm-oracle--get-completions-cached prefix))
          (candidates
           (-map (lambda (candidate)
                   (let-alist candidate
@@ -631,7 +622,6 @@ Runs `elm-reactor' first."
                 candidates)))
     candidates))
 
-
 (defun elm-oracle--get-first-completion (item)
   "Get the first completion for ITEM."
   (let* ((default-directory (elm--find-dependency-file-path))
@@ -641,14 +631,6 @@ Runs `elm-reactor' first."
     (if (> (length candidates) 0)
         (elt candidates 0)
       nil)))
-
-;;;###autoload
-(defun elm-oracle-get-documentation (item)
-  "Get elm-oracle documentation for ITEM."
-  (let ((completion (elm-oracle--get-first-completion item)))
-    (when completion
-      (let-alist completion
-        (concat .signature "\n\n" .comment)))))
 
 ;;;###autoload
 (defun elm-oracle-type-at-point ()
@@ -674,7 +656,7 @@ Runs `elm-reactor' first."
            (beg (1+ (match-beginning 0)))
            (end (match-end 0))
            (prefix (s-trim (buffer-substring-no-properties beg end)))
-           (completions (elm-oracle-get-completions prefix)))
+           (completions (elm-oracle--get-completions prefix)))
       (list beg end completions :exclusive 'no))))
 
 ;;;###autoload
@@ -686,9 +668,10 @@ elm-specific `completion-at-point' function."
             #'elm-oracle-completion-at-point-function
             nil t))
 
+
 (eval-after-load 'auto-complete
   '(ac-define-source elm
-     `((candidates . (elm-oracle-get-completions ac-prefix t))
+     `((candidates . (elm-oracle--get-completions ac-prefix t))
        (prefix . ,elm-oracle--pattern))))
 
 ;;;###autoload
@@ -700,16 +683,17 @@ Add this function to your `elm-mode-hook'."
 
 ;;;###autoload
 (defun company-elm (command &optional arg &rest ignored)
-  "Set up a company backend for elm"
+  "Set up a company backend for elm."
   (interactive (list 'interactive))
-  (let* ((prefix (elm-completion-prefix-at-point))
-         (completions (elm-oracle-get-completions-cached prefix)))
+  (let* ((prefix (elm-oracle--completion-prefix-at-point))
+         (completions (elm-oracle--get-completions-cached prefix)))
     (case command
       (interactive (company-begin-backend 'company-elm-backend))
       (prefix prefix)
-      (doc-buffer (elm-oracle-completion-docbuffer completions arg))
-      (candidates (elm-oracle-completion-namelist completions))
+      (doc-buffer (elm-oracle--completion-docbuffer completions arg))
+      (candidates (elm-oracle--completion-namelist completions))
       (meta (format "This value is named %s" arg)))))
+
 
 (provide 'elm-interactive)
 ;;; elm-interactive.el ends here
