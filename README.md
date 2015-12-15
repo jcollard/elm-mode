@@ -36,7 +36,7 @@ Add this repo to your load-path and `(require 'elm-mode)`. Ensure that
 the following dependencies are available:
 
 * [f](https://github.com/rejeep/f.el)
-* [let-alist](https://github.com/Malabarba/let-alist)
+* [let-alist](https://elpa.gnu.org/packages/let-alist.html)
 * [s](https://github.com/magnars/s.el)
 
 This package assumes you are runing Emacs 24 or later.
