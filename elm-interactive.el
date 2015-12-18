@@ -25,6 +25,7 @@
 (require 'ansi-color)
 (require 'comint)
 (require 'compile)
+(require 'cl-lib)
 (require 'elm-font-lock)
 (require 'elm-util)
 (require 'f)
@@ -33,8 +34,9 @@
 (require 's)
 (require 'tabulated-list)
 (require 'url)
-(eval-when-compile
-  (require 'auto-complete nil t))
+
+(require 'auto-complete nil 'noerror)
+(require 'company nil 'noerror)
 
 (defvar elm-interactive--seen-prompt nil
   "Non-nil represents the fact that a prompt has been spotted.")
@@ -590,10 +592,10 @@ Runs `elm-reactor' first."
 
 (defun elm-oracle--completions-select (completions selection)
   "Search COMPLETIONS for SELECTION and return it."
-  (aref (remove-if-not (lambda (cand)
-                         (let-alist cand
-                           (equal .fullName selection)))
-                       completions) 0))
+  (aref (cl-remove-if-not (lambda (cand)
+                            (let-alist cand
+                              (equal .fullName selection)))
+                          completions) 0))
 
 (defun elm-oracle--completion-docbuffer (completions selection)
   "Search COMPLETIONS for SELECTION and return its documentation."
@@ -679,10 +681,13 @@ elm-specific `completion-at-point' function."
             nil t))
 
 
-(eval-after-load 'auto-complete
-  '(ac-define-source elm
-     `((candidates . (elm-oracle--get-completions ac-prefix t))
-       (prefix . ,elm-oracle--pattern))))
+(with-no-warnings
+  (with-eval-after-load 'auto-complete
+    (ac-define-source elm
+      `((candidates . (elm-oracle--get-completions ac-prefix t))
+        (prefix . ,elm-oracle--pattern)))))
+
+(defvar ac-sources)
 
 ;;;###autoload
 (defun elm-oracle-setup-ac ()
@@ -693,19 +698,18 @@ Add this function to your `elm-mode-hook'."
 
 ;;;###autoload
 (defun company-elm (command &optional arg &rest ignored)
-  "Set up a company backend for elm."
+  "Provide completion info according to COMMAND and ARG.  IGNORED is not used."
   (interactive (list 'interactive))
-  (case command
+  (cl-case command
     (init t)
     (interactive (company-begin-backend 'company-elm))
-    (t
-     (let* ((prefix (elm-oracle--completion-prefix-at-point))
-            (completions (elm-oracle--get-completions-cached prefix)))
-       (case command
-         (prefix prefix)
-         (doc-buffer (elm-oracle--completion-docbuffer completions arg))
-         (candidates (elm-oracle--completion-namelist completions))
-         (meta (elm-oracle--completion-signature completions arg)))))))
+    (t (let* ((prefix (elm-oracle--completion-prefix-at-point))
+              (completions (elm-oracle--get-completions-cached prefix)))
+         (cl-case command
+           (prefix prefix)
+           (doc-buffer (elm-oracle--completion-docbuffer completions arg))
+           (candidates (elm-oracle--completion-namelist completions))
+           (meta (elm-oracle--completion-signature completions arg)))))))
 
 
 (provide 'elm-interactive)
