@@ -24,6 +24,7 @@
 
 ;;; Commentary:
 ;;; Code:
+(require 'elm-format)
 (require 'elm-indent)
 (require 'elm-interactive)
 (require 'elm-font-lock)
@@ -37,9 +38,18 @@ ARG specifies the number of lines to comment or uncomment."
         (comment-end ""))
     (comment-dwim arg)))
 
+(defun elm-mode-after-save-handler ()
+  "Perform various operations upon saving a buffer."
+  (when elm-format-on-save
+    (elm-mode-format-buffer)
+    (let ((before-save-hook '())
+          (after-save-hook '()))
+      (basic-save-buffer))))
+
 (defvar elm-mode-map
   (let ((map (make-keymap)))
     (define-key map [remap comment-dwim] 'elm-comment-dwim)
+    (define-key map "\C-c\C-f" 'elm-mode-format-buffer)
     (define-key map "\C-c\C-l" 'elm-repl-load)
     (define-key map "\C-c\C-p" 'elm-repl-push)
     (define-key map "\C-c\C-e" 'elm-repl-push-decl)
@@ -67,6 +77,8 @@ ARG specifies the number of lines to comment or uncomment."
 
   (set (make-local-variable 'comment-start) "--")
   (set (make-local-variable 'comment-end) "")
+
+  (add-hook 'after-save-hook #'elm-mode-after-save-handler nil t)
 
   (turn-on-elm-font-lock)
   (turn-on-elm-indent))

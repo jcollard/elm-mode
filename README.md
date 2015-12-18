@@ -10,7 +10,8 @@ Elm mode for Emacs.
 1. Integration with [elm-repl](https://github.com/elm-lang/elm-repl).
 1. Integration with [elm-reactor](https://github.com/elm-lang/elm-reactor).
 1. Integration with [elm-package](https://github.com/elm-lang/elm-package).
-1. Integration with [elm-oracle](https://github.com/ElmCast/elm-oracle).
+1. Integration with [elm-oracle][elm-oracle]
+1. Integration with [elm-format][elm-format]
 
 ## Indentation
 
@@ -94,6 +95,19 @@ The following bindings are available in the package list buffer:
 | <kbd>u</kbd> | Unmark package.                |
 | <kbd>x</kbd> | Install marked packages.       |
 
+#### `elm-format`
+
+The following functionality requires [elm-format][elm-format] to be
+installed. `elm-format` does not come with the Elm installer so you
+will have to install it manually.
+
+| Keybinding         | Description                              |
+| ------------------ | ---------------------------------------- |
+| <kbd>C-c C-f</kbd> | Automatically format the current buffer. |
+
+Set or customize `elm-format-on-save` to `t` to apply `elm-format` on
+the current buffer on every save.
+
 #### `elm-oracle`
 
 The following functionality requires [elm-oracle][elm-oracle] to be
@@ -139,4 +153,5 @@ Here's a screenshot of `auto-complete` in action:
 
 ![auto-complete](/screenshots/auto-complete.png)
 
+[elm-format]: https://github.com/avh4/elm-format#installation-01-alpha2
 [elm-oracle]: https://github.com/ElmCast/elm-oracle#installation
