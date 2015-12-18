@@ -153,5 +153,5 @@ Here's a screenshot of `auto-complete` in action:
 
 ![auto-complete](/screenshots/auto-complete.png)
 
-[elm-format]: https://github.com/avh4/elm-format#installation-01-alpha2
+[elm-format]: https://github.com/avh4/elm-format#installation-
 [elm-oracle]: https://github.com/ElmCast/elm-oracle#installation
