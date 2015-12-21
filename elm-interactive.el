@@ -681,6 +681,8 @@ elm-specific `completion-at-point' function."
             nil t))
 
 
+(autoload 'ac-define-source "auto-complete")
+
 (with-no-warnings
   (with-eval-after-load 'auto-complete
     (ac-define-source elm
