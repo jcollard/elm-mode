@@ -681,13 +681,20 @@ elm-specific `completion-at-point' function."
             nil t))
 
 
-(autoload 'ac-define-source "auto-complete")
-
+;; `eval-after-load' is used here instead of `with-eval-after-load'
+;; to avoid a situation where the byte compiler compiles (forms
+;; passed to `eval-after-load' are not byte compiled) the body with
+;; the assumption that `ac-define-source' is a function (this can
+;; happen if auto-complete is not loaded when this file is byte
+;; compiled). When that happens, if the user then tries to install
+;; auto-complete the compiled body will be executed with the assumption
+;; that `ac-define-source' is a function and so `elm` will be the first
+;; thing to be evaluated, causing the compiler to throw an error.
 (with-no-warnings
-  (with-eval-after-load 'auto-complete
-    (ac-define-source elm
-      `((candidates . (elm-oracle--get-completions ac-prefix t))
-        (prefix . ,elm-oracle--pattern)))))
+  (eval-after-load 'auto-complete
+    '(ac-define-source elm
+       `((candidates . (elm-oracle--get-completions ac-prefix t))
+         (prefix . ,elm-oracle--pattern)))))
 
 (defvar ac-sources)
 
