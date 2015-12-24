@@ -313,8 +313,12 @@ Runs `elm-reactor' first."
 ;;; Make:
 (defun elm-compile--command (file &optional output)
   "Generate a command that will compile FILE into OUTPUT."
-  (let ((output-command (if output (concat " --output=" output) "")))
-    (concat elm-compile-command " " file output-command " " (s-join " " elm-compile-arguments))))
+  (let ((elm-compile-arguments
+         (if output
+             (append (butlast elm-compile-arguments)
+                     (list (concat "--output=" (expand-file-name output))))
+           elm-compile-arguments)))
+    (s-join " " (cl-list* elm-compile-command file elm-compile-arguments))))
 
 (defun elm-compile--colorize-compilation-buffer ()
   "Handle ANSI escape sequences in compilation buffer."
