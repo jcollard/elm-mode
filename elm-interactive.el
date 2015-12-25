@@ -315,7 +315,7 @@ Runs `elm-reactor' first."
   "Generate a command that will compile FILE into OUTPUT."
   (let ((elm-compile-arguments
          (if output
-             (append (butlast elm-compile-arguments)
+             (append (cl-remove-if (apply-partially #'string-prefix-p "--output=") elm-compile-arguments)
                      (list (concat "--output=" (expand-file-name output))))
            elm-compile-arguments)))
     (s-join " " (cl-list* elm-compile-command file elm-compile-arguments))))
