@@ -44,12 +44,12 @@ To disable this highlighting, set this to nil."
 
 (defconst elm--keywords
   '("let" "case" "in" "if" "of" "then" "else" "otherwise"
-    "module" "import" "as" "exposing"  "type" "where"
+    "module" "import" "as" "exposing" "type" "where"
     "alias" "port" "infixr" "infixl")
   "Reserved keywords.")
 
 (defconst elm--regexp-keywords
-  (concat (concat "\\<" (regexp-opt elm--keywords t)) "\\>")
+  (regexp-opt elm--keywords 'words)
   "A regular expression representing the reserved keywords.")
 
 (defconst elm--font-lock-keywords
@@ -85,8 +85,9 @@ To disable this highlighting, set this to nil."
     (modify-syntax-entry ?} "){ 4n" st)
     st))
 
+;;; Name regexp is according to https://github.com/elm-lang/elm-compiler/blob/353930a474fee4d833f962100edde70417691bca/src/Parse/Helpers.hs#L65
 (defconst elm--regexp-function
-  "^[a-z][^[:space:][:punct:]]*"
+  "^\\([a-z_][0-9A-Za-z_']*\\|([^)]+)\\)"
   "A regular expression representing function names.")
 
 (defconst elm--font-lock-functions
@@ -94,7 +95,7 @@ To disable this highlighting, set this to nil."
   "Highlighting for function names.")
 
 (defconst elm--regexp-type
-  "\\<[A-Z][^[:space:].]*\\>"
+  "\\<[A-Z][0-9A-Za-z_']*"
   "A regular expression representing modules and types.")
 
 (defconst elm--font-lock-types
