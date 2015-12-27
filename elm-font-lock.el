@@ -30,6 +30,18 @@
   "Font locking for Elm code."
   :group 'faces)
 
+(defface elm-font-lock-operators
+  '((t :inherit font-lock-builtin-face))
+  "The default face used to highlight operators inside expressions."
+  :group 'elm-font-lock)
+
+(defcustom elm-font-lock-operators-face 'elm-font-lock-operators
+  "The face used to highlight operators inside expressions.
+To disable this highlighting, set this to nil."
+  :type '(choice (const nil)
+                 face)
+  :group 'elm-font-lock)
+
 (defface elm-font-lock-multiline-list-delimiters
   '((t :inherit font-lock-keyword-face))
   "The default face used to highlight brackets and commas in multiline lists."
@@ -102,6 +114,17 @@ To disable this highlighting, set this to nil."
   (cons elm--regexp-type font-lock-type-face)
   "Highlighting for module names and types.")
 
+(defconst elm--regexp-operators
+  (concat "\\(" "`[^`]+`"
+          "\\|" "\\B\\\\"
+          "\\|" "[-+*/\\\\|<>=:!@#$%^&,.]+"
+          "\\)")
+  "A regular expression representing operators inside expressions.")
+
+(defconst elm--font-lock-operators
+  (cons elm--regexp-operators '(1 elm-font-lock-operators-face))
+  "Highlighting for operators inside expressions.")
+
 (defconst elm--regexp-multiline-list-comma-closing-brackets
   (concat "^[[:space:]]*" (regexp-opt '("," "]" "}") t))
   "A regular expression representing commas and closing brackets in multiline lists and records.")
@@ -148,7 +171,8 @@ Also highlights opening brackets without a matching bracket."
               elm--font-lock-functions
               elm--font-lock-types
               elm--font-lock-multiline-list-comma-closing-brackets
-              elm--font-lock-multiline-list-opening-brackets)
+              elm--font-lock-multiline-list-opening-brackets
+              elm--font-lock-operators)
         nil nil))
 
 (defun turn-on-elm-font-lock ()
