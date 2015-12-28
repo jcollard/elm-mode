@@ -37,18 +37,25 @@
   (interactive)
   (let* ((column (current-column))
          (line (line-number-at-pos))
-         (in-file (buffer-file-name))
+         ;;; elm-format requires that the file have a .elm extension
+         (in-file (make-temp-file "elm-format" nil ".elm"))
          (err-file (make-temp-file "elm-format"))
          (out-file (make-temp-file "elm-format"))
-         (retcode (call-process elm-format-command
-                                nil (list (current-buffer) err-file)
-                                nil
-                                in-file
-                                "--output" out-file
-                                "--yes")))
+         (contents (buffer-substring-no-properties (point-min) (point-max)))
+         (_ (with-temp-file in-file (insert contents)))
+         (retcode
+          (with-temp-buffer
+            (call-process elm-format-command
+                          nil (list (current-buffer) err-file)
+                          nil
+                          in-file
+                          "--output" out-file
+                          "--yes"))))
 
     (if (/= retcode 0)
-        (message "Error: elm-format failed on current buffer")
+        (with-temp-buffer
+          (insert-file-contents err-file nil nil nil t)
+          (message "Error: elm-format failed on current buffer.\n\n%s" (buffer-string)))
       (insert-file-contents out-file nil nil nil t)
       (goto-char (point-min))
       (forward-line (1- line))
