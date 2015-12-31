@@ -89,6 +89,9 @@
 (dolist (symbol elm-compile-error-regexp-alist)
   (add-to-list 'compilation-error-regexp-alist symbol))
 
+(defvar elm-create-package-command "elm make --yes"
+  "The command that is used to initialize a new package definition.")
+
 (defvar elm-package--contents nil
   "The contents of the Elm package catalog.")
 
@@ -352,6 +355,15 @@ Runs `elm-reactor' first."
 
 
 ;;; Package:
+(defun elm-create-package ()
+  "Generate a new package definition in the current directory."
+  (interactive)
+  (when (elm--has-dependency-file)
+    (error "Elm-package.json already exists"))
+  (let* ((default-directory (elm--find-dependency-file-path)))
+    (message "Creating elm package definition. This might take a minute...")
+    (shell-command elm-create-package-command)))
+
 (defun elm-package--build-uri (&rest segments)
   "Build a URI by combining the package catalog root and SEGMENTS."
   (concat elm-package-catalog-root (s-join "/" segments)))

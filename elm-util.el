@@ -95,7 +95,9 @@ Relies on `haskell-mode' stuff."
 (defun elm--assert-dependency-file ()
   "Report an error unless there is a package file."
   (unless (elm--has-dependency-file)
-    (error "Elm package file not found")))
+    (if (yes-or-no-p "Elm package file not found. Create a new package?")
+        (call-interactively #'elm-create-package)
+      (error "Elm package file not found"))))
 
 (defun elm--read-dependency-file ()
   "Find and read the JSON dependency file into an object."
