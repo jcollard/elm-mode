@@ -355,6 +355,7 @@ Runs `elm-reactor' first."
 
 
 ;;; Package:
+;;;###autoload
 (defun elm-create-package ()
   "Generate a new package definition in the current directory."
   (interactive)
