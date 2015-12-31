@@ -491,7 +491,8 @@ Runs `elm-reactor' first."
   (interactive)
   (unless elm-package--marked-contents
     (error "Nothing to install"))
-  (let ((command-to-run (s-join " && " (elm-package--get-marked-install-commands))))
+  (let* ((and (elm--shell-and-command))
+         (command-to-run (s-join and (elm-package--get-marked-install-commands))))
     (when (yes-or-no-p (concat "Install " (s-join ", " (elm-package--get-marked-packages)) " ?"))
       (let* ((default-directory elm-package--working-dir)
              (compilation-buffer-name-function (lambda (_) elm-package-compile-buffer-name))

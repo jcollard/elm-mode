@@ -111,5 +111,18 @@ Relies on `haskell-mode' stuff."
           "Main.elm"
         (f-join source-dir "Main.elm")))))
 
+(defun elm--shell-and-command ()
+  "Determine the appropriate 'and' command for the current shell.
+
+Currently only special cases the Fish shell, returning '; and ' when
+Fish is used as the default system shell.  Returns ' && ' in all other
+cases."
+  ;; TODO: Windows?
+  (let* ((shell (getenv "SHELL"))
+         (executable (car (reverse (s-split "/" shell)))))
+    (pcase executable
+      ("fish" "; and ")
+      (_ " && "))))
+
 (provide 'elm-util)
 ;;; elm-util.el ends here
