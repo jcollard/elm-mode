@@ -57,7 +57,7 @@ To disable this highlighting, set this to nil."
 (defconst elm--keywords
   '("let" "case" "in" "if" "of" "then" "else" "otherwise"
     "module" "import" "as" "exposing" "type" "where"
-    "alias" "port" "infixr" "infixl")
+    "alias" "port" "infix" "infixr" "infixl")
   "Reserved keywords.")
 
 (defconst elm--regexp-keywords
