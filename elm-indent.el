@@ -904,14 +904,24 @@ OPEN is the start position of the comment in which point is."
      (elm-indent-virtual-indentation start)
      (or (cadr offset-info) (car offset-info) default))))
 
+(defun elm-indent-inside-paren-update-syntax-p (open)
+  (let ((end (point)))
+    (save-excursion
+      (goto-char open)
+      (and (not (looking-at ".*="))
+           (progn
+             (forward-line)
+             (elm-indent-skip-blanks-and-newlines-forward end)
+             (eq (char-after) ?\|))))))
+
 (defun elm-indent-inside-paren (open)
   ;; there is an open structure to complete
-  (if (looking-at "\\s)\\|[;,]")
+  (if (looking-at "\\s)\\|[|;,]")
       ;; A close-paren or a , or ; can only correspond syntactically to
       ;; the open-paren at `open'.  So there is no ambiguity.
-      (progn
-        (if (or (and (eq (char-after) ?\;) (eq (char-after open) ?\())
-                (and (eq (char-after) ?\,) (eq (char-after open) ?\{)))
+      (let* ((is-close-brace (eq (char-after) ?\}))
+             (inside-update (elm-indent-inside-paren-update-syntax-p open)))
+        (if (and (eq (char-after) ?\;) (eq (char-after open) ?\())
             (message "Mismatched punctuation: `%c' in %c...%c"
                      (char-after) (char-after open)
                      (if (eq (char-after open) ?\() ?\) ?\})))
@@ -920,7 +930,11 @@ OPEN is the start position of the comment in which point is."
           (list (list
                  (if (elm-indent-hanging-p)
                      (elm-indent-virtual-indentation nil)
-                   (elm-indent-point-to-col open))))))
+                   (if (and inside-update
+                            (not is-close-brace)
+                            (eq (char-after open) ?\{))
+                       (elm-indent-point-to-col (+ elm-indent-offset open))
+                     (elm-indent-point-to-col open)))))))
     ;; There might still be layout within the open structure.
     (let* ((end (point))
            (basic-indent-info
