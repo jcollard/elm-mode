@@ -34,6 +34,8 @@
 (with-no-warnings
   (require 'cl))
 
+
+;;; Customizations
 (defgroup elm-indent nil
   "Elm indentation."
   :group 'elm
@@ -55,15 +57,47 @@
   :group 'elm-indent
   :type 'boolean)
 
-(defun elm-indent-point-to-col (apoint)
-  "Return the column number of APOINT."
-  (save-excursion
-    (goto-char apoint)
-    (current-column)))
+(defcustom elm-indent-thenelse 0
+  "If non-zero, \"then\" and \"else\" are indented by that amount."
+  :group 'elm-indent
+  :type 'integer)
 
+(defcustom elm-indent-after-keywords
+  '(("of" 2)
+    ("in" 2 0)
+    ("{" 2)
+    "if"
+    "then"
+    "else"
+    "let")
+  "Keywords after which indentation should be indented by some offset.
+Each keyword info can have the following forms:
+
+   KEYWORD | (KEYWORD OFFSET [OFFSET-HANGING])
+
+If absent OFFSET-HANGING defaults to OFFSET.
+If absent OFFSET defaults to `elm-indent-offset'.
+
+OFFSET-HANGING is the offset to use in the case where the keyword
+is at the end of an otherwise-non-empty line."
+  :group 'elm-indent
+  :type '(repeat (choice string
+                         (cons :tag "" (string :tag "keyword:")
+                               (cons :tag "" (integer :tag "offset")
+                                     (choice (const nil)
+                                             (list :tag ""
+                                                   (integer :tag "offset-pending"))))))))
+
+(defcustom elm-indent-dont-hang '("(")
+  "Lexemes that should never be considered as hanging."
+  :group 'elm-indent
+  :type '(repeat string))
+
+
+;;; Internals
 (defconst elm-indent-start-keywords-re
   (concat "\\<"
-          (regexp-opt '("module" "import" "infix" "infixl" "infixr" "type") t)
+          (regexp-opt '("module" "import" "type" "port" "infix" "infixl" "infixr") t)
           "\\>")
   "Regexp for keywords to complete when standing at the first word of a line.")
 
@@ -74,6 +108,17 @@
 
 (defvar elm-indent-last-info nil)
 (defvar elm-indent-info)
+
+(defvar elm-indent-current-line-first-ident ""
+  "Global variable that keeps track of the first ident of the line to indent.")
+
+(defvar elm-indent-inhibit-after-offset nil)
+
+(defun elm-indent-point-to-col (apoint)
+  "Return the column number of APOINT."
+  (save-excursion
+    (goto-char apoint)
+    (current-column)))
 
 (defun elm-indent-push-col (col &optional name)
   "Push indentation information for the column COL.
@@ -183,9 +228,6 @@ Returns the location of the start of the comment, nil otherwise."
    ((looking-at "\\(|[^|]\\)[ \t\n]*") 'guard)
    ((looking-at "\\(=[^>=]\\|:[^:]\\|->\\|<-\\)[ \t\n]*") 'rhs)
    (t 'other)))
-
-(defvar elm-indent-current-line-first-ident ""
-  "Global variable that keeps track of the first ident of the line to indent.")
 
 (defun elm-indent-contour-line (start end)
   "Generate contour information between START and END points."
@@ -799,13 +841,6 @@ OPEN is the start position of the comment in which point is."
                             (elm-indent-point-to-col (match-end 0)))
                         (elm-indent-point-to-col (point))))))))))
 
-(defcustom elm-indent-thenelse 0
-  "If non-nil, \"then\" and \"else\" are indented.
-This is necessary in the \"do\" layout under Elm-98.
-See http://hackage.elm.org/trac/elm-prime/wiki/DoAndIfThenElse"
-  :group 'elm-indent
-  :type 'integer)
-
 (defun elm-indent-closing-keyword (start)
   (let ((open (save-excursion
                 (elm-indent-find-matching-start
@@ -829,39 +864,11 @@ See http://hackage.elm.org/trac/elm-prime/wiki/DoAndIfThenElse"
     (list (list (+ (if (memq (char-after) '(?t ?e)) elm-indent-thenelse 0)
                    (elm-indent-point-to-col open))))))
 
-(defcustom elm-indent-after-keywords
-  '(("of" 2)
-    ("in" 2 0)
-    ("{" 2)
-    "if"
-    "then"
-    "else"
-    "let")
-  "Keywords after which indentation should be indented by some offset.
-Each keyword info can have the following forms:
-
-   KEYWORD | (KEYWORD OFFSET [OFFSET-HANGING])
-
-If absent OFFSET-HANGING defaults to OFFSET.
-If absent OFFSET defaults to `elm-indent-offset'.
-
-OFFSET-HANGING is the offset to use in the case where the keyword
-is at the end of an otherwise-non-empty line."
-  :group 'elm-indent
-  :type '(repeat (choice string
-                         (cons :tag "" (string :tag "keyword:")
-                               (cons :tag "" (integer :tag "offset")
-                                     (choice (const nil)
-                                             (list :tag ""
-                                                   (integer :tag "offset-pending"))))))))
-
 (defun elm-indent-skip-lexeme-forward ()
   (and (zerop (skip-syntax-forward "w"))
        (skip-syntax-forward "_")
        (skip-syntax-forward "(")
        (skip-syntax-forward ")")))
-
-(defvar elm-indent-inhibit-after-offset nil)
 
 (defun elm-indent-offset-after-info ()
   "Return the info from `elm-indent-after-keywords' for keyword at point."
@@ -872,11 +879,6 @@ is at the end of an otherwise-non-empty line."
                (point)))))
     (or (assoc id elm-indent-after-keywords)
         (car (member id elm-indent-after-keywords)))))
-
-(defcustom elm-indent-dont-hang '("(")
-  "Lexemes that should never be considered as hanging."
-  :group 'elm-indent
-  :type '(repeat string))
 
 (defun elm-indent-hanging-p ()
   ;; A Hanging keyword is one that's at the end of a line except it's not at
