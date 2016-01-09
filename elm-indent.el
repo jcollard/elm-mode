@@ -223,8 +223,7 @@ Returns the location of the start of the comment, nil otherwise."
   (cond
    ((elm-indent-empty-line-p) 'empty)
    ((elm-indent-in-comment (point-min) (point)) 'comment)
-   ((looking-at "\\(\\([[:alpha:]]\\(\\sw\\|'\\)*\\)\\|_\\)[ \t\n]*")
-    'ident)
+   ((looking-at "\\(\\([[:alpha:]]\\(\\sw\\|'\\)*\\)\\|_\\)[ \t\n]*") 'ident)
    ((looking-at "\\(|[^|]\\)[ \t\n]*") 'guard)
    ((looking-at "\\(=[^>=]\\|:[^:]\\|->\\|<-\\)[ \t\n]*") 'rhs)
    (t 'other)))
@@ -401,7 +400,7 @@ Returns the location of the start of the comment, nil otherwise."
                (string-match elm-indent-start-keywords-re valname-string))
           (progn
             (elm-indent-push-pos valname)
-            ;; very special for data (type in Elm's case) keyword
+            ;; Special case for `type' declarations.
             (if (string-match "\\<type\\>" valname-string)
                 (if rhs-sign (elm-indent-push-pos rhs-sign)
                   (elm-indent-push-pos-offset valname))
@@ -442,7 +441,7 @@ Returns the location of the start of the comment, nil otherwise."
                  (elm-indent-push-pos aft-valname)
                (elm-indent-push-pos valname valname-string)))
           ;; "100000"   8= vn
-          (8 (elm-indent-push-pos valname))
+          (8 (elm-indent-push-pos-offset valname))
           ;; "001.11"   9= gd rh arh
           (9 (if (elm-indent-no-otherwise guard) (elm-indent-push-pos guard "| "))
              (elm-indent-push-pos aft-rhs-sign))
@@ -498,7 +497,7 @@ Returns the location of the start of the comment, nil otherwise."
           (progn
             (elm-indent-push-pos valname)
             (if (string-match "\\<type\\>" valname-string)
-                ;; very special for data (type in Elm's case) keyword
+                ;; Special case for `type' declarations.
                 (if aft-rhs-sign (elm-indent-push-pos aft-rhs-sign)
                   (elm-indent-push-pos-offset valname))
               (if (not (string-match
@@ -551,9 +550,7 @@ Returns the location of the start of the comment, nil otherwise."
                  (if last-line
                      (elm-indent-push-pos aft-valname))))
             ;; "100000"   8= vn
-            (8 (if is-where
-                   (elm-indent-push-pos-offset valname)
-                 (elm-indent-push-pos valname)))
+            (8 (elm-indent-push-pos-offset valname))
             ;; "001.11"   9= gd rh arh
             (9 (if is-where
                    (elm-indent-push-pos guard)
@@ -624,7 +621,7 @@ than an identifier, a guard or rhs."
           ;; "110000"   7= vn avn
           (7 (elm-indent-push-pos-offset aft-valname))
           ;; "100000"   8= vn
-          (8 (elm-indent-push-pos valname))
+          (8 (elm-indent-push-pos-offset valname))
           ;; "001.11"   9= gd rh arh
           (9 (elm-indent-push-pos aft-rhs-sign))
           ;; "001.10"  10= gd rh
