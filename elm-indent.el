@@ -97,7 +97,7 @@ is at the end of an otherwise-non-empty line."
 ;;; Internals
 (defconst elm-indent-start-keywords-re
   (concat "\\<"
-          (regexp-opt '("module" "import" "type" "port" "infix" "infixl" "infixr") t)
+          (regexp-opt '("module" "import" "type" "infix" "infixl" "infixr") t)
           "\\>")
   "Regexp for keywords to complete when standing at the first word of a line.")
 
