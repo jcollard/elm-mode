@@ -73,19 +73,7 @@
           "\\>[ \t]*"))
 
 (defvar elm-indent-last-info nil)
-
-;; Customizations for different kinds of environments
-;; in which dealing with low-level events are different.
-(defun elm-indent-mark-active ()
-  (if (featurep 'xemacs)
-      (if zmacs-regions
-          zmacs-region-active-p
-        t)
-    mark-active))
-
-;;  for pushing indentation information
-
-(defvar elm-indent-info)            ; Used with dynamic scoping.
+(defvar elm-indent-info)
 
 (defun elm-indent-push-col (col &optional name)
   "Push indentation information for the column COL.
@@ -101,15 +89,9 @@ Uses free var `elm-indent-info'."
   "Push indentation information for POS followed by NAME (if present)."
   (elm-indent-push-col (elm-indent-point-to-col pos) name))
 
-;; (defvar elm-indent-tab-align nil
-;;   "Align all indentations on TAB stops.")
-
 (defun elm-indent-column+offset (column offset)
   (unless offset (setq offset elm-indent-offset))
-  (setq column (+ column offset))
-  ;; (if (and elm-indent-tab-align (> offset 0))
-  ;;     (* 8 (/ (+ column 7) 8))
-  column) ;; )
+  (setq column (+ column offset)))
 
 (defun elm-indent-push-pos-offset (pos &optional offset)
   "Pushes indentation information for the column corresponding to POS
@@ -1230,7 +1212,7 @@ TYPE is either 'guard or 'rhs."
           (/= (preceding-char) ?\ ))
       (insert ?\ ))
   (insert "= ")
-  (elm-indent-align-def (elm-indent-mark-active) 'rhs))
+  (elm-indent-align-def mark-active 'rhs))
 
 
 ;;; elm-indent-mode
