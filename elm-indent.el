@@ -1087,8 +1087,7 @@ We stay in the cycle as long as the TAB key is pressed."
       (elm-indent-cycle)
       (forward-line))))
 
-;;; alignment functions
-
+;;; Alignment functions
 (defun elm-indent-shift-columns (dest-column region-stack)
   "Shift columns in REGION-STACK to go to DEST-COLUMN.
 Elements of the stack are pairs of points giving the start and end
@@ -1222,16 +1221,8 @@ TYPE is either 'guard or 'rhs."
             (if regstack
                 (elm-indent-shift-columns maxcol regstack)))))))
 
-(defun elm-indent-align-guards-and-rhs (start end)
-  "Align the guards and rhs of functions in the region, which must be active."
-  ;; The `start' and `end' args are dummys right now: they're just there so
-  ;; we can use the "r" interactive spec which properly signals an error.
-  (interactive "*r")
-  (elm-indent-align-def t 'guard)
-  (elm-indent-align-def t 'rhs))
 
-;;;  insertion functions
-
+;;; Insertion functions
 (defun elm-indent-insert-equal ()
   "Insert an = sign and align the previous rhs of the current function."
   (interactive "*")
@@ -1241,61 +1232,15 @@ TYPE is either 'guard or 'rhs."
   (insert "= ")
   (elm-indent-align-def (elm-indent-mark-active) 'rhs))
 
-(defun elm-indent-insert-guard (&optional text)
-  "Insert and align a guard sign (|) followed by optional TEXT.
-Alignment works only if all guards are to the south-east of their |."
-  (interactive "*")
-  (let ((pc (if (bolp) ?\012
-              (preceding-char)))
-        (pc1 (or (char-after (- (point) 2)) 0)))
-    ;; check what guard to insert depending on the previous context
-    (if (= pc ?\ )                      ; x = any char other than blank or |
-        (if (/= pc1 ?\|)
-            (insert "| ")               ; after " x"
-          ())                           ; after " |"
-      (if (= pc ?\|)
-          (if (= pc1 ?\|)
-              (insert " | ")            ; after "||"
-            (insert " "))               ; after "x|"
-        (insert " | ")))                ; general case
-    (if text (insert text))
-    (elm-indent-align-def (elm-indent-mark-active) 'guard)))
-
-(defun elm-indent-insert-otherwise ()
-  "Insert a guard sign (|) followed by `otherwise'.
-Also align the previous guards of the current function."
-  (interactive "*")
-  (elm-indent-insert-guard "otherwise")
-  (elm-indent-insert-equal))
-
-(defun elm-indent-insert-where ()
-  "Insert a where keyword at point and indent resulting line.
-One indentation cycle is used."
-  (interactive "*")
-  (insert "where ")
-  (elm-indent-cycle))
-
 
 ;;; elm-indent-mode
-
 (defvar elm-indent-mode nil
   "Non-nil if the semi-intelligent Elm indentation mode is in effect.")
 (make-variable-buffer-local 'elm-indent-mode)
 
 (defvar elm-indent-map
   (let ((map (make-sparse-keymap)))
-    ;; Removed: remapping DEL seems a bit naughty --SDM
-    ;; (define-key map "\177"  'backward-delete-char-untabify)
-    ;; The binding to TAB is already handled by indent-line-function.  --Stef
-    ;; (define-key map "\t"    'elm-indent-cycle)
     (define-key map [?\C-c ?\C-=] 'elm-indent-insert-equal)
-    (define-key map [?\C-c ?\C-|] 'elm-indent-insert-guard)
-    ;; Alternate binding, in case C-c C-| is too inconvenient to type.
-    ;; Duh, C-g is a special key, let's not use it here.
-    ;; (define-key map [?\C-c ?\C-g] 'elm-indent-insert-guard)
-    (define-key map [?\C-c ?\C-o] 'elm-indent-insert-otherwise)
-    (define-key map [?\C-c ?\C-w] 'elm-indent-insert-where)
-    (define-key map [?\C-c ?\C-.] 'elm-indent-align-guards-and-rhs)
     map))
 
 ;;;###autoload
@@ -1356,15 +1301,6 @@ Other special keys are:
 
     \\[elm-indent-insert-equal]
       inserts an =
-    \\[elm-indent-insert-guard]
-      inserts an |
-    \\[elm-indent-insert-otherwise]
-      inserts an | otherwise =
-these functions also align the guards and rhs of the current definition
-    \\[elm-indent-insert-where]
-      inserts a where keyword
-    \\[elm-indent-align-guards-and-rhs]
-      aligns the guards and rhs of the region
 
 Invokes `elm-indent-hook' if not nil."
   (interactive "P")
