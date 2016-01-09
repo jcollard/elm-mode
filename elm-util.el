@@ -92,6 +92,7 @@ Relies on `haskell-mode' stuff."
   "Check if a dependency file exists."
   (f-exists? (f-join (elm--find-dependency-file-path) elm-package-json)))
 
+(declare-function elm-create-package "elm-interactive.el" nil)
 (defun elm--assert-dependency-file ()
   "Report an error unless there is a package file."
   (unless (elm--has-dependency-file)
