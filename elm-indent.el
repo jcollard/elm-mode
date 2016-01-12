@@ -376,6 +376,14 @@ Returns the location of the start of the comment, nil otherwise."
       (- (/ (length (match-data 'integers)) 2) 1)
     (error "elm-indent-find-case: impossible case: %s" test)))
 
+(defun elm-indent-after-list-item-p ()
+  (with-no-warnings
+    ;; HACK: we depend on open being dynamically bound while handling
+    ;; indentation inside of a parenthesized expression.
+    (when open
+      (or (eq (char-after open) ?\()
+          (eq (char-after open) ?\[)))))
+
 (defun elm-indent-empty (start end end-visible indent-info)
   "Find indentation points for an empty line."
   (save-excursion
@@ -441,7 +449,9 @@ Returns the location of the start of the comment, nil otherwise."
                  (elm-indent-push-pos aft-valname)
                (elm-indent-push-pos valname valname-string)))
           ;; "100000"   8= vn
-          (8 (elm-indent-push-pos-offset valname))
+          (8 (if (elm-indent-after-list-item-p)
+                 (elm-indent-push-pos-offset (+ 2 valname))
+               (elm-indent-push-pos-offset valname)))
           ;; "001.11"   9= gd rh arh
           (9 (if (elm-indent-no-otherwise guard) (elm-indent-push-pos guard "| "))
              (elm-indent-push-pos aft-rhs-sign))
@@ -550,7 +560,9 @@ Returns the location of the start of the comment, nil otherwise."
                  (if last-line
                      (elm-indent-push-pos aft-valname))))
             ;; "100000"   8= vn
-            (8 (elm-indent-push-pos-offset valname))
+            (8 (if (elm-indent-after-list-item-p)
+                 (elm-indent-push-pos-offset (+ 2 valname))
+               (elm-indent-push-pos-offset valname)))
             ;; "001.11"   9= gd rh arh
             (9 (if is-where
                    (elm-indent-push-pos guard)
@@ -621,7 +633,9 @@ than an identifier, a guard or rhs."
           ;; "110000"   7= vn avn
           (7 (elm-indent-push-pos-offset aft-valname))
           ;; "100000"   8= vn
-          (8 (elm-indent-push-pos-offset valname))
+          (8 (if (elm-indent-after-list-item-p)
+                 (elm-indent-push-pos-offset (+ 2 valname))
+               (elm-indent-push-pos-offset valname)))
           ;; "001.11"   9= gd rh arh
           (9 (elm-indent-push-pos aft-rhs-sign))
           ;; "001.10"  10= gd rh
@@ -923,7 +937,7 @@ OPEN is the start position of the comment in which point is."
                     (save-excursion
                       (goto-char open)
                       (elm-indent-after-keyword-column nil nil 1))
-                  (elm-indent-point-to-col follow)))))
+                  (elm-indent-point-to-col (+ elm-indent-offset follow))))))
            (open-column (elm-indent-point-to-col open))
            (contour-line (elm-indent-contour-line (1+ open) end)))
       (if (null contour-line)
@@ -936,8 +950,9 @@ OPEN is the start position of the comment in which point is."
             (if base-elem
                 (progn (setcar base-elem basic-indent-info)
                        (setcdr base-elem nil))
-              (setq indent-info
-                    (append indent-info (list (list basic-indent-info)))))
+              (if (not (eq basic-indent-info 0))
+                  (setq indent-info (append (list (list basic-indent-info)) indent-info))
+                (setq indent-info (append indent-info (list (list basic-indent-info))))))
             indent-info))))))
 
 (defun elm-indent-virtual-indentation (start)
