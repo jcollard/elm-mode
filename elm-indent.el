@@ -753,29 +753,6 @@ and find indentation info for each part."
              (elm-indent-find-matching-start regexp limit pred start)))
        (t (point))))))
 
-(defun elm-indent-filter-let-no-in (start)
-  "Return non-nil if point is in front of a `let' that has no `in'.
-START is the position of the presumed `in'."
-  ;; We're looking at either `in' or `let'.
-  (when (looking-at "let")
-    (ignore-errors
-      (save-excursion
-        (forward-word 1)
-        (forward-comment (point-max))
-        (if (looking-at "{")
-            (progn
-              (forward-sexp 1)
-              (forward-comment (point-max))
-              (< (point) start))
-          ;; Use the layout rule to see whether this let is already closed
-          ;; without an `in'.
-          (let ((col (current-column)))
-            (while (progn (forward-line 1) (back-to-indentation)
-                          (< (point) start))
-              (when (< (current-column) col)
-                (setq col nil)
-                (goto-char start)))
-            (null col)))))))
 
 (defun elm-indent-comment (open start)
   "Compute indent info for comments and text inside comments.
@@ -846,10 +823,7 @@ OPEN is the start position of the comment in which point is."
                    (?o "\\<\\(?:\\(of\\)\\|case\\)\\>")
                    (?t "\\<\\(?:\\(then\\)\\|if\\)\\>")
                    (?e "\\<\\(?:\\(else\\)\\|if\\)\\>"))
-                 start
-                 (if (eq (char-after) ?i)
-                     ;; Filter out the `let's that have no `in'.
-                     'elm-indent-filter-let-no-in)))))
+                 start))))
     ;; For a "hanging let/case/if at EOL" we should use a different
     ;; indentation scheme.
     (save-excursion
