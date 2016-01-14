@@ -408,9 +408,9 @@ Runs `elm-reactor' first."
 (defun elm-package--read-json (uri)
   "Read a JSON file from a URI."
   (with-current-buffer (url-retrieve-synchronously uri)
-      (goto-char (point-min))
-      (re-search-forward "^ *$")
-      (json-read)))
+    (goto-char (point-min))
+    (re-search-forward "^ *$")
+    (json-read)))
 
 (defun elm-package--read-package ()
   "Read a package from the minibuffer."
@@ -601,6 +601,34 @@ Runs `elm-reactor' first."
         (insert "\n"))
       (insert (concat statement "\n")))))
 
+
+(defun elm-documentation--show (documentation)
+  "Show DOCUMENTATION in a help buffer."
+  (let-alist documentation
+    (help-setup-xref (list #'elm-documentation--show documentation) nil)
+    (save-excursion
+      (with-help-window (help-buffer)
+        (with-current-buffer (help-buffer)
+          (point-min)
+          (insert (propertize .name 'face 'font-lock-function-name-face))
+          (when .args
+            (insert (concat " " (s-join " " .args))))
+          (when .cases
+            (let ((first t))
+              (mapc
+               (lambda (case)
+                 (if first
+                     (insert "\n  = ")
+                   (insert "\n  | "))
+                 (insert (propertize (elt case 0) 'face 'font-lock-function-name-face))
+                 (insert (concat " " (s-join " " (elt case 1))))
+                 (setq first nil))
+               .cases)))
+          (when .type
+            (insert " : ")
+            (insert (propertize .type 'face 'font-lock-type-face)))
+          (insert (concat "\n\n" (s-trim-left .comment)))))))  )
+
 ;;;###autoload
 (defun elm-documentation-lookup (refresh)
   "Lookup the documentation for a function, refreshing if REFRESH is truthy."
@@ -614,22 +642,7 @@ Runs `elm-reactor' first."
          (module (elm-package--read-module package))
          (definition (elm-package--read-module-definition package module))
          (documentation (elm-package-definition package module definition)))
-    (let-alist documentation
-      (save-excursion
-        (with-help-window (help-buffer)
-          (princ .name)
-          (when .args
-            (princ (concat " " (s-join " " .args))))
-          (when .cases
-            (let ((cases (mapcar
-                          (lambda (case)
-                            (concat (elt case 0) " "
-                                    (s-join " " (elt case 1))))
-                          .cases)))
-              (princ (concat "\n  = " (s-join "\n  | " cases)))))
-          (when .type
-            (princ (concat " : " .type)))
-          (princ (concat "\n\n" (s-trim-left .comment))))))))
+    (elm-documentation--show documentation)))
 
 ;;;###autoload
 (define-derived-mode elm-package-mode tabulated-list-mode "Elm Package"
@@ -677,8 +690,8 @@ Runs `elm-reactor' first."
 (defun elm-oracle--completion-docbuffer (completions selection)
   "Search COMPLETIONS for SELECTION and return its documentation."
   (company-doc-buffer
-    (let-alist (elm-oracle--completions-select completions selection)
-      (format "%s\n\n%s" .signature .comment))))
+   (let-alist (elm-oracle--completions-select completions selection)
+     (format "%s\n\n%s" .signature .comment))))
 
 (defun elm-oracle--completion-signature (completions selection)
   "Search COMPLETIONS for SELECTION and return its signature."
