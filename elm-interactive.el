@@ -595,7 +595,10 @@ Runs `elm-reactor' first."
          (statement (read-string "Import statement: " statement)))
     (save-excursion
       (goto-char (point-min))
-      (forward-line 1)
+      (if (re-search-forward "^import " nil t)
+          (beginning-of-line)
+        (forward-line 1)
+        (insert "\n"))
       (insert (concat statement "\n")))))
 
 ;;;###autoload
