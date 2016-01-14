@@ -405,6 +405,13 @@ Runs `elm-reactor' first."
     (setq elm-package--dependencies (-map (lambda (dep) (symbol-name (car dep)))
                                           .dependencies))))
 
+(defun elm-package--read-json (uri)
+  "Read a JSON file from a URI."
+  (with-current-buffer (url-retrieve-synchronously uri)
+      (goto-char (point-min))
+      (re-search-forward "^ *$")
+      (json-read)))
+
 (defun elm-package--read-package ()
   "Read a package from the minibuffer."
   (completing-read "Package: " elm-package--dependencies nil t))
@@ -413,16 +420,17 @@ Runs `elm-reactor' first."
   "Read a module from PACKAGE from the minibuffer."
   (completing-read "Module: " (elm-package-modules package) nil t))
 
+(defun elm-package--read-module-definition (package module)
+  "Read a definition from PACKAGE and MODULE from the minibuffer."
+  (completing-read "Definition: " (elm-package-definitions package module) nil t))
+
 (defun elm-package-refresh-package (package version)
   "Refresh the cache for PACKAGE with VERSION."
-  (let* ((description (elm-package--build-uri "description"))
-         (package-uri (concat description "?name=" package "&version=" version)))
-    (with-current-buffer (url-retrieve-synchronously package-uri)
-      (goto-char (point-min))
-      (re-search-forward "^ *$")
-      (setq elm-package--cache
-            (cons `(,package . ,(json-read))
-                  elm-package--cache)))))
+  (let ((documentation-uri
+         (elm-package--build-uri "packages" package version "documentation.json")))
+    (setq elm-package--cache
+          (cons `(,package . ,(elm-package--read-json documentation-uri))
+                elm-package--cache))))
 
 (defun elm-package-latest-version (package)
   "Get the latest version of PACKAGE."
@@ -436,12 +444,47 @@ Runs `elm-reactor' first."
       (let-alist package
         (elt .versions 0)))))
 
+(defun elm-package--ensure-cached (package)
+  "Ensure that PACKAGE has been cached."
+  (unless (assoc package elm-package--cache)
+    (elm-package-refresh-package package (elm-package-latest-version package))))
+
 (defun elm-package-modules (package)
   "Get PACKAGE's module list."
-  (unless (assoc package elm-package--cache)
-    (elm-package-refresh-package package (elm-package-latest-version package)))
-  (let-alist (cdr (assoc package elm-package--cache))
-    (append .exposed-modules nil)))
+  (elm-package--ensure-cached package)
+  (sort
+   (mapcar (lambda (module)
+             (let-alist module .name))
+           (cdr (assoc package elm-package--cache)))
+   #'string<))
+
+(defun elm-package--select-module (package module-name)
+  "Select a PACKAGE's MODULE-NAME from the cache."
+  (elm-package--ensure-cached package)
+  (elt (cl-remove-if-not
+        (lambda (module)
+          (let-alist module (equal module-name .name)))
+        (cdr (assoc package elm-package--cache))) 0))
+
+(defun elm-package-definitions (package module-name)
+  "Get all of PACKAGE's MODULE-NAME's definitions."
+  (let-alist (elm-package--select-module package module-name)
+    (let* ((extract (lambda (x)
+                      (let ((name (cdr (assq 'name x))))
+                        (cons name nil))))
+           (aliases (mapcar extract .aliases))
+           (types (mapcar extract .types))
+           (values (mapcar extract .values)))
+      (append aliases types values))))
+
+(defun elm-package-definition (package module-name definition-name)
+  "Get documentation from PACKAGE's MODULE-NAME for DEFINITION-NAME."
+  (let-alist (elm-package--select-module package module-name)
+    (elt (cl-remove-if-not
+          (lambda (x)
+            (equal definition-name (cdr (assq 'name x))))
+          (vconcat .aliases .types .values))
+         0)))
 
 (defun elm-package-refresh ()
   "Refresh the package catalog's contents."
@@ -566,11 +609,24 @@ Runs `elm-reactor' first."
   (let* ((package (elm-package--read-package))
          (version (elm-package-latest-version package))
          (module (elm-package--read-module package))
-         (module (s-replace "." "-" module))
-         (function (read-string "Function: " (thing-at-point 'word t)))
-         (uri (elm-package--build-uri "packages" package version module))
-         (uri (concat uri "#" function)))
-    (browse-url uri)))
+         (definition (elm-package--read-module-definition package module))
+         (documentation (elm-package-definition package module definition)))
+    (let-alist documentation
+      (save-excursion
+        (with-help-window (help-buffer)
+          (princ .name)
+          (when .args
+            (princ (concat " " (s-join " " .args))))
+          (when .cases
+            (let ((cases (mapcar
+                          (lambda (case)
+                            (concat (elt case 0) " "
+                                    (s-join " " (elt case 1))))
+                          .cases)))
+              (princ (concat "\n  = " (s-join "\n  | " cases)))))
+          (when .type
+            (princ (concat " : " .type)))
+          (princ (concat "\n\n" (s-trim-left .comment))))))))
 
 ;;;###autoload
 (define-derived-mode elm-package-mode tabulated-list-mode "Elm Package"
