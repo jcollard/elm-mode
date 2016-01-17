@@ -24,6 +24,7 @@
 
 ;;; Commentary:
 ;;; Code:
+(require 'elm-tags)
 (require 'elm-format)
 (require 'elm-indent)
 (require 'elm-interactive)
@@ -40,6 +41,8 @@ ARG specifies the number of lines to comment or uncomment."
 
 (defun elm-mode-after-save-handler ()
   "Perform various operations upon saving a buffer."
+  (when elm-tags-on-save
+    (elm-mode-generate-tags))
   (when elm-format-on-save
     (elm-mode-format-buffer)
     (let ((before-save-hook '())
@@ -50,6 +53,7 @@ ARG specifies the number of lines to comment or uncomment."
   (let ((map (make-keymap)))
     (define-key map [remap comment-dwim] 'elm-comment-dwim)
     (define-key map "\C-c\C-f" 'elm-mode-format-buffer)
+    (define-key map "\C-c\M-t" 'elm-mode-generate-tags)
     (define-key map "\C-c\C-l" 'elm-repl-load)
     (define-key map "\C-c\C-p" 'elm-repl-push)
     (define-key map "\C-c\C-e" 'elm-repl-push-decl)
