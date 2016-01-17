@@ -823,7 +823,7 @@ OPEN is the start position of the comment in which point is."
           (back-to-indentation)
           (if (< (point) start) (goto-char start))
 
-          (list (list (if (looking-at comment-start-skip)
+          (list (list (if (and comment-start-skip (looking-at comment-start-skip))
                           (if offset
                               (+ 2 offset (elm-indent-point-to-col (point)))
                             (elm-indent-point-to-col (match-end 0)))
