@@ -46,6 +46,22 @@ This package assumes you are runing Emacs 24 or later.
 
 The following bindings are available in `elm-mode`:
 
+## TAGS
+
+| Keybinding             | Description                                                         |
+| ---------------------- | ------------------------------------------------------------------- |
+| <kbd>C-c M-t</kbd>     | Generate a TAGS file for the current project.                       |
+
+TAGS file generation requires that the UNIX `find`, `egrep` commands
+and the Emacs `etags` command be available in your path.
+
+Set or customize `elm-tags-on-save` to `t` to generate a new TAGS file
+for the current project on every save.
+
+Set or customize `elm-tags-exclude-elm-stuff` to `nil` to include
+source files inside `elm-stuff` directories when generating the TAGS
+file.
+
 #### `elm-make`
 
 | Keybinding             | Description                                                         |
