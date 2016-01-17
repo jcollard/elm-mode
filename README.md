@@ -46,7 +46,7 @@ This package assumes you are runing Emacs 24 or later.
 
 The following bindings are available in `elm-mode`:
 
-## TAGS
+#### `TAGS`
 
 | Keybinding             | Description                                                         |
 | ---------------------- | ------------------------------------------------------------------- |
