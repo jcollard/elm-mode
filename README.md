@@ -51,6 +51,8 @@ The following bindings are available in `elm-mode`:
 | Keybinding             | Description                                                         |
 | ---------------------- | ------------------------------------------------------------------- |
 | <kbd>C-c M-t</kbd>     | Generate a TAGS file for the current project.                       |
+| <kbd>C-c .</kbd>       | Jump to tag at point.                                               |
+| <kbd>C-c ,</kbd>       | Jump to previous location after visiting a tag.                     |
 
 TAGS file generation requires that the UNIX `find`, `egrep` commands
 and the Emacs `etags` command be available in your path.
