@@ -35,9 +35,6 @@
 (require 'tabulated-list)
 (require 'url)
 
-(require 'auto-complete nil 'noerror)
-(require 'company nil 'noerror)
-
 (defvar elm-interactive--seen-prompt nil
   "Non-nil represents the fact that a prompt has been spotted.")
 (make-variable-buffer-local 'elm-interactive--seen-prompt)
@@ -770,30 +767,16 @@ elm-specific `completion-at-point' function."
             #'elm-oracle-completion-at-point-function
             nil t))
 
-
-;; `eval-after-load' is used here instead of `with-eval-after-load'
-;; to avoid a situation where the byte compiler compiles (forms
-;; passed to `eval-after-load' are not byte compiled) the body with
-;; the assumption that `ac-define-source' is a function (this can
-;; happen if auto-complete is not loaded when this file is byte
-;; compiled). When that happens, if the user then tries to install
-;; auto-complete the compiled body will be executed with the assumption
-;; that `ac-define-source' is a function and so `elm` will be the first
-;; thing to be evaluated, causing the compiler to throw an error.
-(with-no-warnings
-  (eval-after-load 'auto-complete
-    '(ac-define-source elm
-       `((candidates . (elm-oracle--get-completions ac-prefix t))
-         (prefix . ,elm-oracle--pattern)))))
-
 (defvar ac-sources)
+(defvar ac-source-elm
+  `((candidates . (elm-oracle--get-completions ac-prefix t))
+    (prefix . ,elm-oracle--pattern)))
 
 ;;;###autoload
 (defun elm-oracle-setup-ac ()
   "Set up auto-complete support.
 Add this function to your `elm-mode-hook'."
   (add-to-list 'ac-sources 'ac-source-elm))
-
 
 ;;;###autoload
 (defun company-elm (command &optional arg &rest ignored)
