@@ -1,6 +1,6 @@
 ;;; elm-tags.el --- etags support for Elm.
 
-;; Copyright (C) 2015  Bogdan Popa
+;; Copyright (C) 2016  Bogdan Popa
 
 ;; Author: Bogdan Popa
 ;; URL: https://github.com/jcollard/elm-mode

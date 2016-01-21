@@ -1,7 +1,7 @@
 ;;; elm-mode.el --- Major mode for Elm
 
 ;; Copyright (C) 2013, 2014  Joseph Collard
-;; Copyright (C) 2015  Bogdan Popa
+;; Copyright (C) 2015, 2016  Bogdan Popa
 
 ;; Author: Joseph Collard
 ;; Package-Requires: ((f "0.17") (let-alist "1.0.4") (s "1.7.0") (emacs "24"))

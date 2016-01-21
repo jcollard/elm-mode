@@ -1,6 +1,6 @@
 ;;; elm-interactive.el --- Run an interactive Elm session.
 
-;; Copyright (C) 2015  Bogdan Popa
+;; Copyright (C) 2015, 2016  Bogdan Popa
 
 ;; Author: Bogdan Popa
 ;; URL: https://github.com/jcollard/elm-mode
