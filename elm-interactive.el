@@ -695,17 +695,23 @@ Runs `elm-reactor' first."
   (let-alist (elm-oracle--completions-select completions selection)
     (format "%s : %s" selection .signature)))
 
+(defun elm-oracle--get-completions-cached-1 (prefix)
+  "Get completions for PREFIX."
+  (when (not (elm--has-dependency-file))
+    (error "Completion only works inside Elm projects.  Create one with `M-x elm-create-package RET`"))
+  (let* ((default-directory (elm--find-dependency-file-path))
+         (current-file (or (buffer-file-name) (elm--find-main-file)))
+         (command (s-join " " (list elm-oracle-command
+                                    (shell-quote-argument current-file)
+                                    (shell-quote-argument prefix))))
+         (candidates (json-read-from-string (shell-command-to-string command))))
+    (puthash prefix candidates elm-oracle--completion-cache)))
+
 (defun elm-oracle--get-completions-cached (prefix)
   "Cache and return the cached elm-oracle completions for PREFIX."
   (when (and prefix (not (equal "" prefix)))
     (or (gethash prefix elm-oracle--completion-cache)
-        (let* ((default-directory (elm--find-dependency-file-path))
-               (current-file (or (buffer-file-name) (elm--find-main-file)))
-               (command (s-join " " (list elm-oracle-command
-                                          (shell-quote-argument current-file)
-                                          (shell-quote-argument prefix))))
-               (candidates (json-read-from-string (shell-command-to-string command))))
-          (puthash prefix candidates elm-oracle--completion-cache)))))
+        (elm-oracle--get-completions-cached-1 prefix))))
 
 (defun elm-oracle--get-completions (prefix &optional popup)
   "Get elm-oracle completions for PREFIX with optional POPUP formatting."
