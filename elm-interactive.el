@@ -788,16 +788,16 @@ Add this function to your `elm-mode-hook'."
 (defun company-elm (command &optional arg &rest ignored)
   "Provide completion info according to COMMAND and ARG.  IGNORED is not used."
   (interactive (list 'interactive))
-  (cl-case command
-    (init t)
-    (interactive (company-begin-backend 'company-elm))
-    (t (let* ((prefix (elm-oracle--completion-prefix-at-point))
-              (completions (elm-oracle--get-completions-cached prefix)))
-         (cl-case command
-           (prefix prefix)
-           (doc-buffer (elm-oracle--completion-docbuffer completions arg))
-           (candidates (elm-oracle--completion-namelist completions))
-           (meta (elm-oracle--completion-signature completions arg)))))))
+  (when (derived-mode-p 'elm-mode)
+    (cl-case command
+      (interactive (company-begin-backend 'company-elm))
+      (t (let* ((prefix (elm-oracle--completion-prefix-at-point))
+                (completions (elm-oracle--get-completions-cached prefix)))
+           (cl-case command
+             (prefix prefix)
+             (doc-buffer (elm-oracle--completion-docbuffer completions arg))
+             (candidates (elm-oracle--completion-namelist completions))
+             (meta (elm-oracle--completion-signature completions arg))))))))
 
 
 (provide 'elm-interactive)
