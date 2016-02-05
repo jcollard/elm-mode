@@ -30,6 +30,11 @@
 (require 'elm-interactive)
 (require 'elm-font-lock)
 
+(defgroup elm nil
+  "Support for the elm programming language."
+  :link '(url-link :tag "Github" "https://github.com/jcollard/elm-mode")
+  :group 'languages)
+
 (defun elm-comment-dwim (arg)
   "Comment or uncomment current line or region in a smart way.
 ARG specifies the number of lines to comment or uncomment."

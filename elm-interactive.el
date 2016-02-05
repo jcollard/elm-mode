@@ -44,34 +44,50 @@
 (defvar elm-reactor--process-name "elm-reactor")
 (defvar elm-reactor--buffer-name "*elm-reactor*")
 
-(defvar elm-interactive-command "elm-repl"
-  "The Elm REPL command.")
+(defcustom elm-interactive-command "elm-repl"
+  "The Elm REPL command."
+  :type '(string)
+  :group 'elm)
 
-(defvar elm-interactive-arguments '()
-  "Command line arguments to pass to the Elm REPL command.")
+(defcustom elm-interactive-arguments '()
+  "Command line arguments to pass to the Elm REPL command."
+  :type '(repeat string)
+  :group 'elm)
 
 (defvar elm-interactive-prompt-regexp "^[>|] "
   "Prompt for `run-elm-interactive'.")
 
-(defvar elm-reactor-command "elm-reactor"
-  "The Elm Reactor command.")
+(defcustom elm-reactor-command "elm-reactor"
+  "The Elm Reactor command."
+  :type '(string)
+  :group 'elm)
 
-(defvar elm-reactor-port "8000"
-  "The Elm Reactor port.")
+(defcustom elm-reactor-port "8000"
+  "The Elm Reactor port."
+  :type '(string)
+  :group 'elm)
 
-(defvar elm-reactor-address "127.0.0.1"
-  "The Elm Reactor address.")
+(defcustom elm-reactor-address "127.0.0.1"
+  "The Elm Reactor address."
+  :type '(string)
+  :group 'elm)
 
-(defvar elm-reactor-arguments `("-p" ,elm-reactor-port "-a" ,elm-reactor-address)
-  "Command line arguments to pass to the Elm Reactor command.")
+(defcustom elm-reactor-arguments `("-p" ,elm-reactor-port "-a" ,elm-reactor-address)
+  "Command line arguments to pass to the Elm Reactor command."
+  :type '(string)
+  :group 'elm)
 
 (defvar elm-compile--buffer-name "*elm-make*")
 
-(defvar elm-compile-command "elm-make"
-  "The Elm compilation command.")
+(defcustom elm-compile-command "elm-make"
+  "The Elm compilation command."
+  :type '(string)
+  :group 'elm)
 
-(defvar elm-compile-arguments '("--yes" "--warn" "--output=elm.js")
-  "Command line arguments to pass to the Elm compilation command.")
+(defcustom elm-compile-arguments '("--yes" "--warn" "--output=elm.js")
+  "Command line arguments to pass to the Elm compilation command."
+  :type '(repeat string)
+  :group 'elm)
 
 (defvar elm-compile-error-regexp-alist-alist
   '((elm-file "-- [^-]+ -+ \\(.+\\)$" 1 nil)
@@ -86,8 +102,10 @@
 (dolist (symbol elm-compile-error-regexp-alist)
   (add-to-list 'compilation-error-regexp-alist symbol))
 
-(defvar elm-create-package-command "elm make --yes"
-  "The command that is used to initialize a new package definition.")
+(defcustom elm-create-package-command "elm make --yes"
+  "The command that is used to initialize a new package definition."
+  :type '(string)
+  :group 'elm)
 
 (defvar elm-package--contents nil
   "The contents of the Elm package catalog.")
@@ -106,15 +124,21 @@
 
 (defvar elm-package-buffer-name "*elm-package*")
 
-(defvar elm-package-command "elm-package"
-  "The Elm package command.")
+(defcustom elm-package-command "elm-package"
+  "The Elm package command."
+  :type '(string)
+  :group 'elm)
 
-(defvar elm-package-arguments '("install" "--yes")
-  "Command line arguments to pass to the Elm package command.")
+(defcustom elm-package-arguments '("install" "--yes")
+  "Command line arguments to pass to the Elm package command."
+  :type '(repeat string)
+  :group 'elm)
 
-(defvar elm-package-catalog-root
+(defcustom elm-package-catalog-root
   "http://package.elm-lang.org/"
-  "The root URI for the Elm package catalog.")
+  "The root URI for the Elm package catalog."
+  :type '(string)
+  :group 'elm)
 
 (defvar elm-package-catalog-format
   [(" " 1 nil)
@@ -131,8 +155,10 @@
     map)
   "Keymap for Elm interactive mode.")
 
-(defvar elm-oracle-command "elm-oracle"
-  "The Elm Oracle command.")
+(defcustom elm-oracle-command "elm-oracle"
+  "The Elm Oracle command."
+  :type '(string)
+  :group 'elm)
 
 (defconst elm-oracle--pattern
   "\\(?:[^A-Za-z0-9_.']\\)\\(\\(?:[A-Za-z_][A-Za-z0-9_']*[.]\\)?[A-Za-z0-9_']*\\)"
