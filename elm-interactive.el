@@ -74,7 +74,7 @@
 
 (defcustom elm-reactor-arguments `("-p" ,elm-reactor-port "-a" ,elm-reactor-address)
   "Command line arguments to pass to the Elm Reactor command."
-  :type '(string)
+  :type '(repeat string)
   :group 'elm)
 
 (defvar elm-compile--buffer-name "*elm-make*")
