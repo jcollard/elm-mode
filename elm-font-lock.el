@@ -68,26 +68,42 @@ To disable this highlighting, set this to nil."
   (cons elm--regexp-keywords font-lock-keyword-face)
   "Highlighting for keywords.")
 
-(defun elm--syntax-propertize (start end)
-  "The syntax propertize function for setting single line comments over START to END."
-  (let ((case-fold-search nil))
-    (goto-char start)
-    (funcall
-     (syntax-propertize-rules
-      ;;; Syntax rule for -- comments
-      ((rx (and (0+ " ") (group "--")
-                (0+ any) (group "\n")))
-       (1 "< b")
-       (2 "> b"))
+(defun elm--syntax-stringify ()
+  "Syntax propertize triple quoted strings."
+  (let* ((ppss (save-excursion
+                 (backward-char 3)
+                 (syntax-ppss)))
+         (string-started (and (not (nth 4 ppss)) (nth 8 ppss)))
+         (quote-starting-pos (- (point) 3))
+         (quote-ending-pos (point)))
+    (if (not string-started)
+        (put-text-property quote-starting-pos (1+ quote-starting-pos)
+                           'syntax-table (string-to-syntax "|"))
+      (put-text-property (1- quote-ending-pos) quote-ending-pos
+                           'syntax-table (string-to-syntax "|")))))
 
-      ;;; Syntax rule for char literals
-      ((rx (and (1+ " ")
-                (group "'")
-                (optional "\\") any
-                (group "'")))
-       (1 "\"")
-       (2 "\"")))
-     start end)))
+(defconst elm--syntax-propertize
+  (syntax-propertize-rules
+   ;;; Syntax rule for -- comments
+   ((rx (and (0+ " ") (group "--")
+             (0+ any) (group "\n")))
+    (1 "< b")
+    (2 "> b"))
+
+   ;;; Syntax rule for char literals
+   ((rx (and (1+ " ")
+             (group "'")
+             (optional "\\") any
+             (group "'")))
+    (1 "\"")
+    (2 "\""))
+
+   ((rx (and (or point
+                 (not (any ?\\ ?\"))
+                 (and (or (not (any ?\\)) point) ?\\ (* ?\\ ?\\) (any ?\")))
+             (* ?\\ ?\\)
+             "\"\"\""))
+    (0 (ignore (elm--syntax-stringify))))))
 
 (defvar elm--syntax-table
   (let ((st (make-syntax-table)))
@@ -95,6 +111,8 @@ To disable this highlighting, set this to nil."
     (modify-syntax-entry ?{ "(} 1n" st)
     (modify-syntax-entry ?- ". 23n" st)
     (modify-syntax-entry ?} "){ 4n" st)
+    (modify-syntax-entry ?\" "\"\"" st)
+    (modify-syntax-entry ?\\ "\\" st)
     st))
 
 ;;; Name regexp is according to https://github.com/elm-lang/elm-compiler/blob/353930a474fee4d833f962100edde70417691bca/src/Parse/Helpers.hs#L65
@@ -179,7 +197,7 @@ Also highlights opening brackets without a matching bracket."
   "Turn on Elm font lock."
   (setq font-lock-multiline t)
   (set-syntax-table elm--syntax-table)
-  (set (make-local-variable 'syntax-propertize-function) #'elm--syntax-propertize)
+  (set (make-local-variable 'syntax-propertize-function) elm--syntax-propertize)
   (set (make-local-variable 'font-lock-defaults) elm--font-lock-highlighting))
 
 (provide 'elm-font-lock)
