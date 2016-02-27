@@ -366,9 +366,9 @@ Runs `elm-reactor' first."
 
 (defun elm-compile--file-json (file &optional output)
   "Compile FILE into OUTPUT and return the JSON report."
-  (let ((default-directory (elm--find-dependency-file-path))
-        (report (shell-command-to-string
-                 (elm-compile--command file output t))))
+  (let* ((default-directory (elm--find-dependency-file-path))
+         (report (shell-command-to-string
+                  (elm-compile--command file output t))))
     (if (string-prefix-p "[" report)
         (json-read-from-string report)
       (error "Nothing to do"))))
