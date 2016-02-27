@@ -408,30 +408,34 @@ Runs `elm-reactor' first."
   "Remove unused imports from the current buffer, PROMPT optionally before deleting."
   (interactive "P")
   (elm-compile--ensure-saved)
-  (let* ((report (elm-compile--temporary (elm--buffer-local-file-name))))
+  (let* ((report (elm-compile--temporary (elm--buffer-local-file-name)))
+         (line-offset 0))
     (dolist (ob (mapcar #'identity report))
       (let-alist ob
         (when (equal .tag "unused import")
           (save-excursion
             (goto-char 0)
-            (forward-line (1- .region.start.line))
+            (forward-line (- .region.start.line 1 line-offset))
             (when (or (not prompt) (y-or-n-p "Delete this import? "))
               (dotimes (_ (1+ (- .region.end.line
                                  .region.start.line)))
-                (kill-whole-line)))))))))
+                (kill-whole-line)
+                (setq line-offset (1+ line-offset))))))))))
 
 ;;;###autoload
 (defun elm-compile-add-annotations (&optional prompt)
   "Add missing type annotations to the current buffer, PROMPT optionally before inserting."
   (interactive "P")
   (elm-compile--ensure-saved)
-  (let* ((report (elm-compile--temporary (elm--buffer-local-file-name))))
+  (let* ((report (elm-compile--temporary (elm--buffer-local-file-name)))
+         (line-offset 0))
     (dolist (ob (mapcar #'identity report))
       (let-alist ob
         (when (equal .tag "missing type annotation")
           (let ((annotation (car (last (s-split "\n" .details)))))
             (goto-char 0)
-            (forward-line (1- .region.start.line))
+            (forward-line (+ line-offset (1- .region.start.line)))
+            (setq line-offset (1+ line-offset))
             (when (or (not prompt) (y-or-n-p (format "Add annotation '%s'? " annotation)))
               (princ (format "%s\n" annotation) (current-buffer)))))))))
 

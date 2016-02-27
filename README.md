@@ -74,8 +74,8 @@ file.
 | <kbd>C-u C-c M-c</kbd> | Compile the <code>Main.elm</code> file, specifying the output file.               |
 | <kbd>C-c C-a</kbd>     | Add missing type annotations to the current buffer.                               |
 | <kbd>C-u C-c C-a</kbd> | Add missing type annotations to the current buffer, prompting before each change. |
-| <kbd>C-c C-i</kbd>     | Clean up imports in the current buffer.                                           |
-| <kbd>C-u C-c C-i</kbd> | Clean up imports in the current buffer, prompting before each change.             |
+| <kbd>C-c C-r</kbd>     | Clean up imports in the current buffer.                                           |
+| <kbd>C-u C-c C-r</kbd> | Clean up imports in the current buffer, prompting before each change.             |
 
 
 #### `elm-repl`
