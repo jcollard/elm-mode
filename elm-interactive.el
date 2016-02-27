@@ -337,13 +337,17 @@ Runs `elm-reactor' first."
 
 
 ;;; Make:
-(defun elm-compile--command (file &optional output)
-  "Generate a command that will compile FILE into OUTPUT."
-  (let ((elm-compile-arguments
-         (if output
-             (append (cl-remove-if (apply-partially #'string-prefix-p "--output=") elm-compile-arguments)
-                     (list (concat "--output=" (expand-file-name output))))
-           elm-compile-arguments)))
+(defun elm-compile--command (file &optional output json)
+  "Generate a command that will compile FILE into OUTPUT, with or without JSON reporting."
+  (let* ((elm-compile-arguments
+          (if output
+              (append (cl-remove-if (apply-partially #'string-prefix-p "--output=") elm-compile-arguments)
+                      (list (concat "--output=" (expand-file-name output))))
+            elm-compile-arguments))
+         (elm-compile-arguments
+          (if json
+              (append elm-compile-arguments (list "--report=json"))
+            elm-compile-arguments)))
     (s-join " " (cl-list* elm-compile-command file elm-compile-arguments))))
 
 (defun elm-compile--colorize-compilation-buffer ()
@@ -359,6 +363,20 @@ Runs `elm-reactor' first."
   (let ((default-directory (elm--find-dependency-file-path))
         (compilation-buffer-name-function (lambda (_) elm-compile--buffer-name)))
     (compile (elm-compile--command file output))))
+
+(defun elm-compile--file-json (file &optional output)
+  "Compile FILE into OUTPUT and return the JSON report."
+  (let ((default-directory (elm--find-dependency-file-path)))
+    (json-read-from-string
+     (shell-command-to-string
+      (elm-compile--command file output t)))))
+
+(defun elm-compile--temporary (file)
+  "Compile FILE to a temporary output file and return the compilation report."
+  (let* ((output (make-temp-file "" nil ".js"))
+         (report (elm-compile--file-json file output)))
+    (delete-file output)
+    report))
 
 ;;;###autoload
 (defun elm-compile-buffer (&optional output)
@@ -376,6 +394,21 @@ Runs `elm-reactor' first."
      (list (read-file-name "Output to: "))))
   (elm-compile--file (elm--find-main-file) output))
 
+;;;###autoload
+(defun elm-compile-clean-imports (&optional prompt)
+  "Remove unused imports from the current buffer, PROMPT optionally before deleting."
+  (interactive "P")
+  (let* ((report (elm-compile--temporary (elm--buffer-local-file-name))))
+    (dolist (ob (mapcar #'identity report))
+      (let-alist ob
+        (when (equal .tag "unused import")
+          (save-excursion
+            (goto-char 0)
+            (forward-line (1- .region.start.line))
+            (when (or (not prompt) (y-or-n-p "Delete this import? "))
+              (dotimes (_ (1+ (- .region.end.line
+                                 .region.start.line)))
+                (kill-whole-line)))))))))
 
 ;;; Package:
 ;;;###autoload
