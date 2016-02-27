@@ -366,10 +366,12 @@ Runs `elm-reactor' first."
 
 (defun elm-compile--file-json (file &optional output)
   "Compile FILE into OUTPUT and return the JSON report."
-  (let ((default-directory (elm--find-dependency-file-path)))
-    (json-read-from-string
-     (shell-command-to-string
-      (elm-compile--command file output t)))))
+  (let ((default-directory (elm--find-dependency-file-path))
+        (report (shell-command-to-string
+                 (elm-compile--command file output t))))
+    (if (string-prefix-p "[" report)
+        (json-read-from-string report)
+      (error "Nothing to do"))))
 
 (defun elm-compile--temporary (file)
   "Compile FILE to a temporary output file and return the compilation report."
@@ -394,10 +396,18 @@ Runs `elm-reactor' first."
      (list (read-file-name "Output to: "))))
   (elm-compile--file (elm--find-main-file) output))
 
+(defun elm-compile--ensure-saved ()
+  "Ensure the current buffer has been saved."
+  (when (buffer-modified-p)
+    (if (y-or-n-p "Save current buffer? ")
+        (save-buffer)
+      (error "You must save your changes first"))))
+
 ;;;###autoload
 (defun elm-compile-clean-imports (&optional prompt)
   "Remove unused imports from the current buffer, PROMPT optionally before deleting."
   (interactive "P")
+  (elm-compile--ensure-saved)
   (let* ((report (elm-compile--temporary (elm--buffer-local-file-name))))
     (dolist (ob (mapcar #'identity report))
       (let-alist ob
@@ -409,6 +419,21 @@ Runs `elm-reactor' first."
               (dotimes (_ (1+ (- .region.end.line
                                  .region.start.line)))
                 (kill-whole-line)))))))))
+
+;;;###autoload
+(defun elm-compile-add-annotations (&optional prompt)
+  "Add missing type annotations to the current buffer, PROMPT optionally before inserting."
+  (interactive "P")
+  (elm-compile--ensure-saved)
+  (let* ((report (elm-compile--temporary (elm--buffer-local-file-name))))
+    (dolist (ob (mapcar #'identity report))
+      (let-alist ob
+        (when (equal .tag "missing type annotation")
+          (let ((annotation (car (last (s-split "\n" .details)))))
+            (goto-char 0)
+            (forward-line (1- .region.start.line))
+            (when (or (not prompt) (y-or-n-p (format "Add annotation '%s'? " annotation)))
+              (princ (format "%s\n" annotation) (current-buffer)))))))))
 
 ;;; Package:
 ;;;###autoload
