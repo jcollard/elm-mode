@@ -226,24 +226,19 @@ Stolen from haskell-mode."
       (setq elm-interactive--seen-prompt nil)
       (comint-send-string proc command))))
 
-(defun elm-interactive--initialize ()
-  "Helper function to initialize the Elm REPL."
-  (setq comint-use-prompt-regexp t))
-
 ;;;###autoload
 (define-derived-mode elm-interactive-mode comint-mode "Elm Interactive"
   "Major mode for `run-elm-interactive'.
 
 \\{elm-interactive-mode-map}"
 
-  (setq comint-prompt-regexp elm-interactive-prompt-regexp)
-  (setq comint-prompt-read-only t)
+  (setq-local comint-prompt-regexp elm-interactive-prompt-regexp)
+  (setq-local comint-prompt-read-only t)
+  (setq-local comint-use-prompt-regexp t)
 
   (add-hook 'comint-output-filter-functions #'elm-interactive--spot-prompt nil t)
 
   (turn-on-elm-font-lock))
-
-(add-hook 'elm-interactive-mode-hook #'elm-interactive--initialize)
 
 ;;;###autoload
 (defun run-elm-interactive ()
