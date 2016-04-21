@@ -23,6 +23,11 @@
 
 ;;; Commentary:
 ;;; Code:
+(defcustom elm-main "Main.elm"
+  "Allows for a custom main file to be specified."
+  :group 'elm-util
+  :type 'string)
+
 (require 'f)
 (require 'json)
 (require 'let-alist)
@@ -107,12 +112,12 @@ Relies on `haskell-mode' stuff."
     (json-read-file dep-file)))
 
 (defun elm--find-main-file ()
-  "Find the Main.elm file."
+  "Find the main elm file."
   (let-alist (elm--read-dependency-file)
     (let ((source-dir (aref .source-directories 0)))
       (if (equal "." source-dir)
-          "Main.elm"
-        (f-join source-dir "Main.elm")))))
+          elm-main
+        (f-join source-dir elm-main)))))
 
 (defun elm--shell-and-command ()
   "Determine the appropriate 'and' command for the current shell.

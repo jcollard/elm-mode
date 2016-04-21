@@ -70,8 +70,8 @@ file.
 | ---------------------- | --------------------------------------------------------------------------------- |
 | <kbd>C-c C-c</kbd>     | Compile the current buffer.                                                       |
 | <kbd>C-u C-c C-c</kbd> | Compile the current buffer, specifying the output file.                           |
-| <kbd>C-c M-c</kbd>     | Compile the <code>Main.elm</code> file.                                           |
-| <kbd>C-u C-c M-c</kbd> | Compile the <code>Main.elm</code> file, specifying the output file.               |
+| <kbd>C-c M-c</kbd>     | Compile the main elm file.                                           |
+| <kbd>C-u C-c M-c</kbd> | Compile the main elm file, specifying the output file.               |
 | <kbd>C-c C-a</kbd>     | Add missing type annotations to the current buffer.                               |
 | <kbd>C-u C-c C-a</kbd> | Add missing type annotations to the current buffer, prompting before each change. |
 | <kbd>C-c C-r</kbd>     | Clean up imports in the current buffer.                                           |
@@ -92,8 +92,8 @@ file.
 | ---------------------- | ------------------------------------------------------------------ |
 | <kbd>C-c C-n</kbd>     | Preview the current buffer in a browser.                           |
 | <kbd>C-u C-c C-n</kbd> | Preview the current buffer in a browser in debug mode.             |
-| <kbd>C-c C-m</kbd>     | Preview the <code>Main.elm</code> file in a browser.               |
-| <kbd>C-u C-c C-m</kbd> | Preview the <code>Main.elm</code> file in a browser in debug mode. |
+| <kbd>C-c C-m</kbd>     | Preview the main elm file in a browser.               |
+| <kbd>C-u C-c C-m</kbd> | Preview the main elm file in a browser in debug mode. |
 
 #### `elm-package`
 

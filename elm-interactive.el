@@ -326,7 +326,7 @@ Runs `elm-reactor' first."
 
 ;;;###autoload
 (defun elm-preview-main (debug)
-  "Preview the Main.elm file using Elm reactor (in debug mode if DEBUG is truthy)."
+  "Preview the main elm file using Elm reactor (in debug mode if DEBUG is truthy)."
   (interactive "P")
   (elm-reactor--browse (elm--find-main-file) debug))
 
@@ -385,7 +385,7 @@ Runs `elm-reactor' first."
 
 ;;;###autoload
 (defun elm-compile-main (&optional output)
-  "Compile the Main.elm file into OUTPUT."
+  "Compile the main elm file into OUTPUT."
   (interactive
    (when current-prefix-arg
      (list (read-file-name "Output to: "))))
