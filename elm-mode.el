@@ -35,15 +35,6 @@
   :link '(url-link :tag "Github" "https://github.com/jcollard/elm-mode")
   :group 'languages)
 
-(defun elm-comment-dwim (arg)
-  "Comment or uncomment current line or region in a smart way.
-ARG specifies the number of lines to comment or uncomment."
-  (interactive "*P")
-  (require 'newcomment)
-  (let ((comment-start "--")
-        (comment-end ""))
-    (comment-dwim arg)))
-
 (defun elm-mode-after-save-handler ()
   "Perform various operations upon saving a buffer."
   (when elm-tags-on-save
@@ -56,7 +47,6 @@ ARG specifies the number of lines to comment or uncomment."
 
 (defvar elm-mode-map
   (let ((map (make-keymap)))
-    (define-key map [remap comment-dwim] 'elm-comment-dwim)
     (define-key map "\C-c\C-f" 'elm-mode-format-buffer)
     (define-key map "\C-c\M-t" 'elm-mode-generate-tags)
     (define-key map "\C-c." 'elm-mode-goto-tag-at-point)
