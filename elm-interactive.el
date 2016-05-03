@@ -753,30 +753,32 @@ Runs `elm-reactor' first."
       (s-trim (buffer-substring-no-properties beg end)))))
 
 
-(defun elm-oracle--completion-namelist (completions)
-  "Extract a list of identifier names from the COMPLETIONS alists."
+(defun elm-oracle--completion-namelist (prefix)
+  "Extract a list of identifier names for PREFIX."
   (-map (lambda (candidate)
           (let-alist candidate
             .fullName))
-        completions))
+        (elm-oracle--get-completions-cached prefix)))
 
-(defun elm-oracle--completions-select (completions selection)
-  "Search COMPLETIONS for SELECTION and return it."
-  (aref (cl-remove-if-not (lambda (cand)
-                            (let-alist cand
-                              (equal .fullName selection)))
-                          completions) 0))
+(defun elm-oracle--completions-select (candidate)
+  "Search completions for CANDIDATE."
+  (aref (elm-oracle--get-completions-cached candidate) 0))
 
-(defun elm-oracle--completion-docbuffer (completions selection)
-  "Search COMPLETIONS for SELECTION and return its documentation."
+(defun elm-oracle--completion-docbuffer (candidate)
+  "Return the documentation for CANDIDATE."
   (company-doc-buffer
-   (let-alist (elm-oracle--completions-select completions selection)
+   (let-alist (elm-oracle--completions-select candidate)
      (format "%s\n\n%s" .signature .comment))))
 
-(defun elm-oracle--completion-signature (completions selection)
-  "Search COMPLETIONS for SELECTION and return its signature."
-  (let-alist (elm-oracle--completions-select completions selection)
-    (format "%s : %s" selection .signature)))
+(defun elm-oracle--completion-annotation (candidate)
+  "Return the annotation for CANDIDATE."
+  (let-alist (elm-oracle--completions-select candidate)
+    (format " %s" .signature)))
+
+(defun elm-oracle--completion-signature (candidate)
+  "Return the signature for CANDIDATE."
+  (let-alist (elm-oracle--completions-select candidate)
+    (format "%s : %s" candidate .signature)))
 
 (defun elm-oracle--get-completions-cached-1 (prefix)
   "Get completions for PREFIX."
@@ -875,9 +877,6 @@ elm-specific `completion-at-point' function."
 Add this function to your `elm-mode-hook'."
   (add-to-list 'ac-sources 'ac-source-elm))
 
-(defvar company-elm--prefix)
-(defvar company-elm--completions)
-
 ;;;###autoload
 (defun company-elm (command &optional arg &rest ignored)
   "Provide completion info according to COMMAND and ARG.  IGNORED is not used."
@@ -888,11 +887,11 @@ Add this function to your `elm-mode-hook'."
       (prefix
        (let ((prefix (elm-oracle--completion-prefix-at-point)))
          (when (s-contains? "." prefix)
-           (setq company-elm--completions (elm-oracle--get-completions-cached prefix)
-                 company-elm--prefix prefix))))
-      (doc-buffer (elm-oracle--completion-docbuffer company-elm--completions arg))
-      (candidates (elm-oracle--completion-namelist company-elm--completions))
-      (meta (elm-oracle--completion-signature company-elm--completions arg)))))
+           prefix)))
+      (doc-buffer (elm-oracle--completion-docbuffer arg))
+      (candidates (elm-oracle--completion-namelist arg))
+      (annotation (elm-oracle--completion-annotation arg))
+      (meta (elm-oracle--completion-signature arg)))))
 
 
 (provide 'elm-interactive)
