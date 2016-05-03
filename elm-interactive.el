@@ -875,9 +875,10 @@ elm-specific `completion-at-point' function."
 Add this function to your `elm-mode-hook'."
   (add-to-list 'ac-sources 'ac-source-elm))
 
-;;;###autoload
 (defvar company-elm--prefix)
 (defvar company-elm--completions)
+
+;;;###autoload
 (defun company-elm (command &optional arg &rest ignored)
   "Provide completion info according to COMMAND and ARG.  IGNORED is not used."
   (interactive (list 'interactive))
