@@ -887,8 +887,9 @@ Add this function to your `elm-mode-hook'."
       (interactive (company-begin-backend 'company-elm))
       (prefix
        (let ((prefix (elm-oracle--completion-prefix-at-point)))
-         (setq company-elm--completions (elm-oracle--get-completions-cached prefix)
-               company-elm--prefix prefix)))
+         (when (s-contains? "." prefix)
+           (setq company-elm--completions (elm-oracle--get-completions-cached prefix)
+                 company-elm--prefix prefix))))
       (doc-buffer (elm-oracle--completion-docbuffer company-elm--completions arg))
       (candidates (elm-oracle--completion-namelist company-elm--completions))
       (meta (elm-oracle--completion-signature company-elm--completions arg)))))
