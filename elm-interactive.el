@@ -788,13 +788,21 @@ Runs `elm-reactor' first."
                                     (shell-quote-argument current-file)
                                     (shell-quote-argument prefix))))
          (candidates (json-read-from-string (shell-command-to-string command))))
-    (puthash prefix candidates elm-oracle--completion-cache)))
+    (when (> (length candidates) 0)
+      (puthash prefix candidates elm-oracle--completion-cache))))
 
 (defun elm-oracle--get-completions-cached (prefix)
   "Cache and return the cached elm-oracle completions for PREFIX."
-  (when (and prefix (not (equal "" prefix)))
+  (when (and prefix (s-contains? "." prefix))
     (or (gethash prefix elm-oracle--completion-cache)
-        (elm-oracle--get-completions-cached-1 prefix))))
+        (let* ((module (car (s-split-up-to "\\." prefix 1)))
+               (module-candidates
+                (or (gethash module elm-oracle--completion-cache)
+                    (elm-oracle--get-completions-cached-1 module))))
+          (cl-remove-if-not (lambda (candidate)
+                              (let-alist candidate
+                                (string-prefix-p prefix .fullName)))
+                            module-candidates)))))
 
 (defun elm-oracle--get-completions (prefix &optional popup)
   "Get elm-oracle completions for PREFIX with optional POPUP formatting."
@@ -868,19 +876,21 @@ Add this function to your `elm-mode-hook'."
   (add-to-list 'ac-sources 'ac-source-elm))
 
 ;;;###autoload
+(defvar company-elm--prefix)
+(defvar company-elm--completions)
 (defun company-elm (command &optional arg &rest ignored)
   "Provide completion info according to COMMAND and ARG.  IGNORED is not used."
   (interactive (list 'interactive))
   (when (derived-mode-p 'elm-mode)
     (cl-case command
       (interactive (company-begin-backend 'company-elm))
-      (t (let* ((prefix (elm-oracle--completion-prefix-at-point))
-                (completions (elm-oracle--get-completions-cached prefix)))
-           (cl-case command
-             (prefix prefix)
-             (doc-buffer (elm-oracle--completion-docbuffer completions arg))
-             (candidates (elm-oracle--completion-namelist completions))
-             (meta (elm-oracle--completion-signature completions arg))))))))
+      (prefix
+       (let ((prefix (elm-oracle--completion-prefix-at-point)))
+         (setq company-elm--completions (elm-oracle--get-completions-cached prefix)
+               company-elm--prefix prefix)))
+      (doc-buffer (elm-oracle--completion-docbuffer company-elm--completions arg))
+      (candidates (elm-oracle--completion-namelist company-elm--completions))
+      (meta (elm-oracle--completion-signature company-elm--completions arg)))))
 
 
 (provide 'elm-interactive)
