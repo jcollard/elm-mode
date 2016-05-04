@@ -139,6 +139,7 @@ will have to install it manually.
 | Keybinding          | Description                                               |
 | ------------------- | --------------------------------------------------------- |
 | <kbd>C-c C-t</kbd>  | Show the type of the function at point in the minibuffer. |
+| <kbd>C-c M-d</kbd>  | Show the documentation of the function at point.          |
 
 `elm-mode` supports auto completion through `elm-oracle`. To
 enable basic completion (either with `company-mode` or Emacs'
