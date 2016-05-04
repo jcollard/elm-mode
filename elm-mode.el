@@ -64,6 +64,7 @@
     (define-key map "\C-c\C-d" 'elm-documentation-lookup)
     (define-key map "\C-c\C-i" 'elm-import)
     (define-key map "\C-c\C-t" 'elm-oracle-type-at-point)
+    (define-key map "\C-c\M-d" 'elm-oracle-doc-at-point)
     map)
   "Keymap for Elm major mode.")
 

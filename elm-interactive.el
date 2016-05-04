@@ -830,21 +830,34 @@ Runs `elm-reactor' first."
         (elt candidates 0)
       nil)))
 
-;;;###autoload
-(defun elm-oracle-type-at-point ()
-  "Print the type of the function at point to the minibuffer."
-  (interactive)
+(defun elm-oracle--completion-at-point ()
+  "Get the Oracle completion object at point."
   (save-excursion
     (forward-word)
     (let* ((_ (re-search-backward elm-oracle--pattern nil t))
            (beg (1+ (match-beginning 0)))
            (end (match-end 0))
-           (item (s-trim (buffer-substring-no-properties beg end)))
-           (completion (elm-oracle--get-first-completion item)))
-      (if completion
-          (let-alist completion
-            (message .signature))
-        (message "Unknown type")))))
+           (item (s-trim (buffer-substring-no-properties beg end))))
+      (elm-oracle--get-first-completion item))))
+
+;;;###autoload
+(defun elm-oracle-type-at-point ()
+  "Print the type of the function at point to the minibuffer."
+  (interactive)
+  (let ((completion (elm-oracle--completion-at-point)))
+    (if completion
+        (let-alist completion
+          (message .signature))
+      (message "Unknown type"))))
+
+;;;###autoload
+(defun elm-oracle-doc-at-point ()
+  "Show the documentation of the value at point."
+  (interactive)
+  (let ((completion (elm-oracle--completion-at-point)))
+    (if completion
+        (elm-documentation--show completion)
+      (message "Unknown symbol"))))
 
 ;;;###autoload
 (defun elm-oracle-completion-at-point-function ()
