@@ -63,9 +63,9 @@
   :type 'integer)
 
 (defcustom elm-indent-after-keywords
-  '(("of" 2)
-    ("in" 2 0)
-    ("{" 2)
+  `(("of" ,elm-indent-offset)
+    ("in" ,elm-indent-offset 0)
+    ("{" ,elm-indent-offset)
     "if"
     "then"
     "else"
@@ -80,6 +80,7 @@ If absent OFFSET defaults to `elm-indent-offset'.
 
 OFFSET-HANGING is the offset to use in the case where the keyword
 is at the end of an otherwise-non-empty line."
+  :set-after '(elm-indent-offset)
   :group 'elm-indent
   :type '(repeat (choice string
                          (cons :tag "" (string :tag "keyword:")
