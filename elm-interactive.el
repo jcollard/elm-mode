@@ -91,7 +91,7 @@
 
 (defvar elm-compile-error-regexp-alist-alist
   '((elm-file "-- [^-]+ -+ \\(.+\\)$" 1 nil)
-    (elm-line "^\\([0-9]+\\)│" nil 1))
+    (elm-line "^\\([0-9]+\\)|" nil 1))
   "Regexps to match Elm compiler errors in compilation buffer.")
 
 (defvar elm-compile-error-regexp-alist '(elm-line elm-file))
