@@ -55,8 +55,8 @@ To disable this highlighting, set this to nil."
   :group 'elm-font-lock)
 
 (defconst elm--keywords
-  '("let" "case" "in" "if" "of" "then" "else"
-    "module" "import" "as" "exposing" "type"
+  '("let" "case" "in" "if" "of" "then" "else" "effect"
+    "module" "import" "as" "exposing" "type" "where"
     "alias" "port" "infix" "infixr" "infixl")
   "Reserved keywords.")
 
