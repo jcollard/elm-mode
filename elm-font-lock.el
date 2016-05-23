@@ -98,6 +98,13 @@ To disable this highlighting, set this to nil."
     (1 "\"")
     (2 "\""))
 
+   ;;; Hack for lambda destructuring
+   ((rx (and (group "\\(")
+             (1+ any)
+             (group (and ")" (0+ " ") "->"))))
+    (1 "(")
+    (2 ")"))
+
    ((rx (and (or point
                  (not (any ?\\ ?\"))
                  (and (or (not (any ?\\)) point) ?\\ (* ?\\ ?\\) (any ?\")))
