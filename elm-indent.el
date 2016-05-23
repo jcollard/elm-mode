@@ -42,7 +42,7 @@
   :link '(custom-manual "(elm-mode)Indentation")
   :prefix "elm-indent-")
 
-(defcustom elm-indent-offset 2
+(defcustom elm-indent-offset 4
   "Indentation of Elm statements with respect to containing block."
   :type 'integer
   :group 'elm-indent)
