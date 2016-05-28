@@ -101,6 +101,7 @@ file.
 | ---------------------- | ------------------------------------------------------------ |
 | <kbd>C-c C-d</kbd>     | View a function's documentation in a browser.                |
 | <kbd>C-c C-i</kbd>     | Import a module from one of the dependencies.                |
+| <kbd>C-c C-s</kbd>     | Sort the imports in the current file.                        |
 | <kbd>C-c M-k</kbd>     | Open the package catalog.                                    |
 | <kbd>C-u C-c M-k</kbd> | Open the package catalog, refreshing the package list first. |
 
