@@ -418,6 +418,19 @@ Runs `elm-reactor' first."
                 (setq line-offset (1+ line-offset))))))))))
 
 ;;;###autoload
+(defun elm-sort-imports ()
+  "Sort the import list in the current buffer."
+  (interactive)
+  (save-excursion
+    (goto-char (point-min))
+    (re-search-forward "^import" nil t)
+    (beginning-of-line)
+    (let ((beg (point))
+          (_ (while (re-search-forward "^import" nil t) (end-of-line)))
+          (end (point)))
+      (sort-lines nil beg end))))
+
+;;;###autoload
 (defun elm-compile-add-annotations (&optional prompt)
   "Add missing type annotations to the current buffer, PROMPT optionally before inserting."
   (interactive "P")
@@ -679,7 +692,8 @@ Runs `elm-reactor' first."
           (beginning-of-line)
         (forward-line 1)
         (insert "\n"))
-      (insert (concat statement "\n")))))
+      (insert (concat statement "\n"))))
+  (elm-sort-imports))
 
 
 (defun elm-documentation--show (documentation)
