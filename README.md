@@ -118,6 +118,9 @@ The following bindings are available in the package list buffer:
 | <kbd>u</kbd> | Unmark package.                |
 | <kbd>x</kbd> | Install marked packages.       |
 
+Set or customize `elm-sort-imports-on-save` to `t` to apply
+`elm-sort-imports` on the current buffer on every save.
+
 #### `elm-format`
 
 The following functionality requires [elm-format][elm-format] to be

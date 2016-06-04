@@ -37,6 +37,8 @@
 
 (defun elm-mode-after-save-handler ()
   "Perform various operations upon saving a buffer."
+  (when elm-sort-imports-on-save
+    (elm-sort-imports))
   (when elm-tags-on-save
     (elm-mode-generate-tags))
   (when elm-format-on-save

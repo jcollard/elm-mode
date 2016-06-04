@@ -167,6 +167,11 @@
 (defvar elm-oracle--completion-cache (make-hash-table :test #'equal)
   "A cache for Oracle-based completions by prefix.")
 
+(defcustom elm-sort-imports-on-save nil
+  "Controls whether or not imports should be automaticaly reordered on save."
+  :type 'boolean
+  :group 'elm)
+
 (defvar elm-package-mode-map
   (let ((map (make-keymap)))
     (define-key map "g" #'elm-package-refresh)
