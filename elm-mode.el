@@ -26,6 +26,7 @@
 ;;; Code:
 (require 'elm-tags)
 (require 'elm-format)
+(require 'elm-imenu)
 (require 'elm-indent)
 (require 'elm-interactive)
 (require 'elm-font-lock)
@@ -82,8 +83,9 @@
   (when (boundp 'electric-indent-inhibit)
     (setq-local electric-indent-inhibit t))
 
-  (set (make-local-variable 'comment-start) "--")
-  (set (make-local-variable 'comment-end) "")
+  (setq-local comment-start "--")
+  (setq-local comment-end "")
+  (setq-local imenu-create-index-function #'elm-imenu-create-index)
 
   (add-hook 'after-save-hook #'elm-mode-after-save-handler nil t)
 
