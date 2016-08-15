@@ -90,11 +90,10 @@
   :group 'elm)
 
 (defvar elm-compile-error-regexp-alist-alist
-  '((elm-file "-- [^-]+ -+ \\(.+\\)$" 1 nil)
-    (elm-line "^\\([0-9]+\\)|" nil 1))
-  "Regexps to match Elm compiler errors in compilation buffer.")
+  '((elm-locus "-- [^-]+ -+ \\(.+\\):\\([0-9]+\\):\\([0-9]+\\)$" 1 2 3))
+  "Regexp to match Elm compiler errors in compilation buffer.")
 
-(defvar elm-compile-error-regexp-alist '(elm-line elm-file))
+(defvar elm-compile-error-regexp-alist '(elm-locus))
 
 (dolist (alist elm-compile-error-regexp-alist-alist)
   (add-to-list 'compilation-error-regexp-alist-alist alist))
