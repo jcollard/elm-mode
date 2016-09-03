@@ -86,6 +86,7 @@
   (setq-local comment-start "--")
   (setq-local comment-end "")
   (setq-local imenu-create-index-function #'elm-imenu-create-index)
+  (setq-local paragraph-separate "\\(\r\t\n\\|-}\\)$")
 
   (add-function :before-until (local 'eldoc-documentation-function) #'elm-eldoc)
   (setq-local eldoc-idle-delay 0.75)
