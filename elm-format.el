@@ -27,6 +27,12 @@
   :group 'elm-format
   :type 'boolean)
 
+(defcustom elm-format-elm-version "0.17"
+  "The version of Elm against which code should be formatted."
+  :group 'elm-format
+  :type 'string
+  :options '("0.17" "0.16"))
+
 (defvar elm-format-command "elm-format"
   "The name of the `elm-format' command.")
 
@@ -50,6 +56,7 @@
                           nil
                           in-file
                           "--output" out-file
+                          "--elm-version" elm-format-elm-version
                           "--yes"))))
 
     (if (/= retcode 0)
