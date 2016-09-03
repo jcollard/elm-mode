@@ -87,6 +87,9 @@
   (setq-local comment-end "")
   (setq-local imenu-create-index-function #'elm-imenu-create-index)
 
+  (add-function :before-until (local 'eldoc-documentation-function) #'elm-eldoc)
+  (setq-local eldoc-idle-delay 0.75)
+
   (add-hook 'after-save-hook #'elm-mode-after-save-handler nil t)
 
   (turn-on-elm-font-lock)

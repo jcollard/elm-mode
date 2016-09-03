@@ -849,25 +849,43 @@ Runs `elm-reactor' first."
         (elt candidates 0)
       nil)))
 
-(defun elm-oracle--completion-at-point ()
-  "Get the Oracle completion object at point."
+(defun elm-oracle--function-at-point ()
+  "Get the name of the function at point."
   (save-excursion
     (forward-word)
     (let* ((_ (re-search-backward elm-oracle--pattern nil t))
            (beg (1+ (match-beginning 0)))
            (end (match-end 0))
            (item (s-trim (buffer-substring-no-properties beg end))))
-      (elm-oracle--get-first-completion item))))
+      item)))
+
+(defun elm-oracle--completion-at-point ()
+  "Get the Oracle completion object at point."
+  (elm-oracle--get-first-completion (elm-oracle--function-at-point)))
+
+(defun elm-oracle--type-at-point ()
+  "Get the type of the function at point."
+  (let ((completion (elm-oracle--completion-at-point)))
+    (when completion
+      (let-alist completion
+        (concat
+         (propertize .name 'face 'font-lock-function-name-face)
+         ": "
+         .signature)))))
 
 ;;;###autoload
 (defun elm-oracle-type-at-point ()
   "Print the type of the function at point to the minibuffer."
   (interactive)
-  (let ((completion (elm-oracle--completion-at-point)))
-    (if completion
-        (let-alist completion
-          (message .signature))
+  (let ((type (elm-oracle--type-at-point)))
+    (if type
+        (message type)
       (message "Unknown type"))))
+
+;;;###autoload
+(defun elm-eldoc ()
+  "Get the type of the function at point for eldoc."
+  (elm-oracle--type-at-point))
 
 ;;;###autoload
 (defun elm-oracle-doc-at-point ()
