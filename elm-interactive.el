@@ -852,12 +852,15 @@ Runs `elm-reactor' first."
 (defun elm-oracle--function-at-point ()
   "Get the name of the function at point."
   (save-excursion
-    (skip-chars-forward "[A-Za-z0-9_.']")
-    (let* ((_ (re-search-backward elm-oracle--pattern nil t))
-           (beg (1+ (match-beginning 0)))
-           (end (match-end 0))
-           (item (s-trim (buffer-substring-no-properties beg end))))
-      item)))
+    (let ((symbol (symbol-name (symbol-at-point))))
+      (skip-chars-forward "[A-Za-z0-9_.']")
+      (let* ((_ (re-search-backward elm-oracle--pattern nil t))
+             (beg (1+ (match-beginning 0)))
+             (end (match-end 0))
+             (item (s-trim (buffer-substring-no-properties beg end))))
+        (if (string-empty-p item)
+            symbol
+          item)))))
 
 (defun elm-oracle--completion-at-point ()
   "Get the Oracle completion object at point."
@@ -868,10 +871,11 @@ Runs `elm-reactor' first."
   (let ((completion (elm-oracle--completion-at-point)))
     (when completion
       (let-alist completion
-        (concat
-         (propertize .name 'face 'font-lock-function-name-face)
-         ": "
-         .signature)))))
+        (when (and (not .error) .name)
+          (concat
+           (propertize .fullName 'face 'font-lock-function-name-face)
+           ": "
+           .signature))))))
 
 ;;;###autoload
 (defun elm-oracle-type-at-point ()
