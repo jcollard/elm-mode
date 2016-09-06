@@ -852,7 +852,7 @@ Runs `elm-reactor' first."
 (defun elm-oracle--function-at-point ()
   "Get the name of the function at point."
   (save-excursion
-    (forward-word)
+    (skip-chars-forward "[A-Za-z0-9_.']")
     (let* ((_ (re-search-backward elm-oracle--pattern nil t))
            (beg (1+ (match-beginning 0)))
            (end (match-end 0))
