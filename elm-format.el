@@ -30,8 +30,8 @@
 (defcustom elm-format-elm-version "0.17"
   "The version of Elm against which code should be formatted."
   :group 'elm-format
-  :type 'string
-  :options '("0.17" "0.16"))
+  :type '(choice (const :tag "Default: 0.17" "0.17")
+                 (const :tag "0.16" "0.16")))
 
 (defvar elm-format-command "elm-format"
   "The name of the `elm-format' command.")
