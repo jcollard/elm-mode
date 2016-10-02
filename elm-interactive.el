@@ -39,6 +39,7 @@
   "Non-nil represents the fact that a prompt has been spotted.")
 (make-variable-buffer-local 'elm-interactive--seen-prompt)
 
+(defvar elm-interactive--current-project nil)
 (defvar elm-interactive--process-name "elm")
 (defvar elm-interactive--buffer-name "*elm*")
 (defvar elm-reactor--process-name "elm-reactor")
@@ -231,6 +232,16 @@ Stolen from haskell-mode."
       (setq elm-interactive--seen-prompt nil)
       (comint-send-string proc command))))
 
+(defun elm-interactive-kill-current-session ()
+  "Stop the current REPL session and delete its buffer."
+  (interactive)
+  (when (and elm-interactive--current-project
+             (get-buffer-process elm-interactive--buffer-name)
+             (not (equal elm-interactive--current-project (elm--find-dependency-file-path)))
+             (y-or-n-p "This will kill your existing REPL session.  Continue? "))
+    (delete-process elm-interactive--buffer-name)
+    (kill-buffer elm-interactive--buffer-name)))
+
 ;;;###autoload
 (define-derived-mode elm-interactive-mode comint-mode "Elm Interactive"
   "Major mode for `run-elm-interactive'.
@@ -249,9 +260,12 @@ Stolen from haskell-mode."
 (defun run-elm-interactive ()
   "Run an inferior instance of `elm-repl' inside Emacs."
   (interactive)
+  (elm-interactive-kill-current-session)
   (let* ((default-directory (elm--find-dependency-file-path))
          (prog elm-interactive-command)
          (buffer (comint-check-proc elm-interactive--process-name)))
+
+    (setq elm-interactive--current-project default-directory)
 
     (pop-to-buffer
      (if (or buffer (not (derived-mode-p 'elm-interactive-mode))
