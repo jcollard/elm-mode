@@ -207,17 +207,17 @@ location of the opening symbol, nil otherwise."
 (defun elm-indent-in-comment (start end)
   "Check, starting from START, if END is at or within a comment.
 Returns the location of the start of the comment, nil otherwise."
-  (let (pps)
-    (assert (<= start end))
-    (cond ((= start end) nil)
-          ((nth 4 (save-excursion (setq pps (parse-partial-sexp start end))))
-           (nth 8 pps))
-          ;; We also want to say that we are *at* the beginning of a comment.
-          ((and (not (nth 8 pps))
-                (>= (point-max) (+ end 2))
-                (nth 4 (save-excursion
-                         (setq pps (parse-partial-sexp end (+ end 2))))))
-           (nth 8 pps)))))
+  (when (<= start end)
+    (let (pps)
+      (cond ((= start end) nil)
+            ((nth 4 (save-excursion (setq pps (parse-partial-sexp start end))))
+             (nth 8 pps))
+            ;; We also want to say that we are *at* the beginning of a comment.
+            ((and (not (nth 8 pps))
+                  (>= (point-max) (+ end 2))
+                  (nth 4 (save-excursion
+                           (setq pps (parse-partial-sexp end (+ end 2))))))
+             (nth 8 pps))))))
 
 (defun elm-indent-type-at-point ()
   "Return the type of the line (also puts information in `match-data')."
