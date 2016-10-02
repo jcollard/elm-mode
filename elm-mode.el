@@ -43,7 +43,10 @@
   (when elm-tags-on-save
     (elm-mode-generate-tags))
   (when elm-format-on-save
-    (elm-mode-format-buffer)
+    (elm-mode-format-buffer))
+  (when (or elm-sort-imports-on-save
+            elm-tags-on-save
+            elm-format-on-save)
     (let ((before-save-hook '())
           (after-save-hook '()))
       (basic-save-buffer))))
