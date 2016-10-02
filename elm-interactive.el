@@ -32,6 +32,7 @@
 (require 'json)
 (require 'let-alist)
 (require 's)
+(require 'subr-x)
 (require 'tabulated-list)
 (require 'url)
 
