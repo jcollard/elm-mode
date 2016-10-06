@@ -443,10 +443,10 @@ Runs `elm-reactor' first."
   (interactive)
   (save-excursion
     (goto-char (point-min))
-    (re-search-forward "^import" nil t)
+    (re-search-forward "^import " nil t)
     (beginning-of-line)
     (let ((beg (point))
-          (_ (while (re-search-forward "^import" nil t) (end-of-line)))
+          (_ (while (re-search-forward "^import " nil t) (end-of-line)))
           (end (point)))
       (sort-lines nil beg end))))
 
