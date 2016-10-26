@@ -110,7 +110,7 @@ To disable this highlighting, set this to nil."
   (funcall elm--syntax-propertize begin end)
   (save-excursion
     (goto-char begin)
-    (while (re-search-forward "\\\\(" end t)
+    (while (re-search-forward "\\\\[({]" end t)
       (let ((open (match-beginning 0)))
         (add-text-properties open (1+ open) '(syntax-table (1 . nil)))))))
 
