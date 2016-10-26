@@ -98,19 +98,21 @@ To disable this highlighting, set this to nil."
     (1 "\"")
     (2 "\""))
 
-   ;;; Hack for lambda destructuring
-   ((rx (and (group "\\(")
-             (1+ any)
-             (group (and ")" (0+ " ") "->"))))
-    (1 "(")
-    (2 ")"))
-
    ((rx (and (or point
                  (not (any ?\\ ?\"))
                  (and (or (not (any ?\\)) point) ?\\ (* ?\\ ?\\) (any ?\")))
              (* ?\\ ?\\)
              "\"\"\""))
     (0 (ignore (elm--syntax-stringify))))))
+
+(defun elm--syntax-propertize-function (begin end)
+  "Mark special lexemes between BEGIN and END."
+  (funcall elm--syntax-propertize begin end)
+  (save-excursion
+    (goto-char begin)
+    (while (re-search-forward "\\\\(" end t)
+      (let ((open (match-beginning 0)))
+        (add-text-properties open (1+ open) '(syntax-table (1 . nil)))))))
 
 (defvar elm--syntax-table
   (let ((st (make-syntax-table)))
@@ -204,7 +206,7 @@ Also highlights opening brackets without a matching bracket."
   "Turn on Elm font lock."
   (setq font-lock-multiline t)
   (set-syntax-table elm--syntax-table)
-  (set (make-local-variable 'syntax-propertize-function) elm--syntax-propertize)
+  (set (make-local-variable 'syntax-propertize-function) #'elm--syntax-propertize-function)
   (set (make-local-variable 'font-lock-defaults) elm--font-lock-highlighting))
 
 (provide 'elm-font-lock)
