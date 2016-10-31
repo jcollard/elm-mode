@@ -460,7 +460,8 @@ Runs `elm-reactor' first."
     (dolist (ob (mapcar #'identity report))
       (let-alist ob
         (when (equal .tag "missing type annotation")
-          (let ((annotation (car (last (s-split "\n" .details)))))
+          ;; Drop the first 2 lines from .details since they contain the warning itself.
+          (let ((annotation (s-join "\n" (cdr (cdr (s-split "\n" .details))))))
             (goto-char 0)
             (forward-line (+ line-offset (1- .region.start.line)))
             (setq line-offset (1+ line-offset))
