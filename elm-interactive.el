@@ -286,6 +286,7 @@ Changes the current root directory to be the directory with the closest
 package json if one exists otherwise sets it to be the working directory
 of the file specified."
   (interactive)
+  (save-buffer)
   (let ((import-statement (elm--build-import-statement)))
     (run-elm-interactive)
     (elm-interactive--send-command ":reset\n")
