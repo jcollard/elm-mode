@@ -438,18 +438,68 @@ Runs `elm-reactor' first."
                 (kill-whole-line)
                 (setq line-offset (1+ line-offset))))))))))
 
+(defconst elm-import--pattern
+  (labels ((re-or (&rest forms)
+                  (concat "\\(?:" (s-join "\\|" forms) "\\)"))
+           (re-? (&rest forms)
+                 (concat "\\(?:" (s-join "" forms) "\\)?"))
+           (re-* (&rest forms)
+                 (concat "\\(?:" (s-join "" forms) "\\)*")))
+    (let* ((spaces "[[:space:]
+                    ]") ;; with newlines allowed
+           (ws (concat spaces "*"))
+           (ws+ (concat spaces "+"))
+           (upcase "[A-Z][A-Za-z0-9]*")
+           (lowcase "[a-z][A-Za-z0-9]*")
+           (as-form (concat ws+ "as" ws+ upcase))
+           (exposing-union-type
+            (concat upcase
+                    (re-? ws
+                          "("
+                          (re-or "\\.\\." ;; expose all
+                                 (concat upcase
+                                         (re-* ws "," ws upcase)))
+                          ws
+                          ")")))
+           (exposing-subform
+            (re-or lowcase exposing-union-type))
+           (exposing-form
+            (concat ws+
+                    "exposing"
+                    ws
+                    "("
+                    ws
+                    (re-or "\\.\\." ;; expose all
+                           (concat exposing-subform
+                                   (re-* ws "," ws exposing-subform)))
+                    ws
+                    ")")))
+      (concat "^import"
+              ws+
+              (concat upcase (re-* "\\." upcase))
+              (re-? (re-or (concat as-form (re-? exposing-form))
+                           (concat exposing-form (re-? as-form)))))))
+  "Regex to match elm import (including multiline).
+Import consists of the word \"import\", real package name, and optional
+\"as\" part, and \"exposing\" part, which may be ordered in either way.")
+
 ;;;###autoload
 (defun elm-sort-imports ()
   "Sort the import list in the current buffer."
   (interactive)
   (save-excursion
     (goto-char (point-min))
-    (re-search-forward "^import " nil t)
-    (beginning-of-line)
-    (let ((beg (point))
-          (_ (while (re-search-forward "^import " nil t) (end-of-line)))
-          (end (point)))
-      (sort-lines nil beg end))))
+    (re-search-forward elm-import--pattern nil t)
+    (re-search-backward elm-import--pattern nil t)
+    (let* ((beg (point))
+          (_ (while (re-search-forward elm-import--pattern nil t)))
+          (end (point))
+          (text (buffer-substring-no-properties beg end))
+          (imports (mapcar 'first
+                           (s-match-strings-all elm-import--pattern text))))
+      (kill-region beg end)
+      (insert (s-join "
+" (sort imports 'string<))))))
 
 ;;;###autoload
 (defun elm-compile-add-annotations (&optional prompt)
