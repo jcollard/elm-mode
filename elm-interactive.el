@@ -439,14 +439,13 @@ Runs `elm-reactor' first."
                 (setq line-offset (1+ line-offset))))))))))
 
 (defconst elm-import--pattern
-  (labels ((re-or (&rest forms)
-                  (concat "\\(?:" (s-join "\\|" forms) "\\)"))
-           (re-? (&rest forms)
-                 (concat "\\(?:" (s-join "" forms) "\\)?"))
-           (re-* (&rest forms)
-                 (concat "\\(?:" (s-join "" forms) "\\)*")))
-    (let* ((spaces "[[:space:]
-                    ]") ;; with newlines allowed
+  (cl-labels ((re-or (&rest forms)
+                     (concat "\\(?:" (s-join "\\|" forms) "\\)"))
+              (re-? (&rest forms)
+                    (concat "\\(?:" (s-join "" forms) "\\)?"))
+              (re-* (&rest forms)
+                    (concat "\\(?:" (s-join "" forms) "\\)*")))
+    (let* ((spaces "[[:space:]\n]")
            (ws (concat spaces "*"))
            (ws+ (concat spaces "+"))
            (upcase "[A-Z][A-Za-z0-9]*")
