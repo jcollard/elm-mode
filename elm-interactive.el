@@ -497,8 +497,7 @@ Import consists of the word \"import\", real package name, and optional
           (imports (mapcar 'first
                            (s-match-strings-all elm-import--pattern text))))
       (kill-region beg end)
-      (insert (s-join "
-" (sort imports 'string<))))))
+      (insert (s-join "\n" (sort imports 'string<))))))
 
 ;;;###autoload
 (defun elm-compile-add-annotations (&optional prompt)
