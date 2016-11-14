@@ -448,8 +448,8 @@ Runs `elm-reactor' first."
     (let* ((spaces "[[:space:]\n]")
            (ws (concat spaces "*"))
            (ws+ (concat spaces "+"))
-           (upcase "[A-Z][A-Za-z0-9]*")
-           (lowcase "[a-z][A-Za-z0-9]*")
+           (upcase "[A-Z][A-Za-z0-9_]*")
+           (lowcase "[a-z][A-Za-z0-9_]*")
            (as-form (concat ws+ "as" ws+ upcase))
            (exposing-union-type
             (concat upcase
