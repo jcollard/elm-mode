@@ -1,5 +1,4 @@
-;;; -*- lexical-binding: t -*-
-;;; elm-interactive.el --- Run an interactive Elm session.
+;;; elm-interactive.el --- Run an interactive Elm session. -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2015, 2016  Bogdan Popa
 
@@ -169,6 +168,9 @@
 
 (defvar elm-oracle--completion-cache (make-hash-table :test #'equal)
   "A cache for Oracle-based completions by prefix.")
+
+(defvar elm-oracle--eldoc-cache (make-hash-table :test #'equal)
+  "A cache for Eldoc completions.")
 
 (defcustom elm-sort-imports-on-save nil
   "Controls whether or not imports should be automaticaly reordered on save."
@@ -836,12 +838,18 @@ Import consists of the word \"import\", real package name, and optional
       (s-trim (buffer-substring-no-properties beg end)))))
 
 
-(defun elm-oracle--completion-namelist (prefix)
-  "Extract a list of identifier names for PREFIX."
-  (-map (lambda (candidate)
-          (let-alist candidate
-            .fullName))
-        (elm-oracle--get-completions-cached prefix)))
+(defun elm-oracle--completion-namelist (prefix &optional callback)
+  "Extract a list of identifier names for PREFIX.  Async if CALLBACK is provided."
+  (cl-flet* ((names (candidates)
+                    (-map (lambda (candidate)
+                            (let-alist candidate
+                              .fullName))
+                          candidates))
+             (names-async (candidates)
+                          (funcall callback (names candidates))))
+    (if callback
+        (elm-oracle--get-completions-cached prefix #'names-async)
+      (names (elm-oracle--get-completions-cached prefix)))))
 
 (defun elm-oracle--completions-select (candidate)
   "Search completions for CANDIDATE."
@@ -863,31 +871,67 @@ Import consists of the word \"import\", real package name, and optional
   (let-alist (elm-oracle--completions-select candidate)
     (format "%s : %s" candidate .signature)))
 
-(defun elm-oracle--get-completions-cached-1 (prefix)
-  "Get completions for PREFIX."
+(defun elm-oracle--get-completions-async (command callback)
+  "Get completions by running COMMAND asynchronously.  CALLBACK called on success."
+  (let ((output nil))
+    (cl-flet ((output-filter (_proc string)
+                             (add-to-list 'output string))
+              (process-sentinel (_proc event)
+                                (if (equal event "finished\n")
+                                    (let ((data (json-read-from-string (s-join "" (reverse output)))))
+                                      (funcall callback data)))))
+
+      (make-process
+       :name "elm-oracle"
+       :buffer "elm-oracle"
+       :command command
+       :filter #'output-filter
+       :sentinel #'process-sentinel
+       :connection-type 'pipe))))
+
+(defun elm-oracle--get-completions-cached-1 (prefix &optional callback)
+  "Get completions for PREFIX.  Async if CALLBACK is provided."
   (when (not (elm--has-dependency-file))
     (error "Completion only works inside Elm projects.  Create one with `M-x elm-create-package RET`"))
+
   (let* ((default-directory (elm--find-dependency-file-path))
          (current-file (or (buffer-file-name) (elm--find-main-file)))
-         (command (s-join " " (list elm-oracle-command
-                                    (shell-quote-argument current-file)
-                                    (shell-quote-argument prefix))))
-         (candidates (json-read-from-string (shell-command-to-string command))))
-    (when (> (length candidates) 0)
-      (puthash prefix candidates elm-oracle--completion-cache))))
+         (command (list elm-oracle-command
+                        (shell-quote-argument current-file)
+                        (shell-quote-argument prefix))))
+    (cl-flet* ((cache (candidates)
+                      (when (> (length candidates) 0)
+                        (puthash prefix candidates elm-oracle--completion-cache)))
+               (cache-async (candidates)
+                            (cache candidates)
+                            (funcall callback candidates)))
+      (if callback
+          (elm-oracle--get-completions-async command #'cache-async)
+        (cache (json-read-from-string (shell-command-to-string (s-join " " command))))))))
 
-(defun elm-oracle--get-completions-cached (prefix)
-  "Cache and return the cached elm-oracle completions for PREFIX."
+(defun elm-oracle--filter-completions (prefix candidates)
+  "Filter by PREFIX a list of CANDIDATES."
+  (cl-remove-if-not (lambda (candidate)
+                      (let-alist candidate
+                        (string-prefix-p prefix .fullName)))
+                    candidates))
+
+(defun elm-oracle--get-completions-cached (prefix &optional callback)
+  "Cache and return the cached elm-oracle completions for PREFIX.  Async if CALLBACK is provided."
   (when (and prefix (s-contains? "." prefix))
     (or (gethash prefix elm-oracle--completion-cache)
         (let* ((module (car (s-split-up-to "\\." prefix 1)))
-               (module-candidates
-                (or (gethash module elm-oracle--completion-cache)
-                    (elm-oracle--get-completions-cached-1 module))))
-          (cl-remove-if-not (lambda (candidate)
-                              (let-alist candidate
-                                (string-prefix-p prefix .fullName)))
-                            module-candidates)))))
+               (module-candidates (gethash module elm-oracle--completion-cache)))
+          (cl-flet ((handle-async (candidates)
+                                  (funcall callback
+                                           (elm-oracle--filter-completions prefix candidates))))
+            (if callback
+                (if module-candidates
+                    (handle-async module-candidates)
+                  (elm-oracle--get-completions-cached-1 module #'handle-async))
+              (elm-oracle--filter-completions prefix
+               (or module-candidates
+                   (elm-oracle--get-completions-cached-1 module)))))))))
 
 (defun elm-oracle--get-completions (prefix &optional popup)
   "Get elm-oracle completions for PREFIX with optional POPUP formatting."
@@ -903,15 +947,19 @@ Import consists of the word \"import\", real package name, and optional
                 candidates)))
     candidates))
 
-(defun elm-oracle--get-first-completion (item)
-  "Get the first completion for ITEM."
+(defun elm-oracle--get-first-completion (item &optional callback)
+  "Get the first completion for ITEM.  Async if CALLBACK provided."
   (let* ((default-directory (elm--find-dependency-file-path))
          (current-file (buffer-file-name))
-         (command (s-join " " (list elm-oracle-command current-file item)))
-         (candidates (json-read-from-string (shell-command-to-string command))))
-    (if (> (length candidates) 0)
-        (elt candidates 0)
-      nil)))
+         (command (list elm-oracle-command current-file item)))
+    (cl-flet* ((select-first (candidates)
+                             (when (> (length candidates) 0)
+                               (elt candidates 0)))
+               (select-first-async (candidates)
+                                   (funcall callback (select-first candidates))))
+      (if callback
+          (elm-oracle--get-completions-async command #'select-first-async)
+        (select-first (json-read-from-string (shell-command-to-string (s-join " " command))))))))
 
 (defun elm-oracle--function-at-point ()
   "Get the name of the function at point."
@@ -930,16 +978,19 @@ Import consists of the word \"import\", real package name, and optional
   "Get the Oracle completion object at point."
   (elm-oracle--get-first-completion (elm-oracle--function-at-point)))
 
+(defun elm-oracle--propertize-completion-type (completion)
+  "Propertize COMPLETION so that it can be displayed in the minibuffer."
+  (when completion
+    (let-alist completion
+      (when (and (not .error) .name)
+        (concat
+         (propertize .fullName 'face 'font-lock-function-name-face)
+         ": "
+         .signature)))))
+
 (defun elm-oracle--type-at-point ()
   "Get the type of the function at point."
-  (let ((completion (elm-oracle--completion-at-point)))
-    (when completion
-      (let-alist completion
-        (when (and (not .error) .name)
-          (concat
-           (propertize .fullName 'face 'font-lock-function-name-face)
-           ": "
-           .signature))))))
+  (elm-oracle--propertize-completion-type (elm-oracle--completion-at-point)))
 
 ;;;###autoload
 (defun elm-oracle-type-at-point ()
@@ -953,7 +1004,13 @@ Import consists of the word \"import\", real package name, and optional
 ;;;###autoload
 (defun elm-eldoc ()
   "Get the type of the function at point for eldoc."
-  (elm-oracle--type-at-point))
+  (let* ((name (elm-oracle--function-at-point))
+         (type (gethash name elm-oracle--eldoc-cache)))
+    (cl-flet ((cache (completion)
+                     (when completion
+                       (puthash name (elm-oracle--propertize-completion-type completion) elm-oracle--eldoc-cache))))
+      (elm-oracle--get-first-completion name #'cache)
+      type)))
 
 ;;;###autoload
 (defun elm-oracle-doc-at-point ()
@@ -1007,7 +1064,7 @@ Add this function to your `elm-mode-hook'."
          (when (s-contains? "." prefix)
            prefix)))
       (doc-buffer (elm-oracle--completion-docbuffer arg))
-      (candidates (elm-oracle--completion-namelist arg))
+      (candidates (cons :async (apply-partially #'elm-oracle--completion-namelist arg)))
       (annotation (elm-oracle--completion-annotation arg))
       (meta (elm-oracle--completion-signature arg)))))
 

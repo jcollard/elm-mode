@@ -92,7 +92,7 @@
   (setq-local paragraph-separate "\\(\r\t\n\\|-}\\)$")
 
   (add-function :before-until (local 'eldoc-documentation-function) #'elm-eldoc)
-  (setq-local eldoc-idle-delay 0.75)
+  (setq-local eldoc-idle-delay 0.25)
 
   (add-hook 'after-save-hook #'elm-mode-after-save-handler nil t)
 
