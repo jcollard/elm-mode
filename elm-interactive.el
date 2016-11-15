@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: t -*-
 ;;; elm-interactive.el --- Run an interactive Elm session.
 
 ;; Copyright (C) 2015, 2016  Bogdan Popa
@@ -197,8 +198,8 @@
   "Get the REPL process buffer."
   (get-buffer-process elm-interactive--buffer-name))
 
-(defun elm-interactive--spot-prompt (string)
-  "Spot the prompt, STRING is ignored."
+(defun elm-interactive--spot-prompt (_string)
+  "Spot the prompt, _STRING is ignored."
   (let ((proc (elm-interactive--get-process-buffer)))
     (when proc
       (save-excursion
@@ -263,7 +264,6 @@ Stolen from haskell-mode."
   (interactive)
   (elm-interactive-kill-current-session)
   (let* ((default-directory (elm--find-dependency-file-path))
-         (prog elm-interactive-command)
          (buffer (comint-check-proc elm-interactive--process-name)))
 
     (setq elm-interactive--current-project default-directory)
@@ -701,8 +701,8 @@ Import consists of the word \"import\", real package name, and optional
       (let-alist (nth id elm-package--contents)
         (browse-url (elm-package--build-uri "packages" .name (elt .versions 0)))))))
 
-(defun elm-package--install-sentinel (proc msg)
-  "Refreshes the package buffer on PROC exit, ignoring MSG."
+(defun elm-package--install-sentinel (_proc _msg)
+  "Refreshes the package buffer on _PROC exit, ignoring _MSG."
   (elm-package-refresh))
 
 (defun elm-package-install ()
@@ -802,7 +802,6 @@ Import consists of the word \"import\", real package name, and optional
     (elm-package-refresh-contents))
   (elm-package--read-dependencies)
   (let* ((package (elm-package--read-package))
-         (version (elm-package-latest-version package))
          (module (elm-package--read-module package))
          (definition (elm-package--read-module-definition package module))
          (documentation (elm-package-definition package module definition)))
