@@ -122,10 +122,6 @@ The following bindings are available in the package list buffer:
 Set or customize `elm-sort-imports-on-save` to `t` to apply
 `elm-sort-imports` on the current buffer on every save.
 
-| Keybinding         | Description                                 |
-| ------------------ | ------------------------------------------- |
-| <kbd>C-c t</kbd>   | Run the test suite for the current project. |
-
 #### `elm-oracle`
 
 The following functionality requires [elm-oracle][elm-oracle] to be
@@ -174,6 +170,10 @@ default is `0.17`.
 The following functionality requires [elm-test][elm-test] to be
 installed.  `elm-test` does not come with the Elm installer so you
 will have to install it manually.
+
+| Keybinding         | Description                                 |
+| ------------------ | ------------------------------------------- |
+| <kbd>C-c t</kbd>   | Run the test suite for the current project. |
 
 
 [company-mode]: http://company-mode.github.io/
