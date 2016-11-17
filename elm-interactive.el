@@ -1068,6 +1068,15 @@ Add this function to your `elm-mode-hook'."
       (annotation (elm-oracle--completion-annotation arg))
       (meta (elm-oracle--completion-signature arg)))))
 
+;;;###autoload
+(defun elm-test-project ()
+  "Run the elm-test command on the current project."
+  (interactive)
+  (elm--assert-dependency-file)
+  (let ((default-directory (elm--find-dependency-file-path))
+        (compilation-buffer-name-function (lambda (_) "*elm-test*")))
+    (compile "elm-test")))
+
 
 (provide 'elm-interactive)
 ;;; elm-interactive.el ends here

@@ -12,6 +12,7 @@ Elm mode for Emacs.
 1. Integration with [elm-package](https://github.com/elm-lang/elm-package).
 1. Integration with [elm-oracle][elm-oracle]
 1. Integration with [elm-format][elm-format]
+1. Integration with [elm-test][elm-test]
 
 ## Indentation
 
@@ -121,6 +122,36 @@ The following bindings are available in the package list buffer:
 Set or customize `elm-sort-imports-on-save` to `t` to apply
 `elm-sort-imports` on the current buffer on every save.
 
+| Keybinding         | Description                                 |
+| ------------------ | ------------------------------------------- |
+| <kbd>C-c t</kbd>   | Run the test suite for the current project. |
+
+#### `elm-oracle`
+
+The following functionality requires [elm-oracle][elm-oracle] to be
+installed.  `elm-oracle` does not come with the Elm installer so you
+will have to install it manually.
+
+| Keybinding          | Description                                               |
+| ------------------- | --------------------------------------------------------- |
+| <kbd>C-c C-t</kbd>  | Show the type of the function at point in the minibuffer. |
+| <kbd>C-c M-d</kbd>  | Show the documentation of the function at point.          |
+
+`elm-mode` supports auto-completion through `elm-oracle`.  To
+use [company-mode][company] for auto-completion, add the Elm backend
+to the backend list:
+
+```elisp
+(add-to-list 'company-backends 'company-elm)
+```
+
+The Company backend supports `company-quickhelp` to display
+documentation snippets for the autocompletion candidates.
+
+Here's a screenshot of `company-mode` in action:
+
+![company-mode](/screenshots/company-mode.png)
+
 #### `elm-format`
 
 The following functionality requires [elm-format][elm-format] to be
@@ -138,51 +169,14 @@ Set or customize `elm-format-elm-version` to change which version of
 Elm to format against. Valid options are `0.17` and `0.16`. The
 default is `0.17`.
 
-#### `elm-oracle`
+#### `elm-test`
 
-The following functionality requires [elm-oracle][elm-oracle] to be
-installed. `elm-oracle` does not come with the Elm installer so you
+The following functionality requires [elm-test][elm-test] to be
+installed.  `elm-test` does not come with the Elm installer so you
 will have to install it manually.
 
-| Keybinding          | Description                                               |
-| ------------------- | --------------------------------------------------------- |
-| <kbd>C-c C-t</kbd>  | Show the type of the function at point in the minibuffer. |
-| <kbd>C-c M-d</kbd>  | Show the documentation of the function at point.          |
 
-`elm-mode` supports auto completion through `elm-oracle`. To
-enable basic completion (either with `company-mode` or Emacs'
-`completion-at-point`) add `elm-oracle-setup-completion` to the
-`elm-mode-hook` like so:
-
-```elisp
-(add-hook 'elm-mode-hook #'elm-oracle-setup-completion)
-```
-
-If you want to use `company` for autocompletion all you need to do
-is add the provided backend to the provider list:
-
-```elisp
-(add-to-list 'company-backends 'company-elm)
-```
-
-The `company` backend supports `company-quickhelp` as well to display
-documentation snippets for the autocompletion candidates.
-
-If you prefer to use `auto-complete` as your completion backend you
-can instead do the following after setting up `auto-complete`
-according to its manual:
-
-```elisp
-(add-hook 'elm-mode-hook #'elm-oracle-setup-ac)
-```
-
-Note that the completion process is synchronous so you should set
-`ac-auto-start` to a large value or to `nil` otherwise you will
-experience slowdown. This will be improved in the future.
-
-Here's a screenshot of `auto-complete` in action:
-
-![auto-complete](/screenshots/auto-complete.png)
-
+[company-mode]: http://company-mode.github.io/
 [elm-format]: https://github.com/avh4/elm-format#installation-
 [elm-oracle]: https://github.com/ElmCast/elm-oracle#installation
+[elm-test]: https://github.com/rtfeldman/node-test-runner
