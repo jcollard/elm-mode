@@ -462,8 +462,10 @@ Runs `elm-reactor' first."
                                          (re-* ws "," ws upcase)))
                           ws
                           ")")))
+           (exposing-operator
+            (re-? ws "([^)]+)"))
            (exposing-subform
-            (re-or lowcase exposing-union-type))
+            (re-or lowcase exposing-union-type exposing-operator))
            (exposing-form
             (concat ws+
                     "exposing"
