@@ -891,6 +891,10 @@ Import consists of the word \"import\", real package name, and optional
        :sentinel #'process-sentinel
        :connection-type 'pipe))))
 
+(defun elm-oracle--get-completions-sync (command)
+  "Get completions by running COMMAND synchronously."
+  (json-read-from-string (shell-command-to-string (s-join " " command))))
+
 (defun elm-oracle--get-completions-cached-1 (prefix &optional callback)
   "Get completions for PREFIX.  Async if CALLBACK is provided."
   (when (not (elm--has-dependency-file))
@@ -908,8 +912,11 @@ Import consists of the word \"import\", real package name, and optional
                             (cache candidates)
                             (funcall callback candidates)))
       (if callback
-          (elm-oracle--get-completions-async command #'cache-async)
-        (cache (json-read-from-string (shell-command-to-string (s-join " " command))))))))
+          (if (fboundp 'make-process)
+              (elm-oracle--get-completions-async command #'cache-async)
+            ;; If make-process is not available (<25.1) then we downgrade to a sync call
+            (cache-async (elm-oracle--get-completions-sync command)))
+        (cache (elm-oracle--get-completions-sync command))))))
 
 (defun elm-oracle--filter-completions (prefix candidates)
   "Filter by PREFIX a list of CANDIDATES."
