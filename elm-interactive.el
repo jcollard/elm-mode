@@ -500,7 +500,7 @@ Import consists of the word \"import\", real package name, and optional
           (text (buffer-substring-no-properties beg end))
           (imports (mapcar 'first
                            (s-match-strings-all elm-import--pattern text))))
-      (kill-region beg end)
+      (delete-region beg end)
       (insert (s-join "\n" (sort imports 'string<))))))
 
 ;;;###autoload
