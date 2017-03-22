@@ -497,11 +497,14 @@ Import consists of the word \"import\", real package name, and optional
     (let* ((beg (point))
           (_ (while (re-search-forward elm-import--pattern nil t)))
           (end (point))
-          (text (buffer-substring-no-properties beg end))
+          (old-imports (buffer-substring-no-properties beg end))
           (imports (mapcar 'first
-                           (s-match-strings-all elm-import--pattern text))))
-      (delete-region beg end)
-      (insert (s-join "\n" (sort imports 'string<))))))
+                           (s-match-strings-all elm-import--pattern old-imports)))
+          (sorted-imports (s-join "\n" (sort imports 'string<))))
+      (unless (string= old-imports sorted-imports)
+        (delete-region beg end)
+        (insert sorted-imports)))))
+
 
 ;;;###autoload
 (defun elm-compile-add-annotations (&optional prompt)
