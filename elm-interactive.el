@@ -505,6 +505,7 @@ Import consists of the word \"import\", real package name, and optional
         (delete-region beg end)
         (insert sorted-imports)))))
 
+
 ;;;###autoload
 (defun elm-compile-add-annotations (&optional prompt)
   "Add missing type annotations to the current buffer, PROMPT optionally before inserting."
