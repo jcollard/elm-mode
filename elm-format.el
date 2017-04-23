@@ -37,6 +37,14 @@
   "The name of the `elm-format' command.")
 
 
+(defun elm--display-error (err-file)
+  "Displays the error buffer to the user"
+  (require 'ansi-color)
+  (with-temp-buffer
+    (insert-file-contents err-file nil nil nil t)
+    (ansi-color-apply-on-region (point-min) (point-max))
+    (message "Error: elm-format failed on current buffer.\n\n%s" (buffer-string))))
+
 ;;;###autoload
 (defun elm-mode-format-buffer ()
   "Apply `elm-format' to the current buffer."
@@ -60,9 +68,7 @@
                           "--yes"))))
 
     (if (/= retcode 0)
-        (with-temp-buffer
-          (insert-file-contents err-file nil nil nil t)
-          (message "Error: elm-format failed on current buffer.\n\n%s" (buffer-string)))
+        (elm--display-error err-file)
       (insert-file-contents out-file nil nil nil t)
       (goto-char (point-min))
       (forward-line (1- line))
