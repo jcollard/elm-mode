@@ -22,6 +22,9 @@
 
 ;;; Commentary:
 ;;; Code:
+
+(require 'ansi-color)
+
 (defcustom elm-format-on-save nil
   "Controls whether or not `elm-format' should be run on the current buffer on save."
   :group 'elm-format
@@ -36,6 +39,13 @@
 (defvar elm-format-command "elm-format"
   "The name of the `elm-format' command.")
 
+
+(defun elm-format--display-error (err-file)
+  "Displays the error in file ERR-FILE to the user."
+  (with-temp-buffer
+    (insert-file-contents err-file nil nil nil t)
+    (ansi-color-apply-on-region (point-min) (point-max))
+    (message "Error: elm-format failed on current buffer.\n\n%s" (buffer-string))))
 
 ;;;###autoload
 (defun elm-mode-format-buffer ()
@@ -60,9 +70,7 @@
                           "--yes"))))
 
     (if (/= retcode 0)
-        (with-temp-buffer
-          (insert-file-contents err-file nil nil nil t)
-          (message "Error: elm-format failed on current buffer.\n\n%s" (buffer-string)))
+        (elm-format--display-error err-file)
       (insert-file-contents out-file nil nil nil t)
       (goto-char (point-min))
       (forward-line (1- line))
