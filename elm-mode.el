@@ -60,6 +60,7 @@
     (define-key map "\C-c\C-l" 'elm-repl-load)
     (define-key map "\C-c\C-p" 'elm-repl-push)
     (define-key map "\C-c\C-e" 'elm-repl-push-decl)
+    (define-key map "\C-c\C-z" 'run-elm-interactive)
     (define-key map "\C-c\C-a" 'elm-compile-add-annotations)
     (define-key map "\C-c\C-r" 'elm-compile-clean-imports)
     (define-key map "\C-c\C-c" 'elm-compile-buffer)

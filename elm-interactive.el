@@ -154,6 +154,7 @@
   (let ((map (make-keymap)))
     (define-key map "\t" #'completion-at-point)
     (define-key map (kbd "C-a") #'elm-interactive-mode-beginning)
+    (define-key map (kbd "C-c C-z") #'elm-repl-return-to-origin)
     map)
   "Keymap for Elm interactive mode.")
 
@@ -171,6 +172,9 @@
 
 (defvar elm-oracle--eldoc-cache (make-hash-table :test #'equal)
   "A cache for Eldoc completions.")
+
+(defvar elm-repl--origin nil
+  "Marker for buffer/position from which we jumped to this repl.")
 
 (defcustom elm-sort-imports-on-save nil
   "Controls whether or not imports should be automaticaly reordered on save."
@@ -266,7 +270,8 @@ Stolen from haskell-mode."
   (interactive)
   (elm-interactive-kill-current-session)
   (let* ((default-directory (elm--find-dependency-file-path))
-         (buffer (comint-check-proc elm-interactive--process-name)))
+         (buffer (comint-check-proc elm-interactive--process-name))
+         (origin (point-marker)))
 
     (setq elm-interactive--current-project default-directory)
 
@@ -279,7 +284,18 @@ Stolen from haskell-mode."
     (unless buffer
       (apply #'make-comint-in-buffer elm-interactive--process-name buffer
              elm-interactive-command nil elm-interactive-arguments)
-      (elm-interactive-mode))))
+      (elm-interactive-mode))
+
+    (setq-local elm-repl--origin origin)))
+
+(defun elm-repl-return-to-origin ()
+  "Jump back to the location from which we last jumped to the repl."
+  (interactive)
+  (let* ((pos elm-repl--origin)
+         (buffer (get-buffer (marker-buffer pos))))
+    (when buffer
+      (pop-to-buffer buffer)
+      (goto-char pos))))
 
 ;;;###autoload
 (defun elm-repl-load ()
