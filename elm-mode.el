@@ -161,7 +161,6 @@ Find the roots of this function in the c-awk-mode."
   (setq-local end-of-defun-function #'elm-end-of-defun)
 
   (add-function :before-until (local 'eldoc-documentation-function) #'elm-eldoc)
-  (setq-local eldoc-idle-delay 0.25)
 
   (add-hook 'after-save-hook #'elm-mode-after-save-handler nil t)
 
