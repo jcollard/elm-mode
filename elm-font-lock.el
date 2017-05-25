@@ -84,12 +84,6 @@ To disable this highlighting, set this to nil."
 
 (defconst elm--syntax-propertize
   (syntax-propertize-rules
-   ;;; Syntax rule for -- comments
-   ((rx (and (0+ " ") (group "--")
-             (0+ any) (group "\n")))
-    (1 "< b")
-    (2 "> b"))
-
    ;;; Syntax rule for char literals
    ((rx (and (1+ " ")
              (group "'")
@@ -117,9 +111,11 @@ To disable this highlighting, set this to nil."
 (defvar elm--syntax-table
   (let ((st (make-syntax-table)))
     ;;; Syntax entry for {- -} type comments.
-    (modify-syntax-entry ?{ "(} 1n" st)
-    (modify-syntax-entry ?- ". 23n" st)
-    (modify-syntax-entry ?} "){ 4n" st)
+    (modify-syntax-entry ?\{  "(}1nb" st)
+    (modify-syntax-entry ?\}  "){4nb" st)
+    (modify-syntax-entry ?-  ". 123" st)
+    (modify-syntax-entry ?\n ">" st)
+
     (modify-syntax-entry ?\" "\"\"" st)
     (modify-syntax-entry ?\\ "\\" st)
     st))
