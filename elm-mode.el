@@ -145,7 +145,7 @@ Find the roots of this function in the c-awk-mode."
 ;;;###autoload
 (define-derived-mode elm-mode prog-mode "Elm"
   "Major mode for editing Elm source code."
-  (setq-default indent-tabs-mode nil)
+  (setq-local indent-tabs-mode nil)
 
   ;; Elm is not generally suitable for electric indentation, since
   ;; there is no unambiguously correct indent level for any given
