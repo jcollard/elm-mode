@@ -61,7 +61,7 @@ To disable this highlighting, set this to nil."
   "Reserved keywords.")
 
 (defconst elm--regexp-keywords
-  (concat (regexp-opt elm--keywords 'words) "[^']")
+  (regexp-opt elm--keywords 'symbols)
   "A regular expression representing the reserved keywords.")
 
 (defconst elm--font-lock-keywords
