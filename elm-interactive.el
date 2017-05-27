@@ -373,16 +373,18 @@ Runs `elm-reactor' first."
 ;;; Make:
 (defun elm-compile--command (file &optional output json)
   "Generate a command that will compile FILE into OUTPUT, with or without JSON reporting."
-  (let* ((elm-compile-arguments
-          (if output
-              (append (cl-remove-if (apply-partially #'string-prefix-p "--output=") elm-compile-arguments)
-                      (list (concat "--output=" (expand-file-name output))))
-            elm-compile-arguments))
-         (elm-compile-arguments
-          (if json
-              (append elm-compile-arguments (list "--report=json"))
-            elm-compile-arguments)))
-    (s-join " " (cl-list* elm-compile-command file elm-compile-arguments))))
+  (let ((elm-compile-arguments
+         (if output
+             (append (cl-remove-if (apply-partially #'string-prefix-p "--output=") elm-compile-arguments)
+                     (list (concat "--output=" (expand-file-name output))))
+           elm-compile-arguments)))
+    (concat elm-compile-command " "
+            (mapconcat 'shell-quote-argument
+                       (append (list file)
+                               elm-compile-arguments
+                               (when json
+                                 (list "--report=json")))
+                       " "))))
 
 (defun elm-compile--filter ()
   "Filter function for compilation output."
