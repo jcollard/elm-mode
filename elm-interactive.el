@@ -384,19 +384,24 @@ Runs `elm-reactor' first."
             elm-compile-arguments)))
     (s-join " " (cl-list* elm-compile-command file elm-compile-arguments))))
 
-(defun elm-compile--colorize-compilation-buffer ()
-  "Handle ANSI escape sequences in compilation buffer."
-  (read-only-mode)
-  (ansi-color-apply-on-region compilation-filter-start (point))
-  (read-only-mode))
+(defun elm-compile--filter ()
+  "Filter function for compilation output."
+  (message "APPLY! %S %S" compilation-filter-start (point-max))
+  (ansi-color-apply-on-region (point-min) (point-max)))
 
-(add-hook 'compilation-filter-hook #'elm-compile--colorize-compilation-buffer)
+(define-compilation-mode elm-compilation-mode "Elm-Compile"
+  "Elm compilation mode."
+  (progn
+    (add-hook 'compilation-filter-hook 'elm-compile--filter nil t)))
 
 (defun elm-compile--file (file &optional output)
   "Compile FILE into OUTPUT."
-  (let ((default-directory (elm--find-dependency-file-path))
-        (compilation-buffer-name-function (lambda (_) elm-compile--buffer-name)))
-    (compile (elm-compile--command file output))))
+  (let ((default-directory (elm--find-dependency-file-path)))
+    (with-current-buffer
+        (compilation-start
+         (elm-compile--command file output)
+         'elm-compilation-mode
+         (lambda (_) elm-compile--buffer-name)))))
 
 (defun elm-compile--file-json (file &optional output)
   "Compile FILE into OUTPUT and return the JSON report."
