@@ -61,7 +61,9 @@
                               find-command))
            (etags-command (concat
                            exclude-command
-                           " | etags --language=none --regex=@" elm-tags-regexps " -")))
+                           " | etags --language=none --regex=@"
+                           (shell-quote-argument elm-tags-regexps)
+                           " -")))
       (call-process-shell-command (concat etags-command "&") nil 0))))
 
 
