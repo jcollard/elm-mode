@@ -51,33 +51,29 @@
 (defun elm-mode-format-buffer ()
   "Apply `elm-format' to the current buffer."
   (interactive)
-  (let* ((column (current-column))
-         (line (line-number-at-pos))
-         ;;; elm-format requires that the file have a .elm extension
+  (let* (;; elm-format requires that the file have a .elm extension
          (in-file (make-temp-file "elm-format" nil ".elm"))
          (err-file (make-temp-file "elm-format"))
          (out-file (make-temp-file "elm-format"))
          (contents (buffer-substring-no-properties (point-min) (point-max)))
-         (_ (with-temp-file in-file (insert contents)))
-         (retcode
-          (with-temp-buffer
-            (call-process elm-format-command
-                          nil (list (current-buffer) err-file)
-                          nil
-                          in-file
-                          "--output" out-file
-                          "--elm-version" elm-format-elm-version
-                          "--yes"))))
+         (_ (with-temp-file in-file (insert contents))))
 
-    (if (/= retcode 0)
-        (elm-format--display-error err-file)
-      (insert-file-contents out-file nil nil nil t)
-      (goto-char (point-min))
-      (forward-line (1- line))
-      (goto-char (+ column (point))))
-
-    (delete-file err-file)
-    (delete-file out-file)))
+    (unwind-protect
+        (let ((retcode
+               (with-temp-buffer
+                 (call-process elm-format-command
+                               nil (list (current-buffer) err-file)
+                               nil
+                               in-file
+                               "--output" out-file
+                               "--elm-version" elm-format-elm-version
+                               "--yes"))))
+          (if (/= retcode 0)
+              (elm-format--display-error err-file)
+            (insert-file-contents out-file nil nil nil t)))
+      (delete-file in-file)
+      (delete-file err-file)
+      (delete-file out-file))))
 
 
 (provide 'elm-format)
