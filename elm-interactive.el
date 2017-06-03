@@ -449,9 +449,9 @@ Runs `elm-reactor' first."
   "Remove unused imports from the current buffer, PROMPT optionally before deleting."
   (interactive "P")
   (elm-compile--ensure-saved)
-  (let* ((report (elm-compile--temporary (elm--buffer-local-file-name)))
+  (let* ((report (append (elm-compile--temporary (elm--buffer-local-file-name)) nil))
          (line-offset 0))
-    (dolist (ob (mapcar #'identity report))
+    (dolist (ob report)
       (let-alist ob
         (when (equal .tag "unused import")
           (save-excursion
@@ -535,7 +535,6 @@ Import consists of the word \"import\", real package name, and optional
   (interactive "P")
   (let* ((report (append (elm-compile--temporary (elm--buffer-local-file-name)) nil))
          (line-offset 0))
-    (pp-display-expression report "*elm-annotation-data*")
     (cl-flet ((start-line (o) (let-alist o .region.start.line)))
       (dolist (ob (cl-sort report (lambda (o1 o2) (> (start-line o1) (start-line o2)))))
         (let-alist ob
