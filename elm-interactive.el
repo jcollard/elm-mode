@@ -518,12 +518,12 @@ Import consists of the word \"import\", real package name, and optional
     (re-search-forward elm-import--pattern nil t)
     (re-search-backward elm-import--pattern nil t)
     (let* ((beg (point))
-          (_ (while (re-search-forward elm-import--pattern nil t)))
-          (end (point))
-          (old-imports (buffer-substring-no-properties beg end))
-          (imports (mapcar 'first
-                           (s-match-strings-all elm-import--pattern old-imports)))
-          (sorted-imports (s-join "\n" (sort imports 'string<))))
+           (_ (while (re-search-forward elm-import--pattern nil t)))
+           (end (point))
+           (old-imports (buffer-substring-no-properties beg end))
+           (imports (mapcar 'first
+                            (s-match-strings-all elm-import--pattern old-imports)))
+           (sorted-imports (s-join "\n" (sort imports 'string<))))
       (unless (string= old-imports sorted-imports)
         (delete-region beg end)
         (insert sorted-imports)))))
