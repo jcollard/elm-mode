@@ -533,19 +533,20 @@ Import consists of the word \"import\", real package name, and optional
 (defun elm-compile-add-annotations (&optional prompt)
   "Add missing type annotations to the current buffer, PROMPT optionally before inserting."
   (interactive "P")
-  (elm-compile--ensure-saved)
-  (let* ((report (elm-compile--temporary (elm--buffer-local-file-name)))
+  (let* ((report (append (elm-compile--temporary (elm--buffer-local-file-name)) nil))
          (line-offset 0))
-    (dolist (ob (mapcar #'identity report))
-      (let-alist ob
-        (when (equal .tag "missing type annotation")
-          ;; Drop the first 2 lines from .details since they contain the warning itself.
-          (let ((annotation (s-join "\n" (cdr (cdr (s-split "\n" .details))))))
-            (goto-char 0)
-            (forward-line (+ line-offset (1- .region.start.line)))
-            (setq line-offset (1+ line-offset))
-            (when (or (not prompt) (y-or-n-p (format "Add annotation '%s'? " annotation)))
-              (princ (format "%s\n" annotation) (current-buffer)))))))))
+    (pp-display-expression report "*elm-annotation-data*")
+    (cl-flet ((start-line (o) (let-alist o .region.start.line)))
+      (dolist (ob (cl-sort report (lambda (o1 o2) (> (start-line o1) (start-line o2)))))
+        (let-alist ob
+          (when (equal .tag "missing type annotation")
+            ;; Drop the first 2 lines from .details since they contain the warning itself.
+            (let ((annotation (s-join "\n" (cdr (cdr (s-split "\n" .details))))))
+              (goto-char 0)
+              (forward-line (+ line-offset (1- .region.start.line)))
+              (setq line-offset (1+ line-offset))
+              (when (or (not prompt) (y-or-n-p (format "Add annotation '%s'? " annotation)))
+                (princ (format "%s\n" annotation) (current-buffer))))))))))
 
 ;;; Package:
 ;;;###autoload
