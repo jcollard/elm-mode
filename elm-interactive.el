@@ -536,7 +536,7 @@ Import consists of the word \"import\", real package name, and optional
   (let* ((report (append (elm-compile--temporary (elm--buffer-local-file-name)) nil))
          (line-offset 0))
     (cl-flet ((start-line (o) (let-alist o .region.start.line)))
-      (dolist (ob (cl-sort report (lambda (o1 o2) (> (start-line o1) (start-line o2)))))
+      (dolist (ob (cl-sort report (lambda (o1 o2) (< (start-line o1) (start-line o2)))))
         (let-alist ob
           (when (equal .tag "missing type annotation")
             ;; Drop the first 2 lines from .details since they contain the warning itself.
