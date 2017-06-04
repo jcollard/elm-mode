@@ -351,8 +351,7 @@ of the file specified."
 
 Runs `elm-reactor' first."
   (run-elm-reactor)
-  (let ((qs (if debug "?debug" "")))
-    (browse-url (concat "http://" elm-reactor-address ":" elm-reactor-port "/" path qs))))
+  (browse-url (concat "http://" elm-reactor-address ":" elm-reactor-port "/" path (when debug "?debug"))))
 
 ;;;###autoload
 (defun elm-preview-buffer (debug)
