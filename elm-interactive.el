@@ -406,12 +406,16 @@ Runs `elm-reactor' first."
          (lambda (_) elm-compile--buffer-name)))))
 
 (defun elm-compile--file-json (file &optional output)
-  "Compile FILE into OUTPUT and return the JSON report."
+  "Compile FILE into OUTPUT and return the JSON report.
+The report is a list of elements sorted by their occurrence order
+in the file."
   (let* ((default-directory (elm--find-dependency-file-path))
          (report (shell-command-to-string
                   (elm-compile--command file output t))))
     (if (string-prefix-p "[" report)
-        (json-read-from-string report)
+        (let ((json (json-read-from-string report)))
+          (cl-flet ((start-line (o) (let-alist o .region.start.line)))
+            (cl-sort (append json nil) (lambda (o1 o2) (< (start-line o1) (start-line o2))))))
       (error "Nothing to do"))))
 
 (defun elm-compile--temporary (file)
@@ -449,7 +453,7 @@ Runs `elm-reactor' first."
   "Remove unused imports from the current buffer, PROMPT optionally before deleting."
   (interactive "P")
   (elm-compile--ensure-saved)
-  (let* ((report (append (elm-compile--temporary (elm--buffer-local-file-name)) nil))
+  (let* ((report (elm-compile--temporary (elm--buffer-local-file-name)))
          (line-offset 0))
     (dolist (ob report)
       (let-alist ob
@@ -533,19 +537,18 @@ Import consists of the word \"import\", real package name, and optional
 (defun elm-compile-add-annotations (&optional prompt)
   "Add missing type annotations to the current buffer, PROMPT optionally before inserting."
   (interactive "P")
-  (let* ((report (append (elm-compile--temporary (elm--buffer-local-file-name)) nil))
+  (let* ((report (elm-compile--temporary (elm--buffer-local-file-name)))
          (line-offset 0))
-    (cl-flet ((start-line (o) (let-alist o .region.start.line)))
-      (dolist (ob (cl-sort report (lambda (o1 o2) (< (start-line o1) (start-line o2)))))
-        (let-alist ob
-          (when (equal .tag "missing type annotation")
-            ;; Drop the first 2 lines from .details since they contain the warning itself.
-            (let ((annotation (s-join "\n" (cdr (cdr (s-split "\n" .details))))))
-              (goto-char 0)
-              (forward-line (+ line-offset (1- .region.start.line)))
-              (setq line-offset (1+ line-offset))
-              (when (or (not prompt) (y-or-n-p (format "Add annotation '%s'? " annotation)))
-                (princ (format "%s\n" annotation) (current-buffer))))))))))
+    (dolist (ob report)
+      (let-alist ob
+        (when (equal .tag "missing type annotation")
+          ;; Drop the first 2 lines from .details since they contain the warning itself.
+          (let ((annotation (s-join "\n" (cdr (cdr (s-split "\n" .details))))))
+            (goto-char 0)
+            (forward-line (+ line-offset (1- .region.start.line)))
+            (setq line-offset (1+ line-offset))
+            (when (or (not prompt) (y-or-n-p (format "Add annotation '%s'? " annotation)))
+              (princ (format "%s\n" annotation) (current-buffer)))))))))
 
 ;;; Package:
 ;;;###autoload
