@@ -138,7 +138,7 @@ Find the roots of this function in the c-awk-mode."
     (define-key map (kbd "C-c C-s") 'elm-sort-imports)
     (define-key map (kbd "C-c C-t") 'elm-oracle-type-at-point)
     (define-key map (kbd "C-c M-d") 'elm-oracle-doc-at-point)
-    (define-key map (kbd "C-c t") 'elm-test-project)
+    (define-key map (kbd "C-c C-v") 'elm-test-project)
     map)
   "Keymap for Elm major mode.")
 
