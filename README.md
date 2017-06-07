@@ -173,7 +173,7 @@ will have to install it manually.
 
 | Keybinding         | Description                                 |
 | ------------------ | ------------------------------------------- |
-| <kbd>C-c t</kbd>   | Run the test suite for the current project. |
+| <kbd>C-c C-v</kbd>   | Run the test suite for the current project. |
 
 
 [company-mode]: http://company-mode.github.io/
