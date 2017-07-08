@@ -313,6 +313,13 @@ Returns the location of the start of the comment, nil otherwise."
     (goto-char guard)
     (not (looking-at "|[ \t]*otherwise\\>"))))
 
+(defsubst elm-indent-union-operator-p (guard)
+  "Check if there is a union operator at GUARD."
+  (save-excursion
+    (goto-char guard)
+    (and (looking-at "|")
+	 (not (looking-at "|>")))))
+
 
 (defun elm-indent-guard (start end end-visible indent-info)
   "Find indentation information for a line starting with a guard."
@@ -461,7 +468,10 @@ Returns the location of the start of the comment, nil otherwise."
           (10 (if (elm-indent-no-otherwise guard) (elm-indent-push-pos guard "| "))
               (if last-line (elm-indent-push-pos-offset guard)))
           ;; "001100"  11= gd agd
-          (11 (if (elm-indent-no-otherwise guard) (elm-indent-push-pos guard "|> "))
+          (11 (if (elm-indent-no-otherwise guard)
+		  (if (elm-indent-union-operator-p guard)
+		      (elm-indent-push-pos guard "| ")
+		      (elm-indent-push-pos guard "|> ")))
               (elm-indent-push-pos aft-guard))
           ;; "001000"  12= gd
           (12 (if (elm-indent-no-otherwise guard) (elm-indent-push-pos guard "|> "))
