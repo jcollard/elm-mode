@@ -59,15 +59,17 @@
          (_ (with-temp-file in-file (insert contents))))
 
     (unwind-protect
-        (let ((retcode
-               (with-temp-buffer
-                 (call-process elm-format-command
-                               nil (list (current-buffer) err-file)
-                               nil
-                               in-file
-                               "--output" out-file
-                               "--elm-version" elm-format-elm-version
-                               "--yes"))))
+        (let* ((command elm-format-command)
+               (version elm-format-elm-version)
+               (retcode
+                (with-temp-buffer
+                  (call-process command
+                                nil (list (current-buffer) err-file)
+                                nil
+                                in-file
+                                "--output" out-file
+                                "--elm-version" version
+                                "--yes"))))
           (if (/= retcode 0)
               (elm-format--display-error err-file)
             (insert-file-contents out-file nil nil nil t)))
