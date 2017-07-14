@@ -430,6 +430,7 @@ in the file."
   (interactive
    (when current-prefix-arg
      (list (read-file-name "Output to: "))))
+  (save-some-buffers)
   (elm-compile--file (elm--buffer-local-file-name) output))
 
 ;;;###autoload
