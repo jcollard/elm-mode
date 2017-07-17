@@ -417,12 +417,18 @@ in the file."
             (cl-sort (append json nil) (lambda (o1 o2) (< (start-line o1) (start-line o2))))))
       (error "Nothing to do"))))
 
+
 (defun elm-compile--temporary (file)
-  "Compile FILE to a temporary output file and return the compilation report."
-  (let* ((output (make-temp-file "" nil ".js"))
-         (report (elm-compile--file-json file output)))
-    (delete-file output)
-    report))
+  "Compile the contents of the buffer belonging to FILE into a temporary output file and return the compilation report."
+  (with-current-buffer (get-buffer file)
+    (let* ((input (make-temp-file default-directory nil ".elm"))
+           (_ (with-suppressed-message (write-region (window-start) (window-end) input) ) )
+           (output (make-temp-file "" nil ".js"))
+           (report (elm-compile--file-json input output)))
+      (delete-file output)
+      (delete-file input)
+      report)))
+
 
 ;;;###autoload
 (defun elm-compile-buffer (&optional output)
@@ -452,7 +458,7 @@ in the file."
 (defun elm-compile-clean-imports (&optional prompt)
   "Remove unused imports from the current buffer, PROMPT optionally before deleting."
   (interactive "P")
-  (elm-compile--ensure-saved)
+  ;; (elm-compile--ensure-saved) ;; no longer needed as elm-compile--temporary compiles the buffer contents
   (let* ((report (elm-compile--temporary (elm--buffer-local-file-name)))
          (line-offset 0))
     (dolist (ob report)
