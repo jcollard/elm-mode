@@ -36,6 +36,11 @@
   :type 'string
   :group 'elm-util)
 
+(defcustom elm--get-decl/flash-duration 0.40
+  "Time in seconds the declaration found by `elm--get-decl' will be highlighted."
+  :type 'number
+  :group 'elm-util)
+
 (defconst elm-package-json
   "elm-package.json"
   "The name of the package JSON configuration file.")
@@ -63,7 +68,7 @@ Relies on `haskell-mode' stuff."
            (lines (split-string raw-decl "\n"))
            (first-line (car lines)))
 
-      (inferior-haskell-flash-decl start end)
+      (inferior-haskell-flash-decl start end elm--get-decl/flash-duration)
       (if (string-match-p "^[a-z].*:" first-line)
           (cdr lines)
         lines))))
