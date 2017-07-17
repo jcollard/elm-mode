@@ -265,9 +265,11 @@ Stolen from haskell-mode."
   (turn-on-elm-font-lock))
 
 ;;;###autoload
-(defun run-elm-interactive ()
-  "Run an inferior instance of `elm-repl' inside Emacs."
-  (interactive)
+(defun run-elm-interactive (no-switch)
+  "Run an inferior instance of `elm-repl' inside Emacs.
+
+If universal argument NO-SWITCH is non-nil, then do not switch to the REPL buffer."
+  (interactive "P")
   (elm-interactive-kill-current-session)
   (let* ((default-directory (elm--find-dependency-file-path))
          (buffer (comint-check-proc elm-interactive--process-name))
@@ -275,18 +277,22 @@ Stolen from haskell-mode."
 
     (setq elm-interactive--current-project default-directory)
 
-    (pop-to-buffer
-     (if (or buffer (not (derived-mode-p 'elm-interactive-mode))
-             (comint-check-proc (current-buffer)))
-         (get-buffer-create (or buffer elm-interactive--buffer-name))
-       (current-buffer)))
+    (with-current-buffer
+        (if (or buffer (not (derived-mode-p 'elm-interactive-mode))
+                (comint-check-proc (current-buffer)))
+            (get-buffer-create (or buffer elm-interactive--buffer-name))
+          (current-buffer))
 
-    (unless buffer
-      (apply #'make-comint-in-buffer elm-interactive--process-name buffer
-             elm-interactive-command nil elm-interactive-arguments)
-      (elm-interactive-mode))
+      (unless buffer
+        (apply #'make-comint-in-buffer elm-interactive--process-name buffer
+               elm-interactive-command nil elm-interactive-arguments)
+        (elm-interactive-mode))
 
-    (setq-local elm-repl--origin origin)))
+      (setq-local elm-repl--origin origin)
+      (setq buffer (current-buffer)) )
+
+    (unless no-switch
+      (pop-to-buffer buffer) ) ))
 
 (defun elm-repl-return-to-origin ()
   "Jump back to the location from which we last jumped to the repl."
