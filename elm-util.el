@@ -54,7 +54,7 @@
     (buffer-substring-no-properties (match-beginning 1) (match-end 1))))
 
 (defun elm--get-decl ()
-  "Return the current declaration.
+  "Return the current declaration as a list of lines, together with the beginning and end of its region.
 
 Relies on `haskell-mode' stuff."
   (unless (fboundp #'haskell-ds-backward-decl)
@@ -62,16 +62,30 @@ Relies on `haskell-mode' stuff."
 
   (save-excursion
     (goto-char (1+ (point)))
-    (let* ((start (or (haskell-ds-backward-decl) (point-min)))
-           (end (or (haskell-ds-forward-decl) (point-max)))
-           (raw-decl (s-trim-right (buffer-substring start end)))
+    (let* ((decl-beg (or (haskell-ds-backward-decl) (point-min)))
+           (decl-end (or (haskell-ds-forward-decl) (point-max)))
+           (raw-decl (s-trim-right (buffer-substring decl-beg decl-end)))
            (lines (split-string raw-decl "\n"))
            (first-line (car lines)))
 
-      (inferior-haskell-flash-decl start end elm--get-decl/flash-duration)
-      (if (string-match-p "^[a-z].*:" first-line)
-          (cdr lines)
-        lines))))
+      (inferior-haskell-flash-decl decl-beg decl-end elm--get-decl/flash-duration)
+
+      (cl-values
+       (if (string-match-p "^[a-z].*:" first-line)
+           (cdr lines)
+         lines)
+       decl-beg
+       decl-end))))
+
+(defun elm--get-region (beg end)
+  "Return the region between BEG and END as a list of lines."
+  (let* ((to-push (buffer-substring-no-properties beg end))
+         (lines (split-string (s-trim-right to-push) "\n")))
+    lines))
+
+(defun elm--print-result (result &rest r)
+  "Display the first line of RESULT in the echo area."
+  (princ (car (split-string result "\n")) ))
 
 (defun elm--build-import-statement ()
   "Generate a statement that will import the current module."
@@ -130,6 +144,11 @@ cases."
     (pcase executable
       ("fish" "; and ")
       (_ " && "))))
+
+
+(defmacro xor (a b)
+  `(if ,a (not ,b) ,b))
+
 
 (provide 'elm-util)
 ;;; elm-util.el ends here
