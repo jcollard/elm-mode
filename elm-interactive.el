@@ -59,6 +59,18 @@
 (defvar elm-interactive-prompt-regexp "^[>|] "
   "Prompt for `run-elm-interactive'.")
 
+(defcustom elm-interactive-after-push-hook '(elm--print-result)
+  "Functions to run after a declaration is pushed to the REPL."
+  :type 'hook
+  :group 'elm)
+
+(defcustom elm-interactive-flip-arg-switch-behaviour nil
+  "When this variable is non-nil, elm-repl-push commands
+(`elm-repl-push', `elm-repl-push-decl') will flip the meaning
+of their ARG-SWITCH, which see."
+   :type 'boolean
+   :group 'elm)
+
 (defcustom elm-reactor-command "elm-reactor"
   "The Elm Reactor command."
   :type '(string)
@@ -240,6 +252,16 @@ Stolen from haskell-mode."
       (setq elm-interactive--seen-prompt nil)
       (comint-send-string proc command))))
 
+(defun elm-interactive--extract-last-output ()
+  "Extract and return the last output from the REPL buffer."
+  (let ((proc (elm-interactive--get-process-buffer)))
+    (with-current-buffer (process-buffer proc)
+      (elm-interactive--wait-for-prompt proc 10)
+      (let* ((result-raw (buffer-substring (point-at-bol)
+                                           (save-excursion (re-search-forward comint-prompt-regexp)
+                                                           (re-search-backward comint-prompt-regexp)))))
+        (s-trim (replace-regexp-in-string "^\|+" "" result-raw))))))
+
 (defun elm-interactive-kill-current-session ()
   "Stop the current REPL session and delete its buffer."
   (interactive)
@@ -265,9 +287,11 @@ Stolen from haskell-mode."
   (turn-on-elm-font-lock))
 
 ;;;###autoload
-(defun run-elm-interactive ()
-  "Run an inferior instance of `elm-repl' inside Emacs."
-  (interactive)
+(defun run-elm-interactive (no-switch)
+  "Run an inferior instance of `elm-repl' inside Emacs.
+
+If universal argument NO-SWITCH is non-nil, then do not switch to the REPL buffer."
+  (interactive "P")
   (elm-interactive-kill-current-session)
   (let* ((default-directory (elm--find-dependency-file-path))
          (buffer (comint-check-proc elm-interactive--process-name))
@@ -275,18 +299,22 @@ Stolen from haskell-mode."
 
     (setq elm-interactive--current-project default-directory)
 
-    (pop-to-buffer
-     (if (or buffer (not (derived-mode-p 'elm-interactive-mode))
-             (comint-check-proc (current-buffer)))
-         (get-buffer-create (or buffer elm-interactive--buffer-name))
-       (current-buffer)))
+    (with-current-buffer
+        (if (or buffer (not (derived-mode-p 'elm-interactive-mode))
+                (comint-check-proc (current-buffer)))
+            (get-buffer-create (or buffer elm-interactive--buffer-name))
+          (current-buffer))
 
-    (unless buffer
-      (apply #'make-comint-in-buffer elm-interactive--process-name buffer
-             elm-interactive-command nil elm-interactive-arguments)
-      (elm-interactive-mode))
+      (unless buffer
+        (apply #'make-comint-in-buffer elm-interactive--process-name buffer
+               elm-interactive-command nil elm-interactive-arguments)
+        (elm-interactive-mode))
 
-    (setq-local elm-repl--origin origin)))
+      (setq-local elm-repl--origin origin)
+      (setq buffer (current-buffer)) )
+
+    (unless no-switch
+      (pop-to-buffer buffer) ) ))
 
 (defun elm-repl-return-to-origin ()
   "Jump back to the location from which we last jumped to the repl."
@@ -311,25 +339,60 @@ of the file specified."
     (elm-interactive--send-command import-statement)))
 
 ;;;###autoload
-(defun elm-repl-push (beg end)
-  "Push the region from BEG to END to an interactive REPL."
-  (interactive "r")
-  (let* ((to-push (buffer-substring-no-properties beg end))
-         (lines (split-string (s-trim-right to-push) "\n")))
-    (run-elm-interactive)
+(defun elm-repl-push (beg end arg-switch)
+  "Push the region from BEG to END to an interactive REPL.
+
+If universal argument ARG-SWITCH is not given (default), switch to the REPL
+buffer after the push; otherwise stay in the current buffer.
+\nIf `elm-interactive-flip-arg-switch-behaviour' is non-nil, reverse this behaviour
+(This makes staying in the current buffer after a push the default).
+\nAfter the push, any functions in `elm-interactive-after-push-hook' will be run
+with the last output extracted from the REPL buffer."
+  (interactive "r\nP")
+
+  (let ((lines (elm--get-region beg end)))
+
+    (run-elm-interactive
+     (xor arg-switch
+          elm-interactive-flip-arg-switch-behaviour))
+
     (dolist (line lines)
       (elm-interactive--send-command (concat line " \\\n")))
-    (elm-interactive--send-command "\n")))
+    (elm-interactive--send-command "\n")
+
+    (if elm-interactive-after-push-hook
+        (run-hook-with-args 'elm-interactive-after-push-hook
+                            (elm-interactive--extract-last-output)
+                            beg
+                            end))) )
 
 ;;;###autoload
-(defun elm-repl-push-decl ()
-  "Push the current top level declaration to the REPL."
-  (interactive)
-  (let ((lines (elm--get-decl)))
-    (run-elm-interactive)
+(defun elm-repl-push-decl (arg-switch)
+  "Push the current top level declaration to the REPL.
+
+If universal argument ARG-SWITCH is not given (default), switch to the REPL
+buffer after the push; otherwise stay in the current buffer.
+\nIf `elm-interactive-flip-arg-switch-behaviour' is non-nil, reverse this behaviour
+(This makes staying in the current buffer after a push the default).
+\nAfter the push, any functions in `elm-interactive-after-push-hook' will be run
+with the last output extracted from the REPL buffer."
+  (interactive "P")
+
+  (cl-multiple-value-bind (lines decl-beg decl-end) (elm--get-decl)
+
+    (run-elm-interactive
+     (xor arg-switch
+          elm-interactive-flip-arg-switch-behaviour))
+
     (dolist (line lines)
       (elm-interactive--send-command (concat line " \\\n")))
-    (elm-interactive--send-command "\n")))
+    (elm-interactive--send-command "\n")
+
+    (if elm-interactive-after-push-hook
+        (run-hook-with-args 'elm-interactive-after-push-hook
+                            (elm-interactive--extract-last-output)
+                            decl-beg
+                            decl-end))))
 
 
 ;;; Reactor:
