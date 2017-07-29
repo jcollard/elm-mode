@@ -36,8 +36,8 @@
   :type 'string
   :group 'elm-util)
 
-(defcustom elm--get-decl/flash-duration 0.40
-  "Time in seconds the declaration found by `elm--get-decl' will be highlighted."
+(defcustom elm-flash-duration 0.40
+  "Time in seconds for which declarations will be highlighted when applicable."
   :type 'number
   :group 'elm-util)
 
@@ -68,7 +68,7 @@ Relies on `haskell-mode' stuff."
            (lines (split-string raw-decl "\n"))
            (first-line (car lines)))
 
-      (inferior-haskell-flash-decl start end elm--get-decl/flash-duration)
+      (inferior-haskell-flash-decl start end elm-flash-duration)
       (if (string-match-p "^[a-z].*:" first-line)
           (cdr lines)
         lines))))
