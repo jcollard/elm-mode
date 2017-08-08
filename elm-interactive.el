@@ -417,12 +417,17 @@ in the file."
             (cl-sort (append json nil) (lambda (o1 o2) (< (start-line o1) (start-line o2))))))
       (error "Nothing to do"))))
 
-(defun elm-compile--temporary (file)
-  "Compile FILE to a temporary output file and return the compilation report."
-  (let* ((output (make-temp-file "" nil ".js"))
-         (report (elm-compile--file-json file output)))
-    (delete-file output)
-    report))
+(defun elm-compile--temporary ()
+  "Get a compilation report for the current buffer."
+  (let* ((input (make-temp-file "elm-comp-in-" nil ".elm"))
+         (output (make-temp-file "elm-comp-out-" nil ".js")))
+    (unwind-protect
+        (progn
+          (write-region (point-min) (point-max) input)
+          (elm-compile--file-json input output))
+      (delete-file output)
+      (delete-file input))))
+
 
 ;;;###autoload
 (defun elm-compile-buffer (&optional output)
@@ -452,8 +457,7 @@ in the file."
 (defun elm-compile-clean-imports (&optional prompt)
   "Remove unused imports from the current buffer, PROMPT optionally before deleting."
   (interactive "P")
-  (elm-compile--ensure-saved)
-  (let* ((report (elm-compile--temporary (elm--buffer-local-file-name)))
+  (let* ((report (elm-compile--temporary))
          (line-offset 0))
     (dolist (ob report)
       (let-alist ob
@@ -537,7 +541,7 @@ Import consists of the word \"import\", real package name, and optional
 (defun elm-compile-add-annotations (&optional prompt)
   "Add missing type annotations to the current buffer, PROMPT optionally before inserting."
   (interactive "P")
-  (let* ((report (elm-compile--temporary (elm--buffer-local-file-name)))
+  (let* ((report (elm-compile--temporary))
          (line-offset 0))
     (dolist (ob report)
       (let-alist ob
