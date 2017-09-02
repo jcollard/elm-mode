@@ -87,6 +87,18 @@ Relies on `haskell-mode' stuff."
         (deppath (elm--find-dependency-file-path)))
     (f-relative dirname deppath)))
 
+(defun elm--find-elm-test-root-directory ()
+  "Find the directory from which to run \"elm-test\".
+This is determined by looking for the closest parent directory
+which is not called \"tests\" and which contains a file named as
+per the `elm-package-json' variable."
+  (or (locate-dominating-file
+       default-directory
+       (lambda (dir)
+         (and (not (s-suffix-p "/tests/" dir))
+              (file-exists-p (expand-file-name elm-package-json default-directory)))))
+      (error "No %s found in non-test parent directories" elm-package-json)))
+
 (defun elm--find-dependency-file-path ()
   "Recursively search for a directory containing a package JSON file."
   (or (locate-dominating-file default-directory elm-package-json)

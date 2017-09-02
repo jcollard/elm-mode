@@ -1114,8 +1114,7 @@ Add this function to your `elm-mode-hook'."
 (defun elm-test-project ()
   "Run the elm-test command on the current project."
   (interactive)
-  (elm--assert-dependency-file)
-  (let ((default-directory (elm--find-dependency-file-path))
+  (let ((default-directory (elm--find-elm-test-root-directory))
         (compilation-buffer-name-function (lambda (_) "*elm-test*")))
     (compile "elm-test")))
 
