@@ -96,7 +96,7 @@ per the `elm-package-json' variable."
        default-directory
        (lambda (dir)
          (and (not (s-suffix-p "/tests/" dir))
-              (file-exists-p (expand-file-name elm-package-json default-directory)))))
+              (file-exists-p (expand-file-name elm-package-json dir)))))
       (error "No %s found in non-test parent directories" elm-package-json)))
 
 (defun elm--find-dependency-file-path ()
