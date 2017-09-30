@@ -73,7 +73,7 @@
                                 "--output" out-file
                                 "--elm-version" version
                                 "--yes"))))
-          (if (/= retcode 0)
+          (if (not (eq retcode 0))
               (elm-format--display-error err-file)
             (insert-file-contents out-file nil nil nil t)))
       (delete-file in-file)
