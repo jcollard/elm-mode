@@ -74,7 +74,9 @@ IS-INTERACTIVE, show a buffer if the formatting fails."
             (ansi-color-apply-on-region (point-min) (point-max))
             (special-mode))
           (if (eq retcode 0)
-              (insert-file-contents out-file nil nil nil t)
+              (progn
+                (insert-file-contents out-file nil nil nil t)
+                (message "elm-format applied"))
             (if is-interactive
                 (display-buffer error-buffer)
               (message "elm-format failed: see %s" (buffer-name error-buffer)))))
