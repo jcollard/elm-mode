@@ -75,10 +75,9 @@ IS-INTERACTIVE, show a buffer if the formatting fails."
             (special-mode))
           (if (eq retcode 0)
               (insert-file-contents out-file nil nil nil t)
-            (progn
-              (if is-interactive
-                  (display-buffer error-buffer)
-                (message "elm-format failed: see %s" (buffer-name error-buffer))))))
+            (if is-interactive
+                (display-buffer error-buffer)
+              (message "elm-format failed: see %s" (buffer-name error-buffer)))))
       (delete-file in-file)
       (delete-file err-file)
       (delete-file out-file))))
