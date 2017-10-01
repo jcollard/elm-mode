@@ -46,8 +46,7 @@
   "Replaces the current buffer's contents with the output of a successful call to elm-format."
   (let ((error-buffer (get-buffer error-buffer-name)))
     (when error-buffer
-      (save-current-buffer
-        (set-buffer error-buffer)
+      (with-current-buffer error-buffer
         (read-only-mode 0)
         (erase-buffer)
         (insert "elm-format applied successfully.")
@@ -64,8 +63,7 @@
   Otherwise, just displays a message informing that the call failed."
 
   (let ((error-buffer (get-buffer-create error-buffer-name)))
-    (save-current-buffer
-      (set-buffer error-buffer)
+    (with-current-buffer error-buffer
       (read-only-mode 0)
       (insert-file-contents err-file nil nil nil t)
       (ansi-color-apply-on-region (point-min) (point-max))
