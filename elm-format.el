@@ -42,7 +42,7 @@
   :group 'elm-format
   :type 'string)
 
-(defun elm-format--handle-success (out-file error-buffer-name is-call-interactive)
+(defun elm-format--handle-success (out-file error-buffer-name)
   "Replaces the current buffer's contents with the output of a successful call to elm-format."
   (let ((error-buffer (get-buffer error-buffer-name)))
     (when error-buffer
@@ -52,12 +52,9 @@
         (insert "elm-format applied successfully.")
         (read-only-mode 1)))
 
-    (insert-file-contents out-file nil nil nil t)
+    (insert-file-contents out-file nil nil nil t)))
 
-    (when is-call-interactive
-      (message "elm-format applied"))))
-
-(defun elm-format--handle-error (err-file error-buffer-name is-call-interactive)
+(defun elm-format--handle-error (err-file error-buffer-name)
   "Handles error for calls to elm-format.
   If elm-format was run interactively by the user, displays a read-only buffer with the error.
   Otherwise, just displays a message informing that the call failed."
@@ -67,11 +64,7 @@
       (read-only-mode 0)
       (insert-file-contents err-file nil nil nil t)
       (ansi-color-apply-on-region (point-min) (point-max))
-      (read-only-mode t))
-
-    (if is-call-interactive
-        (display-buffer error-buffer)
-      (message (concat "elm-format failed: see " error-buffer-name)))))
+      (read-only-mode 1))))
 
 ;;;###autoload
 (defun elm-mode-format-buffer (&optional is-call-interactive)
@@ -98,8 +91,14 @@
                                 "--elm-version" version
                                 "--yes"))))
           (if (not (eq retcode 0))
-              (elm-format--handle-error err-file error-buffer-name is-call-interactive)
-            (elm-format--handle-success out-file error-buffer-name is-call-interactive)))
+              (progn
+                (elm-format--handle-error err-file error-buffer-name)
+                (if is-call-interactive
+                    (display-buffer (get-buffer error-buffer-name))
+                  (message (concat "elm-format failed: see " error-buffer-name))))
+            (progn
+              (elm-format--handle-success out-file error-buffer-name)
+              (when is-call-interactive (message "elm-format applied")))))
       (delete-file in-file)
       (delete-file err-file)
       (delete-file out-file))))
