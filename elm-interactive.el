@@ -472,6 +472,7 @@ in the file."
                 (setq line-offset (1+ line-offset))))))))))
 
 (defconst elm-import--pattern
+  ;; FIXME: should just use rx
   (cl-labels ((re-or (&rest forms)
                      (concat "\\(?:" (s-join "\\|" forms) "\\)"))
               (re-? (&rest forms)
