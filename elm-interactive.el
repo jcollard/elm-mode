@@ -803,6 +803,20 @@ Import consists of the word \"import\", real package name, and optional
       (insert (concat statement "\n"))))
   (elm-sort-imports))
 
+(let* ((files-imports (make-hash-table :test 'equal))
+       (get-file-imports
+        #'(lambda (file) (let ((imports (gethash file files-imports)))
+                           (if imports imports
+                             (setf (gethash file files-imports)
+                                   (make-hash-table :test 'equal)))))))
+  (progn
+    (defun elm-imports--add (buf module alias)
+      (let ((imports (funcall get-file-imports buf)))
+        (setf (gethash module imports) alias)))
+    (defun elm-imports--get (buf module)
+      (gethash module (funcall get-file-imports buf)))
+    (defun elm-imports--reset (buf)
+      (setf (gethash buf files-imports) (make-hash-table :test 'equal)))))
 
 (defun elm-documentation--show (documentation)
   "Show DOCUMENTATION in a help buffer."
