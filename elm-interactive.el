@@ -843,6 +843,11 @@ Import consists of the word \"import\", real package name, and optional
     (defun elm-imports--reset (buf)
       (setf (gethash buf files-imports) (make-hash-table :test 'equal)))))
 
+(defun elm-imports--aliased (buffer name full-name)
+  (let* ((suffix (concat "." name))
+         (module-name (s-chop-suffix suffix full-name)))
+    (elm-imports--get buffer module-name)))
+
 (defun elm-documentation--show (documentation)
   "Show DOCUMENTATION in a help buffer."
   (let-alist documentation
@@ -995,7 +1000,7 @@ Import consists of the word \"import\", real package name, and optional
   "Filter by PREFIX a list of CANDIDATES."
   (cl-remove-if-not (lambda (candidate)
                       (let-alist candidate
-                        (string-prefix-p prefix .fullName)))
+                        (string-prefix-p prefix (elm-imports--aliased (buffer-name) .name .fullName))))
                     candidates))
 
 (defun elm-oracle--get-completions-cached (prefix &optional callback)
