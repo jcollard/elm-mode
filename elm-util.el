@@ -130,6 +130,9 @@ per the `elm-package-json' variable."
           elm-main-file
         (f-join source-dir elm-main-file)))))
 
+(defun buffer->string (buffer)
+  (with-current-buffer buffer (buffer-string)))
+
 (defun elm--shell-and-command ()
   "Determine the appropriate 'and' command for the current shell.
 

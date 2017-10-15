@@ -803,6 +803,11 @@ Import consists of the word \"import\", real package name, and optional
       (insert (concat statement "\n"))))
   (elm-sort-imports))
 
+(defun elm-imports--read (buffer)
+  (let ((imports (s-match-strings-all elm-import--pattern (buffer->string buffer))))
+    (labels ((strip-properties (s) (substring-no-properties s)))
+    (mapcar #'(lambda (x) (s-split-words (strip-properties (first x)))) imports))))
+
 (let* ((files-imports (make-hash-table :test 'equal))
        (get-file-imports
         #'(lambda (file) (let ((imports (gethash file files-imports)))
