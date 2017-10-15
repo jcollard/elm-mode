@@ -803,10 +803,30 @@ Import consists of the word \"import\", real package name, and optional
       (insert (concat statement "\n"))))
   (elm-sort-imports))
 
-(defun elm-imports--read (buffer)
-  (let ((imports (s-match-strings-all elm-import--pattern (buffer->string buffer))))
-    (labels ((strip-properties (s) (substring-no-properties s)))
-    (mapcar #'(lambda (x) (s-split-words (strip-properties (first x)))) imports))))
+(cl-labels
+    ((strip-properties (s) (substring-no-properties s))
+     (extract-alias (words)
+                    (let
+                        ((bare-import (car (--split-with
+                                            (not (equal "exposing" it))
+                                            (--drop-while (equal "import" it) words)))))
+                      (let ((maybe-aliased
+                             (mapcar #'(lambda (lst) (s-join "." lst)) (-split-on "as" bare-import))))
+                        (if (eq 1 (length maybe-aliased))
+                            ;; unaliased imports only contain the qualified module name
+                            (cons (car maybe-aliased) maybe-aliased)
+                          maybe-aliased)))))
+
+  (defun elm-imports--read (buffer)
+    "Reads imports from given buffer and returns an alist containing imports and their aliases"
+    (let ((imports (s-match-strings-all elm-import--pattern (buffer->string buffer))))
+      (mapcar #'(lambda (x) (extract-alias
+                             (s-split-words (strip-properties (first x))))) imports)))
+
+  (defun elm-imports--store (buffer)
+    "Reads imports from buffer and stores them"
+    (mapc #'(lambda (import) (elm-imports--add buffer (car import) (-last-item import)))
+          (elm-imports--read buffer))))
 
 (let* ((files-imports (make-hash-table :test 'equal))
        (get-file-imports
