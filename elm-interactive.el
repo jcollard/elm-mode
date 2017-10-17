@@ -821,7 +821,7 @@ Import consists of the word \"import\", real package name, and optional
     "Reads imports from given buffer and returns an alist containing imports and their aliases"
     (let ((imports (s-match-strings-all elm-import--pattern (buffer->string buffer))))
       (mapcar #'(lambda (x) (extract-alias
-                             (s-split-words (strip-properties (first x))))) imports)))
+                             (s-split "[ \n\t]+" (strip-properties (first x))))) imports)))
 
   (defun elm-imports--store (buffer)
     "Reads imports from buffer and stores them"
