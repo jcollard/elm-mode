@@ -1147,10 +1147,47 @@ Add this function to your `elm-mode-hook'."
     (cl-case command
       (interactive (company-begin-backend 'company-elm))
       (prefix (elm-oracle--completion-prefix-at-point))
-      (doc-buffer (elm-oracle--completion-docbuffer arg))
-      (candidates (cons :async (apply-partially #'elm-oracle--completion-namelist arg)))
-      (annotation (elm-oracle--completion-annotation arg))
-      (meta (elm-oracle--completion-signature arg)))))
+      (doc-buffer (elm-company--docbuffer arg))
+      (candidates (cons :async (apply-partially #'elm-company--candidates arg)))
+      (annotation (elm-company--signature arg))
+      (meta (elm-company--meta arg)))))
+
+(defun elm-company--candidates (prefix &optional callback)
+  (funcall callback (mapcar #' elm-company--make-candidate (elm-oracle--get-candidates prefix))))
+
+(defun elm-company--make-candidate (candidate)
+  (let-alist candidate
+    (propertize (s-join "." (list (elm-imports--aliased (buffer-name) .name .fullName) .name))
+                'signature .signature 'name .fullName 'comment .comment)))
+
+(defun elm-company--signature (candidate)
+  (format " %s" (get-text-property 0 'signature candidate)))
+
+(defun elm-company--meta (candidate)
+  (format "%s : %s"
+          (get-text-property 0 'name candidate)
+          (get-text-property 0 'signature candidate)))
+
+(defun elm-company--docbuffer (candidate)
+  "Return the documentation for CANDIDATE."
+  (company-doc-buffer
+   (format "%s : %s\n\n%s"
+           (get-text-property 0 'name candidate)
+           (get-text-property 0 'signature candidate)
+           (get-text-property 0 'comment candidate))))
+
+(defun elm-oracle--get-candidates (prefix)
+  (let*
+      ((default-directory (elm--find-dependency-file-path))
+       (file (or (buffer-file-name) (elm--find-main-file))))
+    (elm-oracle--run prefix file)))
+
+(defun elm-oracle--run (prefix &optional file)
+  "Get completions by running COMMAND synchronously."
+  (let ((command (s-join " " (list elm-oracle-command
+                                   (shell-quote-argument file)
+                                   (shell-quote-argument prefix)))))
+    (json-read-from-string (shell-command-to-string command))))
 
 ;;;###autoload
 (defun elm-test-project ()
