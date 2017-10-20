@@ -825,8 +825,10 @@ Import consists of the word \"import\", real package name, and optional
 
   (defun elm-imports--store (buffer)
     "Reads imports from buffer and stores them"
-    (mapc #'(lambda (import) (elm-imports--add buffer (car import) (-last-item import)))
-          (elm-imports--read buffer))))
+    (progn
+      (elm-imports--reset buffer)
+      (mapc #'(lambda (import) (elm-imports--add buffer (car import) (-last-item import)))
+            (elm-imports--read buffer))))
 
 (let* ((files-imports (make-hash-table :test 'equal))
        (get-file-imports
@@ -847,6 +849,11 @@ Import consists of the word \"import\", real package name, and optional
   (let* ((suffix (concat "." name))
          (module-name (s-chop-suffix suffix full-name)))
     (elm-imports--get buffer module-name)))
+
+(add-hook 'elm-mode-hook #'(lambda () (elm-imports--store (buffer-name))))
+(add-hook 'after-save-hook
+          #'(lambda () (when (equal major-mode 'elm-mode)
+                         (elm-imports--store (buffer-name)))))
 
 (defun elm-documentation--show (documentation)
   "Show DOCUMENTATION in a help buffer."
