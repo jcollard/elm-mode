@@ -808,8 +808,8 @@ Import consists of the word \"import\", real package name, and optional
      (extract-alias (words)
                     (let
                         ((bare-import (car (--split-with
-                                            (not (equal "exposing" it))
-                                            (--drop-while (equal "import" it) words)))))
+                                            (not (s-prefix? "exposing" it))
+                                            (--drop-while (s-prefix? "import" it) words)))))
                       (let ((maybe-aliased
                              (mapcar #'(lambda (lst) (s-join "." lst)) (-split-on "as" bare-import))))
                         (if (eq 1 (length maybe-aliased))
