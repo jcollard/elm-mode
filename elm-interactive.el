@@ -821,7 +821,7 @@ Import consists of the word \"import\", real package name, and optional
     "Reads imports from given buffer and returns an alist containing imports and their aliases"
     (let ((imports (s-match-strings-all elm-import--pattern (buffer->string buffer))))
       (mapcar #'(lambda (x) (extract-alias
-                             (s-split "[ \n\t]+" (strip-properties (first x))))) imports)))
+                             (s-split "[ \n\t]+" (strip-properties (first x))))) imports))))
 
   (defun elm-imports--store (buffer)
     "Reads imports from buffer and stores them"
@@ -842,13 +842,15 @@ Import consists of the word \"import\", real package name, and optional
         (setf (gethash module imports) alias)))
     (defun elm-imports--get (buf module)
       (gethash module (funcall get-file-imports buf)))
+    (defun elm-imports--inspect (buf)
+      (funcall get-file-imports buf))
     (defun elm-imports--reset (buf)
       (setf (gethash buf files-imports) (make-hash-table :test 'equal)))))
 
 (defun elm-imports--aliased (buffer name full-name)
   (let* ((suffix (concat "." name))
          (module-name (s-chop-suffix suffix full-name)))
-    (elm-imports--get buffer module-name)))
+    (concat (elm-imports--get buffer module-name) suffix)))
 
 (add-hook 'elm-mode-hook #'(lambda () (elm-imports--store (buffer-name))))
 (add-hook 'after-save-hook
@@ -1160,12 +1162,14 @@ Add this function to your `elm-mode-hook'."
       (meta (elm-company--meta arg)))))
 
 (defun elm-company--candidates (prefix &optional callback)
-  (funcall callback (mapcar #' elm-company--make-candidate (elm-oracle--get-candidates prefix))))
+  (funcall (if callback callback #'identity)
+           (mapcar #' elm-company--make-candidate (elm-oracle--get-candidates prefix))))
 
 (defun elm-company--make-candidate (candidate)
-  (let-alist candidate
-    (propertize (s-join "." (list (elm-imports--aliased (buffer-name) .name .fullName) .name))
-                'signature .signature 'name .fullName 'comment .comment)))
+  (progn
+    (let-alist candidate
+      (propertize .fullName
+                  'signature .signature 'name .fullName 'comment .comment))))
 
 (defun elm-company--signature (candidate)
   (format " %s" (get-text-property 0 'signature candidate)))
@@ -1183,18 +1187,61 @@ Add this function to your `elm-mode-hook'."
            (get-text-property 0 'signature candidate)
            (get-text-property 0 'comment candidate))))
 
+(let ((oracle-cache (make-hash-table :test #'equal)))
+  (progn
+    (defun module-name (name full)
+      (let ((suffix (concat "." name)))
+        (s-chop-suffix suffix full)))
+    (defun get-map (key storage)
+      (let ((hashmap (gethash key storage)))
+        (if hashmap hashmap
+          (puthash key (make-hash-table :test #'equal) storage))))
+    (defun elm-oracle--cache-store (candidate)
+      (let-alist candidate
+        (let ((module-map (get-map (module-name .name .fullName) oracle-cache)))
+          (puthash .name candidate module-map))))
+    (defun elm-oracle--cache-get (module)
+      (get-map module oracle-cache))
+    (defun elm-oracle--cache-get-alist (module)
+      (hash-table-values (get-map module oracle-cache)))
+    (defun oca () oracle-cache)))
+
+(defun elm-oracle--cache (candidates)
+  (mapcar #'elm-oracle--cache-store candidates))
+
+(defun elm-oracle--cached-candidates (prefix)
+  (if (> (length prefix) 0)
+      (let* ((aliased (elm-imports--inspect (buffer-name)))
+             (candidates nil))
+        (progn
+          (maphash #'(lambda (k v) (push (cons v k) candidates)) aliased)
+          (message "prefix %s : %s" prefix (assoc prefix candidates))
+          (let ((module (assoc prefix candidates)))
+            (if module
+                (elm-oracle--cache-get-alist (cdr module))
+              (elm-oracle--cached-candidates (seq-subseq prefix 0 -1))))))))
+
 (defun elm-oracle--get-candidates (prefix)
   (let*
       ((default-directory (elm--find-dependency-file-path))
        (file (or (buffer-file-name) (elm--find-main-file))))
-    (elm-oracle--run prefix file)))
+    (mapcar
+     #'(lambda (candidate)
+         (let-alist candidate
+           (cons (cons 'fullName
+                       (elm-imports--aliased (buffer-name) .name .fullName))
+                 candidate)))
+     (elm-oracle--cache
+      (or (elm-oracle--cached-candidates prefix) (elm-oracle--run prefix file))))))
 
 (defun elm-oracle--run (prefix &optional file)
   "Get completions by running COMMAND synchronously."
   (let ((command (s-join " " (list elm-oracle-command
                                    (shell-quote-argument file)
-                                   (shell-quote-argument prefix)))))
-    (json-read-from-string (shell-command-to-string command))))
+                                   (shell-quote-argument prefix))))
+        (json-array-type 'list))
+    (progn
+      (json-read-from-string (shell-command-to-string command)))))
 
 ;;;###autoload
 (defun elm-test-project ()
