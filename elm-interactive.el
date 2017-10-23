@@ -843,8 +843,6 @@ Import consists of the word \"import\", real package name, and optional
         (setf (gethash module imports) alias)))
     (defun elm-imports--get (buf module)
       (gethash module (funcall get-file-imports buf)))
-    (defun elm-imports--inspect (buf)
-      (funcall get-file-imports buf))
     (defun elm-imports--reset (buf)
       (setf (gethash buf files-imports) (make-hash-table :test 'equal)))))
 
@@ -1205,6 +1203,8 @@ Add this function to your `elm-mode-hook'."
             (puthash .name candidate module-map))))
       (defun elm-oracle--cache-get (module)
         (get-map module oracle-cache))
+      (defun elm-oracle--modules ()
+        (hash-table-keys oracle-cache))
       (defun elm-oracle--cache-get-alist (module)
         (hash-table-values (get-map module oracle-cache))))))
 
@@ -1213,21 +1213,31 @@ Add this function to your `elm-mode-hook'."
 
 (defun elm-oracle--cached-candidates (prefix)
   (if (> (length prefix) 0)
-      (let* ((aliased (elm-imports--inspect (buffer-name)))
-             (candidates nil))
-        (progn
-          (maphash #'(lambda (k v) (push (cons v k) candidates)) aliased)
-          (let ((modules
-                 (--filter (or (s-prefix? prefix (car it)) (s-prefix? (car it) prefix))
-                           candidates)))
-            (if-let ((completions
-                      (mapcar
-                       #'(lambda (module)
-                           (elm-oracle--cache-get-alist (cdr module)))
-                       (if modules modules candidates))))
-                ;; any null means a module is out-of sync
-                (if (notany #'null completions)
-                    (apply #'nconc completions))))))))
+      (let* ((aliased (elm-oracle--modules))
+             ;; "Basics" module is exposed by default,
+             ;; let's parse it, if it's not there already
+             ;; (along other modules exposed by default)
+             (aliased (if (assoc "Basics" aliased)
+                          aliased
+                        (progn
+                          (elm-oracle--get-candidates "")
+                          (elm-oracle--modules))))
+             (candidates (mapcar
+                          #'(lambda (module) (cons
+                                              (or (elm-imports--get (buffer-name) module) module)
+                                              module))
+                          aliased)))
+        (let ((modules
+               (--filter (or (s-prefix? prefix (car it)) (s-prefix? (car it) prefix))
+                         candidates)))
+          (if-let ((completions
+                    (mapcar
+                     #'(lambda (module)
+                         (elm-oracle--cache-get-alist (cdr module)))
+                     (if modules modules candidates))))
+              ;; any null means a module is out-of sync
+              (if (notany #'null completions)
+                  (apply #'nconc completions)))))))
 
 (defun elm-oracle--get-candidates (prefix)
   (let*
