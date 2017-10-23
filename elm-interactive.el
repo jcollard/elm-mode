@@ -164,7 +164,7 @@
   :group 'elm)
 
 (defconst elm-oracle--pattern
-  "\\(?:[^A-Za-z0-9_.']\\)\\(\\(?:[A-Za-z_][A-Za-z0-9_']*[.]\\)?[A-Za-z0-9_']*\\)"
+  "\\(?:[^A-Za-z0-9_.']\\)\\(\\(?:[A-Za-z_][A-Za-z0-9_']*[.]\\)*[A-Za-z0-9_']*\\)"
   "The prefix pattern used for completion.")
 
 (defvar elm-oracle--completion-cache (make-hash-table :test #'equal)
