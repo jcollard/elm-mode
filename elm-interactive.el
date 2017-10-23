@@ -484,7 +484,7 @@ in the file."
            (ws+ (concat spaces "+"))
            (upcase "[A-Z][A-Za-z0-9_]*")
            (lowcase "[a-z][A-Za-z0-9_]*")
-           (as-form (concat ws+ "as" ws+ upcase))
+           (as-form (concat ws+ "as" ws+ "\\(" upcase "\\)"))
            (exposing-union-type
             (concat upcase
                     (re-? ws
@@ -511,12 +511,27 @@ in the file."
                     ")")))
       (concat "^import"
               ws+
-              (concat upcase (re-* "\\." upcase))
+              (concat "\\(" upcase (re-* "\\." upcase) "\\)")
               (re-? (re-or (concat as-form (re-? exposing-form))
                            (concat exposing-form (re-? as-form)))))))
   "Regex to match elm import (including multiline).
 Import consists of the word \"import\", real package name, and optional
 \"as\" part, and \"exposing\" part, which may be ordered in either way.")
+
+(defun elm-imports-list ()
+  "Find all imports in the current buffer.
+Return a list of pairs of (NAME . FULL_NAME)."
+  (save-excursion
+    (save-match-data
+      (let ((matches ()))
+        (goto-char (point-min))
+        (while (re-search-forward elm-import--pattern nil t)
+          (let ((full (match-string 1))
+                (as (match-string 2)))
+            (push (cons full full) matches)
+            (when as
+              (push (cons as full) matches))))
+        matches))))
 
 ;;;###autoload
 (defun elm-sort-imports ()
