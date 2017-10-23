@@ -26,6 +26,7 @@
 (require 'comint)
 (require 'compile)
 (require 'cl-lib)
+(require 'dash)
 (require 'elm-font-lock)
 (require 'elm-util)
 (require 'f)
