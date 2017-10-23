@@ -539,18 +539,14 @@ Return a list of pairs of (NAME . FULL_NAME)."
   (interactive)
   (save-excursion
     (goto-char (point-min))
-    (re-search-forward elm-import--pattern nil t)
-    (re-search-backward elm-import--pattern nil t)
-    (let* ((beg (point))
-           (_ (while (re-search-forward elm-import--pattern nil t)))
-           (end (point))
-           (old-imports (buffer-substring-no-properties beg end))
-           (imports (mapcar 'first
-                            (s-match-strings-all elm-import--pattern old-imports)))
-           (sorted-imports (s-join "\n" (sort imports 'string<))))
-      (unless (string= old-imports sorted-imports)
-        (delete-region beg end)
-        (insert sorted-imports)))))
+    (while (re-search-forward elm-import--pattern nil t)
+      ;; Sort block of contiguous imports, separated by empty lines
+      (let ((start (match-beginning 0)))
+        (forward-char 1) ;; Move past newline
+        (while (looking-at elm-import--pattern)
+          (goto-char (1+ (match-end 0))))
+        (let ((end (point)))
+          (sort-regexp-fields nil elm-import--pattern "\\1" start end))))))
 
 
 ;;;###autoload
