@@ -1166,10 +1166,9 @@ Add this function to your `elm-mode-hook'."
            (mapcar #' elm-company--make-candidate (elm-oracle--get-candidates prefix))))
 
 (defun elm-company--make-candidate (candidate)
-  (progn
-    (let-alist candidate
-      (propertize .fullName
-                  'signature .signature 'name .fullName 'comment .comment))))
+  (let-alist candidate
+    (propertize .fullName
+                'signature .signature 'name .fullName 'comment .comment)))
 
 (defun elm-company--signature (candidate)
   (format " %s" (get-text-property 0 'signature candidate)))
@@ -1188,23 +1187,23 @@ Add this function to your `elm-mode-hook'."
            (get-text-property 0 'comment candidate))))
 
 (let ((oracle-cache (make-hash-table :test #'equal)))
-  (progn
-    (defun module-name (name full)
-      (let ((suffix (concat "." name)))
-        (s-chop-suffix suffix full)))
-    (defun get-map (key storage)
-      (let ((hashmap (gethash key storage)))
-        (if hashmap hashmap
-          (puthash key (make-hash-table :test #'equal) storage))))
-    (defun elm-oracle--cache-store (candidate)
-      (let-alist candidate
-        (let ((module-map (get-map (module-name .name .fullName) oracle-cache)))
-          (puthash .name candidate module-map))))
-    (defun elm-oracle--cache-get (module)
-      (get-map module oracle-cache))
-    (defun elm-oracle--cache-get-alist (module)
-      (hash-table-values (get-map module oracle-cache)))
-    (defun oca () oracle-cache)))
+  (cl-flet
+      ((module-name (name full)
+                    (let ((suffix (concat "." name)))
+                      (s-chop-suffix suffix full)))
+       (get-map (key storage)
+                (let ((hashmap (gethash key storage)))
+                  (if hashmap hashmap
+                    (puthash key (make-hash-table :test #'equal) storage)))))
+    (progn
+      (defun elm-oracle--cache-store (candidate)
+        (let-alist candidate
+          (let ((module-map (get-map (module-name .name .fullName) oracle-cache)))
+            (puthash .name candidate module-map))))
+      (defun elm-oracle--cache-get (module)
+        (get-map module oracle-cache))
+      (defun elm-oracle--cache-get-alist (module)
+        (hash-table-values (get-map module oracle-cache))))))
 
 (defun elm-oracle--cache (candidates)
   (mapcar #'elm-oracle--cache-store candidates))
@@ -1215,11 +1214,16 @@ Add this function to your `elm-mode-hook'."
              (candidates nil))
         (progn
           (maphash #'(lambda (k v) (push (cons v k) candidates)) aliased)
-          (message "prefix %s : %s" prefix (assoc prefix candidates))
-          (let ((module (assoc prefix candidates)))
-            (if module
-                (elm-oracle--cache-get-alist (cdr module))
-              (elm-oracle--cached-candidates (seq-subseq prefix 0 -1))))))))
+          (if-let ((modules
+                    (--filter (or (s-prefix? prefix (car it)) (s-prefix? (car it) prefix))
+                              candidates)))
+              (if-let ((completions
+                        (mapcar
+                         #'(lambda (module)
+                             (elm-oracle--cache-get-alist (cdr module))) modules)))
+                  ;; any null means a module is out-of sync
+                  (if (notany #'null completions)
+                      (apply #'nconc completions))))))))
 
 (defun elm-oracle--get-candidates (prefix)
   (let*
@@ -1231,8 +1235,9 @@ Add this function to your `elm-mode-hook'."
            (cons (cons 'fullName
                        (elm-imports--aliased (buffer-name) .name .fullName))
                  candidate)))
-     (elm-oracle--cache
-      (or (elm-oracle--cached-candidates prefix) (elm-oracle--run prefix file))))))
+     (elm-oracle--filter-completions prefix
+                                     (elm-oracle--cache
+      (or (elm-oracle--cached-candidates prefix) (elm-oracle--run prefix file)))))))
 
 (defun elm-oracle--run (prefix &optional file)
   "Get completions by running COMMAND synchronously."
@@ -1240,8 +1245,7 @@ Add this function to your `elm-mode-hook'."
                                    (shell-quote-argument file)
                                    (shell-quote-argument prefix))))
         (json-array-type 'list))
-    (progn
-      (json-read-from-string (shell-command-to-string command)))))
+    (json-read-from-string (shell-command-to-string command))))
 
 ;;;###autoload
 (defun elm-test-project ()
