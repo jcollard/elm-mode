@@ -1113,7 +1113,10 @@ Add this function to your `elm-mode-hook'."
   (when (derived-mode-p 'elm-mode)
     (cl-case command
       (interactive (company-begin-backend 'company-elm))
-      (prefix (elm-oracle--completion-prefix-at-point))
+      (prefix
+       (let ((prefix (elm-oracle--completion-prefix-at-point)))
+         (when (s-contains? "." prefix)
+           prefix)))
       (doc-buffer (elm-oracle--completion-docbuffer arg))
       (candidates (cons :async (apply-partially #'elm-oracle--completion-namelist arg)))
       (annotation (elm-oracle--completion-annotation arg))
