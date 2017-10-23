@@ -1010,7 +1010,9 @@ Import consists of the word \"import\", real package name, and optional
   "Filter by PREFIX a list of CANDIDATES."
   (cl-remove-if-not (lambda (candidate)
                       (let-alist candidate
-                        (string-prefix-p prefix (elm-imports--aliased (buffer-name) .name .fullName))))
+                        (or
+                         (string-prefix-p prefix (elm-imports--aliased (buffer-name) .name .fullName))
+                         (string-prefix-p prefix .name))))
                     candidates))
 
 (defun elm-oracle--get-completions-cached (prefix &optional callback)
@@ -1215,16 +1217,17 @@ Add this function to your `elm-mode-hook'."
              (candidates nil))
         (progn
           (maphash #'(lambda (k v) (push (cons v k) candidates)) aliased)
-          (if-let ((modules
-                    (--filter (or (s-prefix? prefix (car it)) (s-prefix? (car it) prefix))
-                              candidates)))
-              (if-let ((completions
-                        (mapcar
-                         #'(lambda (module)
-                             (elm-oracle--cache-get-alist (cdr module))) modules)))
-                  ;; any null means a module is out-of sync
-                  (if (notany #'null completions)
-                      (apply #'nconc completions))))))))
+          (let ((modules
+                 (--filter (or (s-prefix? prefix (car it)) (s-prefix? (car it) prefix))
+                           candidates)))
+            (if-let ((completions
+                      (mapcar
+                       #'(lambda (module)
+                           (elm-oracle--cache-get-alist (cdr module)))
+                       (if modules modules candidates))))
+                ;; any null means a module is out-of sync
+                (if (notany #'null completions)
+                    (apply #'nconc completions))))))))
 
 (defun elm-oracle--get-candidates (prefix)
   (let*
@@ -1234,7 +1237,7 @@ Add this function to your `elm-mode-hook'."
      #'(lambda (candidate)
          (let-alist candidate
            (cons (cons 'fullName
-                       (elm-imports--aliased (buffer-name) .name .fullName))
+                       (s-chop-prefix "." (elm-imports--aliased (buffer-name) .name .fullName)))
                  candidate)))
      (elm-oracle--filter-completions prefix
                                      (elm-oracle--cache
