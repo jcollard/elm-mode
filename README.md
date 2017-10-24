@@ -40,6 +40,7 @@ the following dependencies are available:
 * [f](https://github.com/rejeep/f.el)
 * [let-alist](https://elpa.gnu.org/packages/let-alist.html)
 * [s](https://github.com/magnars/s.el)
+* [dash](https://github.com/magnars/dash.el)
 
 This package assumes you are runing Emacs 24 or later.
 
