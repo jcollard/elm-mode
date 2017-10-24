@@ -485,7 +485,7 @@ in the file."
            (ws+ (concat spaces "+"))
            (upcase "[A-Z][A-Za-z0-9_]*")
            (lowcase "[a-z][A-Za-z0-9_]*")
-           (as-form (concat ws+ "as" ws+ upcase))
+           (as-form (concat ws+ "as" ws+ "\\(" upcase "\\)"))
            (exposing-union-type
             (concat upcase
                     (re-? ws
@@ -512,7 +512,7 @@ in the file."
                     ")")))
       (concat "^import"
               ws+
-              (concat upcase (re-* "\\." upcase))
+              (concat "\\(" upcase (re-* "\\." upcase) "\\)")
               (re-? (re-or (concat as-form (re-? exposing-form))
                            (concat exposing-form (re-? as-form)))))))
   "Regex to match elm import (including multiline).
@@ -525,18 +525,14 @@ Import consists of the word \"import\", real package name, and optional
   (interactive)
   (save-excursion
     (goto-char (point-min))
-    (re-search-forward elm-import--pattern nil t)
-    (re-search-backward elm-import--pattern nil t)
-    (let* ((beg (point))
-           (_ (while (re-search-forward elm-import--pattern nil t)))
-           (end (point))
-           (old-imports (buffer-substring-no-properties beg end))
-           (imports (mapcar 'first
-                            (s-match-strings-all elm-import--pattern old-imports)))
-           (sorted-imports (s-join "\n" (sort imports 'string<))))
-      (unless (string= old-imports sorted-imports)
-        (delete-region beg end)
-        (insert sorted-imports)))))
+    (while (re-search-forward elm-import--pattern nil t)
+      ;; Sort block of contiguous imports, separated by empty lines
+      (let ((start (match-beginning 0)))
+        (forward-char 1) ;; Move past newline
+        (while (looking-at elm-import--pattern)
+          (goto-char (1+ (match-end 0))))
+        (let ((end (point)))
+          (sort-regexp-fields nil elm-import--pattern "\\1" start end))))))
 
 
 ;;;###autoload
@@ -804,32 +800,28 @@ Import consists of the word \"import\", real package name, and optional
       (insert (concat statement "\n"))))
   (elm-sort-imports))
 
-(cl-labels
-    ((strip-properties (s) (substring-no-properties s))
-     (extract-alias (words)
-                    (let
-                        ((bare-import (car (--split-with
-                                            (not (s-prefix? "exposing" it))
-                                            (--drop-while (s-prefix? "import" it) words)))))
-                      (let ((maybe-aliased
-                             (mapcar #'(lambda (lst) (s-join "." lst)) (-split-on "as" bare-import))))
-                        (if (eq 1 (length maybe-aliased))
-                            ;; unaliased imports only contain the qualified module name
-                            (cons (car maybe-aliased) maybe-aliased)
-                          maybe-aliased)))))
+(defun elm-imports--list (buffer)
+  "Find all imports in the current buffer.
+Return a list of pairs of (FULL_NAME . NAME)."
+  (with-current-buffer buffer
+    (save-excursion
+      (save-match-data
+        (let ((matches ()))
+          (goto-char (point-min))
+          (while (re-search-forward elm-import--pattern nil t)
+            (let ((full (substring-no-properties (match-string 1)))
+                  (as (match-string 2)))
+              (if as
+                  (push (cons full (substring-no-properties as)) matches)
+                (push (cons full full) matches))))
+          matches)))))
 
-  (defun elm-imports--read (buffer)
-    "Reads imports from given buffer and returns an alist containing imports and their aliases"
-    (let ((imports (s-match-strings-all elm-import--pattern (buffer->string buffer))))
-      (mapcar #'(lambda (x) (extract-alias
-                             (s-split "[ \n\t]+" (strip-properties (first x))))) imports))))
-
-  (defun elm-imports--store (buffer)
-    "Reads imports from buffer and stores them"
-    (progn
-      (elm-imports--reset buffer)
-      (mapc #'(lambda (import) (elm-imports--add buffer (car import) (-last-item import)))
-            (elm-imports--read buffer))))
+(defun elm-imports--store (buffer)
+  "Reads imports from buffer and stores them"
+  (progn
+    (elm-imports--reset buffer)
+    (mapc #'(lambda (import) (elm-imports--add buffer (car import) (cdr import)))
+          (elm-imports--list buffer))))
 
 (let* ((files-imports (make-hash-table :test 'equal))
        (get-file-imports
