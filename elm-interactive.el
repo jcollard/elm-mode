@@ -831,14 +831,18 @@ Return a list of pairs of (FULL_NAME . NAME)."
                                    (make-hash-table :test 'equal)))))))
   (progn
     (defun elm-imports--add (buf module alias)
+      "Store module alias used inside the buffer"
       (let ((imports (funcall get-file-imports buf)))
         (setf (gethash module imports) alias)))
     (defun elm-imports--get (buf module)
+      "Get module alias inside the buffer"
       (gethash module (funcall get-file-imports buf)))
     (defun elm-imports--reset (buf)
+      "Reset buffer's module aliases"
       (setf (gethash buf files-imports) (make-hash-table :test 'equal)))))
 
 (defun elm-imports--aliased (buffer name full-name)
+  "Translates an exposed function with NAME and qualified name FULL-NAME to its fully qualified form using the alias defined inside the BUFFER"
   (let* ((suffix (concat "." name))
          (module-name (s-chop-suffix suffix full-name)))
     (concat (elm-imports--get buffer module-name) suffix)))
@@ -1155,18 +1159,22 @@ Add this function to your `elm-mode-hook'."
       (meta (elm-company--meta arg)))))
 
 (defun elm-company--candidates (prefix &optional callback)
+  "Function providing candidates for company-mode"
   (funcall (if callback callback #'identity)
            (mapcar #' elm-company--make-candidate (elm-oracle--get-candidates prefix))))
 
 (defun elm-company--make-candidate (candidate)
+  "Creates a company-mode completion candidate from a CANDIDATE obtained via elm-oracle"
   (let-alist candidate
     (propertize .fullName
                 'signature .signature 'name .fullName 'comment .comment)))
 
 (defun elm-company--signature (candidate)
+  "Returns company signature for CANDIDATE"
   (format " %s" (get-text-property 0 'signature candidate)))
 
 (defun elm-company--meta (candidate)
+  "Returns company meta for CANDIDATE"
   (format "%s : %s"
           (get-text-property 0 'name candidate)
           (get-text-property 0 'signature candidate)))
@@ -1179,6 +1187,7 @@ Add this function to your `elm-mode-hook'."
            (get-text-property 0 'signature candidate)
            (get-text-property 0 'comment candidate))))
 
+;; symbol cache and functions relevant to it
 (let ((oracle-cache (make-hash-table :test #'equal)))
   (cl-flet
       ((module-name (name full)
@@ -1190,24 +1199,30 @@ Add this function to your `elm-mode-hook'."
                     (puthash key (make-hash-table :test #'equal) storage)))))
     (progn
       (defun elm-oracle--cache-store (candidate)
+        "Stores a candidate inside the symbol cache"
         (let-alist candidate
           (let ((module-map (get-map (module-name .name .fullName) oracle-cache)))
             (puthash .name candidate module-map))))
       (defun elm-oracle--cache-get (module)
+        "Retrieves symbols for MODULE from the symbol cache"
         (get-map module oracle-cache))
       (defun elm-oracle--modules ()
+        "Returns modules currently cached in the symbol cache"
         (hash-table-keys oracle-cache))
       (defun elm-oracle--cache-get-alist (module)
+        "Returns an alist containing cached functions for given MODULE"
         (hash-table-values (get-map module oracle-cache))))))
 
 (defun elm-oracle--cache (candidates)
+  "Caches candidates returned by elm-oracle for future use"
   (mapcar #'elm-oracle--cache-store candidates))
 
 (defun elm-oracle--cached-candidates (prefix)
+  "Returns cached elm-oracle completion candidates for given PREFIX"
   (if (> (length prefix) 0)
       (let* ((aliased (elm-oracle--modules))
-             ;; "Basics" module is exposed by default,
-             ;; let's parse it, if it's not there already
+             ;; "Basics" module is exposed by default, let's parse it
+             ;; and initialise the cache if it's not there already
              ;; (along other modules exposed by default)
              (aliased (if (assoc "Basics" aliased)
                           aliased
@@ -1232,6 +1247,7 @@ Add this function to your `elm-mode-hook'."
                   (apply #'nconc completions)))))))
 
 (defun elm-oracle--get-candidates (prefix)
+  "Rerturns elm-oracle completion candidates for given PREFIX"
   (let*
       ((default-directory (elm--find-dependency-file-path))
        (file (or (buffer-file-name) (elm--find-main-file))))
@@ -1246,7 +1262,7 @@ Add this function to your `elm-mode-hook'."
       (or (elm-oracle--cached-candidates prefix) (elm-oracle--run prefix file)))))))
 
 (defun elm-oracle--run (prefix &optional file)
-  "Get completions by running COMMAND synchronously."
+  "Get completions inside FILE for PREFIX"
   (let ((command (s-join " " (list elm-oracle-command
                                    (shell-quote-argument file)
                                    (shell-quote-argument prefix))))
