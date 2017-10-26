@@ -832,6 +832,7 @@ Return a list of pairs of (FULL_NAME . NAME)."
   (progn
     (defun elm-imports--add (buf module alias)
       "Store module alias used inside the buffer"
+      (elm-oracle--cache-init module)
       (let ((imports (funcall get-file-imports buf)))
         (setf (gethash module imports) alias)))
     (defun elm-imports--get (buf module)
@@ -1203,8 +1204,11 @@ Add this function to your `elm-mode-hook'."
         (let-alist candidate
           (let ((module-map (get-map (module-name .name .fullName) oracle-cache)))
             (puthash .name candidate module-map))))
+      (defun elm-oracle--cache-init (module)
+        "Initialises MODULE's symbol cache"
+        (get-map module oracle-cache))
       (defun elm-oracle--cache-get (module)
-        "Retrieves symbols for MODULE from the symbol cache"
+        "Retrieves symbols for MODULE from the symbol cache. Also initialises MODULE's symbol cache."
         (get-map module oracle-cache))
       (defun elm-oracle--modules ()
         "Returns modules currently cached in the symbol cache"
@@ -1224,7 +1228,7 @@ Add this function to your `elm-mode-hook'."
              ;; "Basics" module is exposed by default, let's parse it
              ;; and initialise the cache if it's not there already
              ;; (along other modules exposed by default)
-             (aliased (if (assoc "Basics" aliased)
+             (aliased (if (member "Basics" aliased)
                           aliased
                         (progn
                           (elm-oracle--get-candidates "")
@@ -1257,9 +1261,9 @@ Add this function to your `elm-mode-hook'."
            (cons (cons 'fullName
                        (s-chop-prefix "." (elm-imports--aliased (buffer-name) .name .fullName)))
                  candidate)))
-     (elm-oracle--filter-completions prefix
-                                     (elm-oracle--cache
-      (or (elm-oracle--cached-candidates prefix) (elm-oracle--run prefix file)))))))
+     (or
+      (elm-oracle--filter-completions prefix (elm-oracle--cached-candidates prefix))
+      (elm-oracle--cache (elm-oracle--run prefix file))))))
 
 (defun elm-oracle--run (prefix &optional file)
   "Get completions for PREFIX inside FILE."
