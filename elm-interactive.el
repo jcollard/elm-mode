@@ -1063,33 +1063,34 @@ Passes completions to CALLBACK if present, otherwise returns them."
            (get-text-property 0 'comment candidate))))
 
 ;; symbol cache and functions relevant to it
-(let ((oracle-cache (make-hash-table :test #'equal)))
-  (cl-flet
-      ((module-name (name full)
-                    (let ((suffix (concat "." name)))
-                      (s-chop-suffix suffix full)))
-       (get-map (key storage)
-                (let ((hashmap (gethash key storage)))
-                  (if hashmap hashmap
-                    (puthash key (make-hash-table :test #'equal) storage)))))
-    (progn
-      (defun elm-oracle--cache-store (candidate)
-        "Stores a candidate inside the symbol cache"
-        (let-alist candidate
-          (let ((module-map (get-map (module-name .name .fullName) oracle-cache)))
-            (puthash .name candidate module-map))))
-      (defun elm-oracle--cache-init (module)
-        "Initialises MODULE's symbol cache"
-        (get-map module oracle-cache))
-      (defun elm-oracle--cache-get (module)
-        "Retrieves symbols for MODULE from the symbol cache. Also initialises MODULE's symbol cache."
-        (get-map module oracle-cache))
-      (defun elm-oracle--modules ()
-        "Returns modules currently cached in the symbol cache"
-        (hash-table-keys oracle-cache))
-      (defun elm-oracle--cache-get-alist (module)
-        "Returns an alist containing cached functions for given MODULE"
-        (hash-table-values (get-map module oracle-cache))))))
+(make-variable-buffer-local 'elm-oracle--symbol-cache)
+(add-hook 'elm-mode-hook #'(lambda () (setq elm-oracle--symbol-cache (make-hash-table :test #'equal))))
+(cl-flet
+    ((module-name (name full)
+                  (let ((suffix (concat "." name)))
+                    (s-chop-suffix suffix full)))
+     (get-map (key storage)
+              (let ((hashmap (gethash key storage)))
+                (if hashmap hashmap
+                  (puthash key (make-hash-table :test #'equal) storage)))))
+  (progn
+    (defun elm-oracle--cache-store (candidate)
+      "Stores a candidate inside the symbol cache"
+      (let-alist candidate
+        (let ((module-map (get-map (module-name .name .fullName) elm-oracle--symbol-cache)))
+          (puthash .name candidate module-map))))
+    (defun elm-oracle--cache-init (module)
+      "Initialises MODULE's symbol cache"
+      (get-map module elm-oracle--symbol-cache))
+    (defun elm-oracle--cache-get (module)
+      "Retrieves symbols for MODULE from the symbol cache. Also initialises MODULE's symbol cache."
+      (get-map module elm-oracle--symbol-cache))
+    (defun elm-oracle--modules ()
+      "Returns modules currently cached in the symbol cache"
+      (hash-table-keys elm-oracle--symbol-cache))
+    (defun elm-oracle--cache-get-alist (module)
+      "Returns an alist containing cached functions for given MODULE"
+      (hash-table-values (get-map module elm-oracle--symbol-cache)))))
 
 (defun elm-oracle--cache (candidates)
   "Caches CANDIDATES returned by elm-oracle for future use."
