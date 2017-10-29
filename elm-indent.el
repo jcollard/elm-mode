@@ -1229,35 +1229,6 @@ TYPE is either 'guard or 'rhs."
 (define-obsolete-variable-alias 'elm-indent-map 'elm-indent-mode-map)
 
 ;;;###autoload
-(defun turn-on-elm-indent ()
-  "Turn on ``intelligent'' Elm indentation mode."
-  (set (make-local-variable 'indent-line-function) 'elm-indent-cycle)
-  (set (make-local-variable 'indent-region-function) 'elm-indent-region)
-  (setq elm-indent-mode t)
-  ;; Activate our keymap.
-  (let ((map (current-local-map)))
-    (while (and map (not (eq map elm-indent-map)))
-      (setq map (keymap-parent map)))
-    (if map
-        ;; elm-indent-map is already active: nothing to do.
-        nil
-      ;; Put our keymap on top of the others.  We could also put it in
-      ;; second place, or in a minor-mode.  The minor-mode approach would be
-      ;; easier, but it's harder for the user to override it.  This approach
-      ;; is the closest in behavior compared to the previous code that just
-      ;; used a bunch of local-set-key.
-      (set-keymap-parent elm-indent-map (current-local-map))
-      ;; Protect our keymap.
-      (setq map (make-sparse-keymap))
-      (set-keymap-parent map elm-indent-map)
-      (use-local-map map)))
-  (run-hooks 'elm-indent-hook))
-
-(defun turn-off-elm-indent ()
-  "Turn off ``intelligent'' Elm indentation mode."
-  (elm-indent-mode nil))
-
-;;;###autoload
 (define-minor-mode elm-indent-mode
   "``Intelligent'' Elm indentation mode.
 
@@ -1283,6 +1254,14 @@ Invokes `elm-indent-hook' if not nil."
         (set (make-local-variable 'indent-region-function) 'elm-indent-region))
     (kill-local-variable 'indent-line-function)
     (kill-local-variable 'indent-region-function)))
+
+;;;###autoload
+(define-obsolete-function-alias 'turn-on-elm-indent 'elm-indent-mode)
+
+(defun turn-off-elm-indent ()
+  "Turn off ``intelligent'' Elm indentation mode."
+  (elm-indent-mode nil))
+
 
 (provide 'elm-indent)
 ;;; elm-indent.el ends here
