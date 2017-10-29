@@ -1221,15 +1221,12 @@ TYPE is either 'guard or 'rhs."
   (elm-indent-align-def mark-active 'rhs))
 
 
-;;; elm-indent-mode
-(defvar elm-indent-mode nil
-  "Non-nil if the semi-intelligent Elm indentation mode is in effect.")
-(make-variable-buffer-local 'elm-indent-mode)
-
-(defvar elm-indent-map
+(defvar elm-indent-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map [?\C-c ?\C-=] 'elm-indent-insert-equal)
     map))
+
+(define-obsolete-variable-alias 'elm-indent-map 'elm-indent-mode-map)
 
 ;;;###autoload
 (defun turn-on-elm-indent ()
@@ -1258,24 +1255,10 @@ TYPE is either 'guard or 'rhs."
 
 (defun turn-off-elm-indent ()
   "Turn off ``intelligent'' Elm indentation mode."
-  (kill-local-variable 'indent-line-function)
-  ;; Remove elm-indent-map from the local map.
-  (let ((map (current-local-map)))
-    (while map
-      (let ((parent (keymap-parent map)))
-        (if (eq elm-indent-map parent)
-            (set-keymap-parent map (keymap-parent parent))
-          (setq map parent)))))
-  (setq elm-indent-mode nil))
-
-;; Put this minor mode on the global minor-mode-alist.
-(or (assq 'elm-indent-mode (default-value 'minor-mode-alist))
-    (setq-default minor-mode-alist
-                  (append (default-value 'minor-mode-alist)
-                          '((elm-indent-mode " Elm Indent")))))
+  (elm-indent-mode nil))
 
 ;;;###autoload
-(defun elm-indent-mode (&optional arg)
+(define-minor-mode elm-indent-mode
   "``Intelligent'' Elm indentation mode.
 
 This deals with the layout rules of Elm.
@@ -1291,14 +1274,15 @@ Other special keys are:
       inserts an =
 
 Invokes `elm-indent-hook' if not nil."
-  (interactive "P")
-  (setq elm-indent-mode
-        (if (null arg)
-            (not elm-indent-mode)
-          (> (prefix-numeric-value arg) 0)))
+  :global nil
+  :lighter " EIndent"
+  :map 'elm-indent-mode-map
   (if elm-indent-mode
-      (turn-on-elm-indent)
-    (turn-off-elm-indent)))
+      (progn
+        (set (make-local-variable 'indent-line-function) 'elm-indent-cycle)
+        (set (make-local-variable 'indent-region-function) 'elm-indent-region))
+    (kill-local-variable 'indent-line-function)
+    (kill-local-variable 'indent-region-function)))
 
 (provide 'elm-indent)
 ;;; elm-indent.el ends here
