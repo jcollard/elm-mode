@@ -810,42 +810,15 @@ Return a list of pairs of (FULL_NAME . NAME)."
                 (push (cons full full) matches))))
           matches)))))
 
-(defun elm-imports--store (buffer)
-  "Read imports from BUFFER and store them."
-  (progn
-    (elm-imports--reset buffer)
-    (mapc #'(lambda (import) (elm-imports--add buffer (car import) (cdr import)))
-          (elm-imports--list buffer))))
-
-(let* ((files-imports (make-hash-table :test 'equal))
-       (get-file-imports
-        #'(lambda (file) (let ((imports (gethash file files-imports)))
-                           (if imports imports
-                             (setf (gethash file files-imports)
-                                   (make-hash-table :test 'equal)))))))
-  (progn
-    (defun elm-imports--add (buf module alias)
-      "Store module alias used inside the buffer"
-      (elm-oracle--cache-init module)
-      (let ((imports (funcall get-file-imports buf)))
-        (setf (gethash module imports) alias)))
-    (defun elm-imports--get (buf module)
-      "Get module alias inside the buffer"
-      (gethash module (funcall get-file-imports buf)))
-    (defun elm-imports--reset (buf)
-      "Reset buffer's module aliases"
-      (setf (gethash buf files-imports) (make-hash-table :test 'equal)))))
+(defun elm-imports--get (buf module)
+  "Get module alias inside the buffer"
+  (cdr (assoc module (elm-imports--list buf))))
 
 (defun elm-imports--aliased (buffer name full-name)
   "Use aliases defined inside BUFFER to translate an exposed function with NAME and qualified name FULL-NAME to its aliased and qualified form."
   (let* ((suffix (concat "." name))
          (module-name (s-chop-suffix suffix full-name)))
     (concat (elm-imports--get buffer module-name) suffix)))
-
-(add-hook 'elm-mode-hook #'(lambda () (elm-imports--store (buffer-name))))
-(add-hook 'after-save-hook
-          #'(lambda () (when (equal major-mode 'elm-mode)
-                         (elm-imports--store (buffer-name)))))
 
 (defun elm-documentation--show (documentation)
   "Show DOCUMENTATION in a help buffer."
