@@ -937,9 +937,8 @@ Return a list of pairs of (FULL_NAME . NAME)."
   "Set up standard completion.
 Add this function to your `elm-mode-hook' to enable an
 elm-specific `completion-at-point' function."
-  (add-hook 'completion-at-point-functions
-            #'elm-oracle-completion-at-point-function
-            nil t))
+  (add-to-list (make-local-variable 'completion-at-point-functions)
+               #'elm-oracle-completion-at-point-function))
 
 (defvar ac-sources)
 (defvar ac-source-elm
