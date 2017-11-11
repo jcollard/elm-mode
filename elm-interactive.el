@@ -903,13 +903,12 @@ and qualified name FULL-NAME to its aliased and qualified form."
   "Get elm-oracle completions for PREFIX with optional POPUP formatting."
   (mapcar (if popup
               (lambda (name)
-                (let ((sig (get-text-property 0 'signature name))
-                      (comment (get-text-property 0 'comment name)))
+                (let-alist candidate
                   (popup-make-item name
-                                   :document (concat signature "\n\n" comment)
-                                   :summary signature)))
+                                   :document (concat .signature "\n\n" .comment)
+                                   :summary .signature)))
             #'identity)
-          (elm-company--candidates prefix)))
+          (elm-oracle--get-candidates prefix)))
 
 (defun elm-oracle--function-at-point ()
   "Get the name of the function at point."
@@ -934,10 +933,8 @@ and qualified name FULL-NAME to its aliased and qualified form."
 (defun elm-oracle--propertize-completion-type (completion)
   "Propertize COMPLETION so that it can be displayed in the minibuffer."
   (when completion
-    (concat
-     (propertize (get-text-property 0 'name completion) 'face 'font-lock-function-name-face)
-     ": "
-     (get-text-property 0 'signature completion))))
+    (let-alist completion
+      (concat (propertize .name 'face 'font-lock-function-name-face) ": " .signature))))
 
 (defun elm-oracle--type-at-point ()
   "Get the type of the function at point."
