@@ -796,7 +796,7 @@ Import consists of the word \"import\", real package name, and optional
 
 (defun elm-imports--list (buffer)
   "Find all imports in the current BUFFER.
-Return a list of pairs of (NAME . FULL_NAME)."
+Return a list of pairs of (FULL_NAME . NAME)."
   (with-current-buffer buffer
     (save-excursion
       (save-match-data
@@ -806,19 +806,16 @@ Return a list of pairs of (NAME . FULL_NAME)."
             (let ((full (substring-no-properties (match-string 1)))
                   (as (match-string 2)))
               (if as
-                  (push (cons (substring-no-properties as) full) matches)
+                  (push (cons full (substring-no-properties as)) matches)
                 (push (cons full full) matches))))
           matches)))))
-
-(defun elm-imports--get (imports-list module)
-  "Using IMPORTS-LIST, find the full name of MODULE."
-  (alist-get module imports-list nil nil 'string-equal))
 
 (defun elm-imports--aliased (imports-list name full-name)
   "Use IMPORTS-LIST to translate an exposed function with NAME
 and qualified name FULL-NAME to its aliased and qualified form."
   (let* ((suffix (concat "." name))
-         (module-name (s-chop-suffix suffix full-name)))
+         (module-name (s-chop-suffix suffix full-name))
+         (local-module-name (alist-get module-name imports-list nil nil 'string-equal)))
     (concat (elm-imports--get imports-list module-name) suffix)))
 
 
@@ -890,15 +887,6 @@ and qualified name FULL-NAME to its aliased and qualified form."
            (end (match-end 0)))
       (s-trim (buffer-substring-no-properties beg end)))))
 
-(defun elm-oracle--filter-completions (imports-list prefix candidates)
-  "Given IMPORTS-LIST, filter by PREFIX a list of CANDIDATES."
-  (cl-remove-if-not (lambda (candidate)
-                      (let-alist candidate
-                        (or
-                         (string-prefix-p prefix (elm-imports--aliased imports-list .name .fullName))
-                         (string-prefix-p prefix .name))))
-                    candidates))
-
 (defun elm-oracle--get-completions (prefix &optional popup)
   "Get elm-oracle completions for PREFIX with optional POPUP formatting."
   (mapcar (if popup
@@ -913,15 +901,14 @@ and qualified name FULL-NAME to its aliased and qualified form."
 (defun elm-oracle--function-at-point ()
   "Get the name of the function at point."
   (save-excursion
-    (let ((symbol (symbol-name (symbol-at-point))))
-      (skip-chars-forward "[A-Za-z0-9_.']")
-      (let* ((_ (re-search-backward elm-oracle--pattern nil t))
-             (beg (1+ (match-beginning 0)))
-             (end (match-end 0))
-             (item (s-trim (buffer-substring-no-properties beg end))))
-        (if (string-empty-p item)
-            symbol
-          item)))))
+    (skip-chars-forward "[A-Za-z0-9_.']")
+    (let* ((_ (re-search-backward elm-oracle--pattern nil t))
+           (beg (1+ (match-beginning 0)))
+           (end (match-end 0))
+           (item (s-trim (buffer-substring-no-properties beg end))))
+      (if (string-empty-p item)
+          nil
+        item))))
 
 (defun elm-oracle--completion-at-point ()
   "Get the Oracle completion object at point."
@@ -1034,83 +1021,37 @@ Passes completions to CALLBACK if present, otherwise returns them."
            (get-text-property 0 'signature candidate)
            (get-text-property 0 'comment candidate))))
 
-;; symbol cache and functions relevant to it
-(let ((oracle-cache (make-hash-table :test #'equal)))
-  (cl-flet
-      ((module-name (name full)
-                    (let ((suffix (concat "." name)))
-                      (s-chop-suffix suffix full)))
-       (get-map (key storage)
-                (let ((hashmap (gethash key storage)))
-                  (if hashmap hashmap
-                    (puthash key (make-hash-table :test #'equal) storage)))))
-    (progn
-      (defun elm-oracle--cache-store (candidate)
-        "Stores a candidate inside the symbol cache"
-        (let-alist candidate
-          (let ((module-map (get-map (module-name .name .fullName) oracle-cache)))
-            (puthash .name candidate module-map))))
-      (defun elm-oracle--cache-init (module)
-        "Initialises MODULE's symbol cache"
-        (get-map module oracle-cache))
-      (defun elm-oracle--cache-get (module)
-        "Retrieves symbols for MODULE from the symbol cache. Also initialises MODULE's symbol cache."
-        (get-map module oracle-cache))
-      (defun elm-oracle--modules ()
-        "Returns modules currently cached in the symbol cache"
-        (hash-table-keys oracle-cache))
-      (defun elm-oracle--cache-get-alist (module)
-        "Returns an alist containing cached functions for given MODULE"
-        (hash-table-values (get-map module oracle-cache))))))
 
-(defun elm-oracle--cache (candidates)
-  "Caches CANDIDATES returned by elm-oracle for future use."
-  (mapcar #'elm-oracle--cache-store candidates))
-
-(defun elm-oracle--cached-candidates (imports-list prefix)
-  "Given IMPORTS-LIST, return cached elm-oracle completion candidates for PREFIX."
-  (if (> (length prefix) 0)
-      (let* ((aliased (elm-oracle--modules))
-             ;; "Basics" module is exposed by default, let's parse it
-             ;; and initialise the cache if it's not there already
-             ;; (along other modules exposed by default)
-             (aliased (if (member "Basics" aliased)
-                          aliased
-                        (progn
-                          (elm-oracle--get-candidates "")
-                          (elm-oracle--modules))))
-             (candidates (mapcar
-                          #'(lambda (module) (cons
-                                         (or (elm-imports--get imports-list module) module)
-                                         module))
-                          aliased)))
-        (let ((modules
-               (--filter (or (s-prefix? prefix (car it)) (s-prefix? (car it) prefix))
-                         candidates)))
-          (if-let ((completions
-                    (mapcar
-                     #'(lambda (module)
-                         (elm-oracle--cache-get-alist (cdr module)))
-                     (if modules modules candidates))))
-              ;; any null means a module is out-of sync
-              (if (notany #'null completions)
-                  (apply #'nconc completions)))))))
+(defvar-local elm-oracle--cache nil
+  "This is a cons pair of (IMPORTS-LIST . CANDIDATES).
+IMPORTS-LIST is the result of `elm-imports--list' at the time
+`elm-oracle' was run, and CANDIDATES is the set of results.")
 
 (defun elm-oracle--get-candidates (prefix)
   "Rerturns elm-oracle completion candidates for given PREFIX."
   (let*
       ((file (or (buffer-file-name) (elm--find-main-file)))
        (imports-list (elm-imports--list (current-buffer))))
-    (mapcar
-     #'(lambda (candidate)
-         (let-alist candidate
-           (cons (cons 'fullName
-                       (s-chop-prefix "." (elm-imports--aliased imports-list .name .fullName)))
-                 candidate)))
-     (or
-      (elm-oracle--filter-completions imports-list prefix
-                                      (elm-oracle--cached-candidates imports-list prefix))
-      (elm-oracle--cache (elm-oracle--run prefix file))))))
+    ;; TODO: filter these
+    (cl-remove-if-not
+     (lambda (candidate)
+       (let-alist candidate
+         (or (string-prefix-p prefix .fullName)
+             (string-prefix-p prefix .name))))
+     (if (equal imports-list (car elm-oracle--cache))
+         (cdr elm-oracle--cache)
+       (setq elm-oracle--cache
+             (cons imports-list (elm-oracle--catalogue-with-local-names file imports-list)))))))
+
+(defun elm-oracle--catalogue-with-local-names (file imports-list)
+  "Given FILE and IMPORTS-LIST, get an alias-adjusted catalogue of all symbols known to elm-oracle."
+  (mapcar
+   #'(lambda (candidate)
+       (let-alist candidate
+         (cons (cons 'fullName
+                     (concat (elm-imports--aliased imports-list .name .fullName)))
+               candidate)))
+   (elm-oracle--run "" file)))
 
 (defun elm-oracle--run (prefix &optional file)
   "Get completions for PREFIX inside FILE."
