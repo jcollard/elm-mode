@@ -796,7 +796,7 @@ Import consists of the word \"import\", real package name, and optional
 
 (defun elm-imports--list (buffer)
   "Find all imports in the current BUFFER.
-Return a list of pairs of (FULL_NAME . NAME)."
+Return a list of pairs of (NAME . FULL_NAME)."
   (with-current-buffer buffer
     (save-excursion
       (save-match-data
@@ -806,19 +806,21 @@ Return a list of pairs of (FULL_NAME . NAME)."
             (let ((full (substring-no-properties (match-string 1)))
                   (as (match-string 2)))
               (if as
-                  (push (cons full (substring-no-properties as)) matches)
+                  (push (cons (substring-no-properties as) full) matches)
                 (push (cons full full) matches))))
           matches)))))
 
-(defun elm-imports--get (buf module)
-  "Get module alias inside the buffer"
-  (cdr (assoc module (elm-imports--list buf))))
+(defun elm-imports--get (imports-list module)
+  "Using IMPORTS-LIST, find the full name of MODULE."
+  (alist-get module imports-list nil nil 'string-equal))
 
-(defun elm-imports--aliased (buffer name full-name)
-  "Use aliases defined inside BUFFER to translate an exposed function with NAME and qualified name FULL-NAME to its aliased and qualified form."
+(defun elm-imports--aliased (imports-list name full-name)
+  "Use IMPORTS-LIST to translate an exposed function with NAME
+and qualified name FULL-NAME to its aliased and qualified form."
   (let* ((suffix (concat "." name))
          (module-name (s-chop-suffix suffix full-name)))
-    (concat (elm-imports--get buffer module-name) suffix)))
+    (concat (elm-imports--get imports-list module-name) suffix)))
+
 
 (defun elm-documentation--show (documentation)
   "Show DOCUMENTATION in a help buffer."
@@ -888,12 +890,12 @@ Return a list of pairs of (FULL_NAME . NAME)."
            (end (match-end 0)))
       (s-trim (buffer-substring-no-properties beg end)))))
 
-(defun elm-oracle--filter-completions (prefix candidates)
-  "Filter by PREFIX a list of CANDIDATES."
+(defun elm-oracle--filter-completions (imports-list prefix candidates)
+  "Given IMPORTS-LIST, filter by PREFIX a list of CANDIDATES."
   (cl-remove-if-not (lambda (candidate)
                       (let-alist candidate
                         (or
-                         (string-prefix-p prefix (elm-imports--aliased (buffer-name) .name .fullName))
+                         (string-prefix-p prefix (elm-imports--aliased imports-list .name .fullName))
                          (string-prefix-p prefix .name))))
                     candidates))
 
@@ -1036,41 +1038,40 @@ Passes completions to CALLBACK if present, otherwise returns them."
            (get-text-property 0 'comment candidate))))
 
 ;; symbol cache and functions relevant to it
-(make-variable-buffer-local 'elm-oracle--symbol-cache)
-(add-hook 'elm-mode-hook #'(lambda () (setq elm-oracle--symbol-cache (make-hash-table :test #'equal))))
-(cl-flet
-    ((module-name (name full)
-                  (let ((suffix (concat "." name)))
-                    (s-chop-suffix suffix full)))
-     (get-map (key storage)
-              (let ((hashmap (gethash key storage)))
-                (if hashmap hashmap
-                  (puthash key (make-hash-table :test #'equal) storage)))))
-  (progn
-    (defun elm-oracle--cache-store (candidate)
-      "Stores a candidate inside the symbol cache"
-      (let-alist candidate
-        (let ((module-map (get-map (module-name .name .fullName) elm-oracle--symbol-cache)))
-          (puthash .name candidate module-map))))
-    (defun elm-oracle--cache-init (module)
-      "Initialises MODULE's symbol cache"
-      (get-map module elm-oracle--symbol-cache))
-    (defun elm-oracle--cache-get (module)
-      "Retrieves symbols for MODULE from the symbol cache. Also initialises MODULE's symbol cache."
-      (get-map module elm-oracle--symbol-cache))
-    (defun elm-oracle--modules ()
-      "Returns modules currently cached in the symbol cache"
-      (hash-table-keys elm-oracle--symbol-cache))
-    (defun elm-oracle--cache-get-alist (module)
-      "Returns an alist containing cached functions for given MODULE"
-      (hash-table-values (get-map module elm-oracle--symbol-cache)))))
+(let ((oracle-cache (make-hash-table :test #'equal)))
+  (cl-flet
+      ((module-name (name full)
+                    (let ((suffix (concat "." name)))
+                      (s-chop-suffix suffix full)))
+       (get-map (key storage)
+                (let ((hashmap (gethash key storage)))
+                  (if hashmap hashmap
+                    (puthash key (make-hash-table :test #'equal) storage)))))
+    (progn
+      (defun elm-oracle--cache-store (candidate)
+        "Stores a candidate inside the symbol cache"
+        (let-alist candidate
+          (let ((module-map (get-map (module-name .name .fullName) oracle-cache)))
+            (puthash .name candidate module-map))))
+      (defun elm-oracle--cache-init (module)
+        "Initialises MODULE's symbol cache"
+        (get-map module oracle-cache))
+      (defun elm-oracle--cache-get (module)
+        "Retrieves symbols for MODULE from the symbol cache. Also initialises MODULE's symbol cache."
+        (get-map module oracle-cache))
+      (defun elm-oracle--modules ()
+        "Returns modules currently cached in the symbol cache"
+        (hash-table-keys oracle-cache))
+      (defun elm-oracle--cache-get-alist (module)
+        "Returns an alist containing cached functions for given MODULE"
+        (hash-table-values (get-map module oracle-cache))))))
 
 (defun elm-oracle--cache (candidates)
   "Caches CANDIDATES returned by elm-oracle for future use."
   (mapcar #'elm-oracle--cache-store candidates))
 
-(defun elm-oracle--cached-candidates (prefix)
-  "Return cached elm-oracle completion candidates for given PREFIX."
+(defun elm-oracle--cached-candidates (imports-list prefix)
+  "Given IMPORTS-LIST, return cached elm-oracle completion candidates for PREFIX."
   (if (> (length prefix) 0)
       (let* ((aliased (elm-oracle--modules))
              ;; "Basics" module is exposed by default, let's parse it
@@ -1083,8 +1084,8 @@ Passes completions to CALLBACK if present, otherwise returns them."
                           (elm-oracle--modules))))
              (candidates (mapcar
                           #'(lambda (module) (cons
-                                              (or (elm-imports--get (buffer-name) module) module)
-                                              module))
+                                         (or (elm-imports--get imports-list module) module)
+                                         module))
                           aliased)))
         (let ((modules
                (--filter (or (s-prefix? prefix (car it)) (s-prefix? (car it) prefix))
@@ -1101,21 +1102,23 @@ Passes completions to CALLBACK if present, otherwise returns them."
 (defun elm-oracle--get-candidates (prefix)
   "Rerturns elm-oracle completion candidates for given PREFIX."
   (let*
-      ((default-directory (elm--find-dependency-file-path))
-       (file (or (buffer-file-name) (elm--find-main-file))))
+      ((file (or (buffer-file-name) (elm--find-main-file)))
+       (imports-list (elm-imports--list (current-buffer))))
     (mapcar
      #'(lambda (candidate)
          (let-alist candidate
            (cons (cons 'fullName
-                       (s-chop-prefix "." (elm-imports--aliased (buffer-name) .name .fullName)))
+                       (s-chop-prefix "." (elm-imports--aliased imports-list .name .fullName)))
                  candidate)))
      (or
-      (elm-oracle--filter-completions prefix (elm-oracle--cached-candidates prefix))
+      (elm-oracle--filter-completions imports-list prefix
+                                      (elm-oracle--cached-candidates imports-list prefix))
       (elm-oracle--cache (elm-oracle--run prefix file))))))
 
 (defun elm-oracle--run (prefix &optional file)
   "Get completions for PREFIX inside FILE."
-  (let ((command (s-join " " (list elm-oracle-command
+  (let ((default-directory (elm--find-dependency-file-path))
+        (command (s-join " " (list elm-oracle-command
                                    (shell-quote-argument file)
                                    (shell-quote-argument prefix))))
         (json-array-type 'list))
