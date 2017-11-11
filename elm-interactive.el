@@ -470,13 +470,14 @@ in the file."
 (defconst elm-import--pattern
   (let* ((upper-word '(seq upper (0+ alnum)))
          (lower-word '(seq lower (0+ alnum)))
-         (exposing-item `(or ,lower-word (seq ,upper-word (opt (0+ space) "(" (0+ space) (or ".." ,upper-word) (0+ space) ")"))))
-         (exposing-list `(seq ,exposing-item (0+ (0+ space) "," (0+ space) ,exposing-item))))
+         (ws '(or space "\n"))
+         (exposing-item `(or ,lower-word (seq ,upper-word (opt (0+ ,ws) "(" (0+ ,ws) (or ".." ,upper-word) (0+ ,ws) ")"))))
+         (exposing-list `(seq ,exposing-item (0+ (0+ ,ws) "," (0+ ,ws) ,exposing-item))))
     (rx-to-string
      `(seq line-start
-           "import" (1+ space) (group ,upper-word (0+ "." ,upper-word))
-           (opt (1+ space) "as" (1+ space) (group ,upper-word))
-           (opt (1+ space) "exposing" (1+ space) "(" (0+ space) (or ".." ,exposing-list) (0+ space) ")"))) )
+           "import" (1+ ,ws) (group ,upper-word (0+ "." ,upper-word))
+           (opt (1+ ,ws) "as" (1+ ,ws) (group ,upper-word))
+           (opt (1+ ,ws) "exposing" (1+ ,ws) "(" (0+ ,ws) (or ".." ,exposing-list) (0+ ,ws) ")"))) )
   "Regex to match elm import (including multiline).
 Import consists of the word \"import\", real package name, and optional
 \"as\" part, and \"exposing\" part, which may be ordered in either way.")
