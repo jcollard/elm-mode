@@ -910,22 +910,26 @@ and qualified name FULL-NAME to its aliased and qualified form."
           nil
         item))))
 
-(defun elm-oracle--completion-at-point ()
+(defun elm-oracle--item-at-point ()
   "Get the Oracle completion object at point."
   (let ((prefix (elm-oracle--function-at-point)))
     (when prefix
-      ;; TODO: should find only an exactly-matching symbol
-      (car (elm-oracle--get-completions prefix)))))
+      (cl-find-if
+       (lambda (candidate)
+         (let-alist candidate
+           (or (string= prefix .fullName)
+               (string= prefix .name))))
+       (elm-oracle--get-catalogue)))))
 
 (defun elm-oracle--propertize-completion-type (completion)
   "Propertize COMPLETION so that it can be displayed in the minibuffer."
   (when completion
     (let-alist completion
-      (concat (propertize .name 'face 'font-lock-function-name-face) ": " .signature))))
+      (concat (propertize .fullName 'face 'font-lock-function-name-face) ": " .signature))))
 
 (defun elm-oracle--type-at-point ()
   "Get the type of the function at point."
-  (elm-oracle--propertize-completion-type (elm-oracle--completion-at-point)))
+  (elm-oracle--propertize-completion-type (elm-oracle--item-at-point)))
 
 ;;;###autoload
 (defun elm-oracle-type-at-point ()
@@ -942,7 +946,7 @@ and qualified name FULL-NAME to its aliased and qualified form."
 (defun elm-oracle-doc-at-point ()
   "Show the documentation of the value at point."
   (interactive)
-  (let ((completion (elm-oracle--completion-at-point)))
+  (let ((completion (elm-oracle--item-at-point)))
     (if completion
         (elm-documentation--show completion)
       (message "Unknown symbol"))))
@@ -1028,20 +1032,23 @@ IMPORTS-LIST is the result of `elm-imports--list' at the time
 `elm-oracle' was run, and CANDIDATES is the set of results.")
 
 (defun elm-oracle--get-candidates (prefix)
-  "Rerturns elm-oracle completion candidates for given PREFIX."
+  "Returns elm-oracle completion candidates for given PREFIX."
+  (cl-remove-if-not
+   (lambda (candidate)
+     (let-alist candidate
+       (or (string-prefix-p prefix .fullName)
+           (string-prefix-p prefix .name))))
+   (elm-oracle--get-catalogue)))
+
+(defun elm-oracle--get-catalogue ()
+  "Return the full elm-oracle catalogue for the current file."
   (let*
       ((file (or (buffer-file-name) (elm--find-main-file)))
        (imports-list (elm-imports--list (current-buffer))))
-    ;; TODO: filter these
-    (cl-remove-if-not
-     (lambda (candidate)
-       (let-alist candidate
-         (or (string-prefix-p prefix .fullName)
-             (string-prefix-p prefix .name))))
-     (if (and imports-list (equal imports-list (car elm-oracle--cache)))
-         (cdr elm-oracle--cache)
-       (setq elm-oracle--cache
-             (cons imports-list (elm-oracle--catalogue-with-local-names file imports-list)))))))
+    (if (and imports-list (equal imports-list (car elm-oracle--cache)))
+        (cdr elm-oracle--cache)
+      (setq elm-oracle--cache
+            (cons imports-list (elm-oracle--catalogue-with-local-names file imports-list))))))
 
 (defun elm-oracle--catalogue-with-local-names (file imports-list)
   "Given FILE and IMPORTS-LIST, get an alias-adjusted catalogue of all symbols known to elm-oracle."
