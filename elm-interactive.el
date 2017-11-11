@@ -1038,7 +1038,7 @@ IMPORTS-LIST is the result of `elm-imports--list' at the time
        (let-alist candidate
          (or (string-prefix-p prefix .fullName)
              (string-prefix-p prefix .name))))
-     (if (equal imports-list (car elm-oracle--cache))
+     (if (and imports-list (equal imports-list (car elm-oracle--cache)))
          (cdr elm-oracle--cache)
        (setq elm-oracle--cache
              (cons imports-list (elm-oracle--catalogue-with-local-names file imports-list)))))))
