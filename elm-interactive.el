@@ -780,12 +780,11 @@ Return a list of pairs of (FULL_NAME . NAME)."
           matches)))))
 
 (defun elm-imports--aliased (imports-list name full-name)
-  "Use IMPORTS-LIST to translate an exposed function with NAME
-and qualified name FULL-NAME to its aliased and qualified form."
+  "Given IMPORTS-LIST, return the local name for function with NAME and FULL-NAME."
   (let* ((suffix (concat "." name))
          (module-name (s-chop-suffix suffix full-name))
          (local-module-name (alist-get module-name imports-list nil nil 'string-equal)))
-    (concat (elm-imports--get imports-list module-name) suffix)))
+    (concat local-module-name suffix)))
 
 
 (defun elm-documentation--show (documentation)
@@ -859,12 +858,14 @@ and qualified name FULL-NAME to its aliased and qualified form."
 (defun elm-oracle--get-completions (prefix &optional popup)
   "Get elm-oracle completions for PREFIX with optional POPUP formatting."
   (mapcar (if popup
-              (lambda (name)
+              (lambda (candidate)
                 (let-alist candidate
-                  (popup-make-item name
+                  (popup-make-item .fullName
                                    :document (concat .signature "\n\n" .comment)
                                    :summary .signature)))
-            #'identity)
+            (lambda (candidate)
+              (let-alist candidate
+                .fullName)))
           (elm-oracle--get-candidates prefix)))
 
 (defun elm-oracle--function-at-point ()
@@ -951,6 +952,10 @@ elm-specific `completion-at-point' function."
 Add this function to your `elm-mode-hook'."
   (add-to-list 'ac-sources 'ac-source-elm))
 
+
+(declare-function company-begin-backend "company")
+(declare-function company-doc-buffer "company")
+
 ;;;###autoload
 (defun company-elm (command &optional arg &rest ignored)
   "Provide completion info according to COMMAND and ARG.  IGNORED is not used."
@@ -1001,7 +1006,7 @@ IMPORTS-LIST is the result of `elm-imports--list' at the time
 `elm-oracle' was run, and CANDIDATES is the set of results.")
 
 (defun elm-oracle--get-candidates (prefix)
-  "Returns elm-oracle completion candidates for given PREFIX."
+  "Return elm-oracle completion candidates for given PREFIX."
   (cl-remove-if-not
    (lambda (candidate)
      (let-alist candidate
