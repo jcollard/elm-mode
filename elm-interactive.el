@@ -36,6 +36,7 @@
 (require 'subr-x)
 (require 'tabulated-list)
 (require 'url)
+(require 'rx)
 
 (defvar elm-interactive--seen-prompt nil
   "Non-nil represents the fact that a prompt has been spotted.")
@@ -467,48 +468,15 @@ in the file."
                 (setq line-offset (1+ line-offset))))))))))
 
 (defconst elm-import--pattern
-  ;; FIXME: should just use rx
-  (cl-labels ((re-or (&rest forms)
-                     (concat "\\(?:" (s-join "\\|" forms) "\\)"))
-              (re-? (&rest forms)
-                    (concat "\\(?:" (s-join "" forms) "\\)?"))
-              (re-* (&rest forms)
-                    (concat "\\(?:" (s-join "" forms) "\\)*")))
-    (let* ((spaces "[[:space:]\n]")
-           (ws (concat spaces "*"))
-           (ws+ (concat spaces "+"))
-           (upcase "[A-Z][A-Za-z0-9_]*")
-           (lowcase "[a-z][A-Za-z0-9_]*")
-           (as-form (concat ws+ "as" ws+ "\\(" upcase "\\)"))
-           (exposing-union-type
-            (concat upcase
-                    (re-? ws
-                          "("
-                          (re-or "\\.\\." ;; expose all
-                                 (concat upcase
-                                         (re-* ws "," ws upcase)))
-                          ws
-                          ")")))
-           (exposing-operator
-            (re-? ws "([^)]+)"))
-           (exposing-subform
-            (re-or lowcase exposing-union-type exposing-operator))
-           (exposing-form
-            (concat ws+
-                    "exposing"
-                    ws
-                    "("
-                    ws
-                    (re-or "\\.\\." ;; expose all
-                           (concat exposing-subform
-                                   (re-* ws "," ws exposing-subform)))
-                    ws
-                    ")")))
-      (concat "^import"
-              ws+
-              (concat "\\(" upcase (re-* "\\." upcase) "\\)")
-              (re-? (re-or (concat as-form (re-? exposing-form))
-                           (concat exposing-form (re-? as-form)))))))
+  (let* ((upper-word '(seq upper (0+ alnum)))
+         (lower-word '(seq lower (0+ alnum)))
+         (exposing-item `(or ,lower-word (seq ,upper-word (opt (0+ space) "(" (0+ space) (or ".." ,upper-word) (0+ space) ")"))))
+         (exposing-list `(seq ,exposing-item (0+ (0+ space) "," (0+ space) ,exposing-item))))
+    (rx-to-string
+     `(seq line-start
+           "import" (1+ space) (group ,upper-word (0+ "." ,upper-word))
+           (opt (1+ space) "as" (1+ space) (group ,upper-word))
+           (opt (1+ space) "exposing" (1+ space) "(" (0+ space) (or ".." ,exposing-list) (0+ space) ")"))) )
   "Regex to match elm import (including multiline).
 Import consists of the word \"import\", real package name, and optional
 \"as\" part, and \"exposing\" part, which may be ordered in either way.")
