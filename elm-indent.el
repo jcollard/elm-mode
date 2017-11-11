@@ -1221,61 +1221,15 @@ TYPE is either 'guard or 'rhs."
   (elm-indent-align-def mark-active 'rhs))
 
 
-;;; elm-indent-mode
-(defvar elm-indent-mode nil
-  "Non-nil if the semi-intelligent Elm indentation mode is in effect.")
-(make-variable-buffer-local 'elm-indent-mode)
-
-(defvar elm-indent-map
+(defvar elm-indent-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map [?\C-c ?\C-=] 'elm-indent-insert-equal)
     map))
 
-;;;###autoload
-(defun turn-on-elm-indent ()
-  "Turn on ``intelligent'' Elm indentation mode."
-  (set (make-local-variable 'indent-line-function) 'elm-indent-cycle)
-  (set (make-local-variable 'indent-region-function) 'elm-indent-region)
-  (setq elm-indent-mode t)
-  ;; Activate our keymap.
-  (let ((map (current-local-map)))
-    (while (and map (not (eq map elm-indent-map)))
-      (setq map (keymap-parent map)))
-    (if map
-        ;; elm-indent-map is already active: nothing to do.
-        nil
-      ;; Put our keymap on top of the others.  We could also put it in
-      ;; second place, or in a minor-mode.  The minor-mode approach would be
-      ;; easier, but it's harder for the user to override it.  This approach
-      ;; is the closest in behavior compared to the previous code that just
-      ;; used a bunch of local-set-key.
-      (set-keymap-parent elm-indent-map (current-local-map))
-      ;; Protect our keymap.
-      (setq map (make-sparse-keymap))
-      (set-keymap-parent map elm-indent-map)
-      (use-local-map map)))
-  (run-hooks 'elm-indent-hook))
-
-(defun turn-off-elm-indent ()
-  "Turn off ``intelligent'' Elm indentation mode."
-  (kill-local-variable 'indent-line-function)
-  ;; Remove elm-indent-map from the local map.
-  (let ((map (current-local-map)))
-    (while map
-      (let ((parent (keymap-parent map)))
-        (if (eq elm-indent-map parent)
-            (set-keymap-parent map (keymap-parent parent))
-          (setq map parent)))))
-  (setq elm-indent-mode nil))
-
-;; Put this minor mode on the global minor-mode-alist.
-(or (assq 'elm-indent-mode (default-value 'minor-mode-alist))
-    (setq-default minor-mode-alist
-                  (append (default-value 'minor-mode-alist)
-                          '((elm-indent-mode " Elm Indent")))))
+(define-obsolete-variable-alias 'elm-indent-map 'elm-indent-mode-map)
 
 ;;;###autoload
-(defun elm-indent-mode (&optional arg)
+(define-minor-mode elm-indent-mode
   "``Intelligent'' Elm indentation mode.
 
 This deals with the layout rules of Elm.
@@ -1291,14 +1245,23 @@ Other special keys are:
       inserts an =
 
 Invokes `elm-indent-hook' if not nil."
-  (interactive "P")
-  (setq elm-indent-mode
-        (if (null arg)
-            (not elm-indent-mode)
-          (> (prefix-numeric-value arg) 0)))
+  :global nil
+  :lighter " EIndent"
+  :map 'elm-indent-mode-map
   (if elm-indent-mode
-      (turn-on-elm-indent)
-    (turn-off-elm-indent)))
+      (progn
+        (set (make-local-variable 'indent-line-function) 'elm-indent-cycle)
+        (set (make-local-variable 'indent-region-function) 'elm-indent-region))
+    (kill-local-variable 'indent-line-function)
+    (kill-local-variable 'indent-region-function)))
+
+;;;###autoload
+(define-obsolete-function-alias 'turn-on-elm-indent 'elm-indent-mode)
+
+(defun turn-off-elm-indent ()
+  "Turn off ``intelligent'' Elm indentation mode."
+  (elm-indent-mode nil))
+
 
 (provide 'elm-indent)
 ;;; elm-indent.el ends here
