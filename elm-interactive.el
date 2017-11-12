@@ -482,12 +482,13 @@ in the file."
      `(seq line-start
            "import" (1+ ,ws) (group ,upper-word (0+ "." ,upper-word))
            (opt (1+ ,ws) "as" (1+ ,ws) (group ,upper-word))
-           (opt (1+ ,ws) "exposing" (1+ ,ws) "(" (0+ ,ws) (or ".." ,exposing-list) (0+ ,ws) ")")
+           (opt (1+ ,ws) "exposing" (1+ ,ws) "(" (0+ ,ws) (group (or ".." ,exposing-list)) (0+ ,ws) ")")
            (0+ space)
            line-end)) )
   "Regex to match elm import (including multiline).
 Import consists of the word \"import\", real package name, and optional
-\"as\" part, and \"exposing\" part, which may be ordered in either way.")
+\"as\" part, and \"exposing\" part, which must occur in that (standard) order.
+Each is captured as a group.")
 
 ;;;###autoload
 (defun elm-sort-imports ()
@@ -770,9 +771,11 @@ Import consists of the word \"import\", real package name, and optional
       (insert (concat statement "\n"))))
   (elm-sort-imports))
 
+
 (defun elm-imports--list (buffer)
   "Find all imports in the current BUFFER.
-Return a list of pairs of (FULL_NAME . NAME)."
+Return an alist of (FULL_NAME . ('as AS 'exposing EXPOSING), where
+EXPOSING"
   (with-current-buffer buffer
     (save-excursion
       (save-match-data
@@ -780,18 +783,25 @@ Return a list of pairs of (FULL_NAME . NAME)."
           (goto-char (point-min))
           (while (re-search-forward elm-import--pattern nil t)
             (let ((full (substring-no-properties (match-string 1)))
-                  (as (match-string 2)))
-              (if as
-                  (push (cons full (substring-no-properties as)) matches)
-                (push (cons full full) matches))))
+                  (as (match-string 2))
+                  (exposing (match-string 3)))
+              (push (list full
+                          (cons 'as (if as (substring-no-properties as) full))
+                          (cons 'exposing exposing))
+                    matches)))
           matches)))))
 
 (defun elm-imports--aliased (imports-list name full-name)
   "Given IMPORTS-LIST, return the local name for function with NAME and FULL-NAME."
   (let* ((suffix (concat "." name))
          (module-name (s-chop-suffix suffix full-name))
-         (local-module-name (alist-get module-name imports-list nil nil 'string-equal)))
-    (concat local-module-name suffix)))
+         (imports-entry (alist-get module-name imports-list nil nil 'string-equal)))
+    (let-alist imports-entry
+      (if (when .exposing
+            (or (string-equal .exposing "..")
+                (cl-find name (s-split " *, *" .exposing) :test 'string-equal)))
+          name
+        (concat (or .as module-name) suffix)))))
 
 
 (defun elm-documentation--show (documentation)
