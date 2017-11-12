@@ -979,6 +979,8 @@ Add this function to your `elm-mode-hook'."
   (when (derived-mode-p 'elm-mode)
     (cl-case command
       (interactive (company-begin-backend 'company-elm))
+      (sorted t)
+      (duplicates t)
       (prefix (elm-oracle--completion-prefix-at-point))
       (doc-buffer (elm-company--docbuffer arg))
       (candidates (cons :async (apply-partially #'elm-company--candidates arg)))
@@ -1023,12 +1025,18 @@ IMPORTS-LIST is the result of `elm-imports--list' at the time
 
 (defun elm-oracle--get-candidates (prefix)
   "Return elm-oracle completion candidates for given PREFIX."
-  (cl-remove-if-not
-   (lambda (candidate)
-     (let-alist candidate
-       (or (string-prefix-p prefix .fullName)
-           (string-prefix-p prefix .name))))
-   (elm-oracle--get-catalogue)))
+  (cl-sort
+   (cl-remove-if-not
+    (lambda (candidate)
+      (let-alist candidate
+        (or (string-prefix-p prefix .fullName)
+            (string-prefix-p prefix .name))))
+    (elm-oracle--get-catalogue))
+   (lambda (c1 c2)
+     ;; Sort better matches first
+     (let ((n1 (alist-get 'fullName c1))
+           (n2 (alist-get 'fullName c2)))
+       (> (s-index-of prefix n2) (s-index-of prefix n1))))))
 
 (defun elm-oracle--get-catalogue ()
   "Return the full elm-oracle catalogue for the current file."
