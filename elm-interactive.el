@@ -1041,10 +1041,28 @@ IMPORTS-LIST is the result of `elm-imports--list' at the time
   (let*
       ((file (or (buffer-file-name) (elm--find-main-file)))
        (imports-list (elm-imports--list (current-buffer))))
-    (if (and imports-list (equal imports-list (car elm-oracle--cache)))
-        (cdr elm-oracle--cache)
-      (setq elm-oracle--cache
-            (cons imports-list (elm-oracle--catalogue-with-local-names file imports-list))))))
+    (append
+     (elm-oracle--module-completions imports-list)
+     (if (and imports-list (equal imports-list (car elm-oracle--cache)))
+         (cdr elm-oracle--cache)
+       (setq elm-oracle--cache
+             (cons imports-list (elm-oracle--catalogue-with-local-names file imports-list)))))))
+
+;; These should arguably be in a separate completion backend, since
+;; they could theoretically be used without elm-oracle
+(defun elm-oracle--module-completions (imports-list)
+  "Return completions for modules in IMPORTS-LIST.
+Completions are in the same format as those returned by
+  `elm-oracle--catalogue-with-local-names'."
+  (mapcar
+   (lambda (import)
+     (let ((full-name (car import)))
+       (list (cons 'localName (alist-get 'as (cdr import)))
+             (cons 'name "")
+             (cons 'fullName full-name)
+             (cons 'signature ""))))
+   imports-list))
+
 
 (defun elm-oracle--catalogue-with-local-names (file imports-list)
   "Given FILE and IMPORTS-LIST, get an alias-adjusted catalogue of all symbols known to elm-oracle."
