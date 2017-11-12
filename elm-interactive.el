@@ -798,9 +798,10 @@ EXPOSING"
          (module-name (s-chop-suffix suffix full-name))
          (imports-entry (alist-get module-name imports-list nil nil 'string-equal)))
     (let-alist imports-entry
-      (if (when .exposing
-            (or (string-equal .exposing "..")
-                (cl-find name (s-split " *, *" .exposing) :test 'string-equal)))
+      (if (or (string-equal "Basics" module-name)
+              (when .exposing
+                (or (string-equal .exposing "..")
+                    (cl-find name (s-split " *, *" .exposing) :test 'string-equal))))
           name
         (concat (or .as module-name) suffix)))))
 
