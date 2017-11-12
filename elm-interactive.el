@@ -879,12 +879,10 @@ EXPOSING"
   (mapcar (if popup
               (lambda (candidate)
                 (let-alist candidate
-                  (popup-make-item .fullName
+                  (popup-make-item .localName
                                    :document (concat .signature "\n\n" .comment)
                                    :summary .signature)))
-            (lambda (candidate)
-              (let-alist candidate
-                .fullName)))
+            (apply-partially 'alist-get 'localName))
           (elm-oracle--get-candidates prefix)))
 
 (defun elm-oracle--function-at-point ()
@@ -906,15 +904,14 @@ EXPOSING"
       (cl-find-if
        (lambda (candidate)
          (let-alist candidate
-           (or (string= prefix .fullName)
-               (string= prefix .name))))
+           (string= prefix .localName)))
        (elm-oracle--get-catalogue)))))
 
 (defun elm-oracle--propertize-completion-type (completion)
   "Propertize COMPLETION so that it can be displayed in the minibuffer."
   (when completion
     (let-alist completion
-      (concat (propertize .fullName 'face 'font-lock-function-name-face) ": " .signature))))
+      (concat (propertize .localName 'face 'font-lock-function-name-face) ": " .signature))))
 
 (defun elm-oracle--type-at-point ()
   "Get the type of the function at point."
@@ -997,7 +994,7 @@ Passes completions to CALLBACK if present, otherwise returns them."
 (defun elm-company--make-candidate (candidate)
   "Create a ‘company-mode’ completion candidate from a CANDIDATE obtained via elm-oracle."
   (let-alist candidate
-    (propertize .fullName
+    (propertize .localName
                 'signature .signature 'name .fullName 'comment .comment)))
 
 (defun elm-company--signature (candidate)
@@ -1030,13 +1027,13 @@ IMPORTS-LIST is the result of `elm-imports--list' at the time
    (cl-remove-if-not
     (lambda (candidate)
       (let-alist candidate
-        (or (string-prefix-p prefix .fullName)
+        (or (string-prefix-p prefix .localName)
             (string-prefix-p prefix .name))))
     (elm-oracle--get-catalogue))
    (lambda (c1 c2)
      ;; Sort better matches first
-     (let ((n1 (alist-get 'fullName c1))
-           (n2 (alist-get 'fullName c2)))
+     (let ((n1 (alist-get 'localName c1))
+           (n2 (alist-get 'localName c2)))
        (> (s-index-of prefix n2) (s-index-of prefix n1))))))
 
 (defun elm-oracle--get-catalogue ()
@@ -1054,7 +1051,7 @@ IMPORTS-LIST is the result of `elm-imports--list' at the time
   (mapcar
    #'(lambda (candidate)
        (let-alist candidate
-         (cons (cons 'fullName
+         (cons (cons 'localName
                      (concat (elm-imports--aliased imports-list .name .fullName)))
                candidate)))
    (elm-oracle--run "" file)))
