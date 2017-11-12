@@ -32,11 +32,12 @@
 (require 'f)
 (require 'json)
 (require 'let-alist)
+(require 'rx)
 (require 's)
+(require 'seq)
 (require 'subr-x)
 (require 'tabulated-list)
 (require 'url)
-(require 'rx)
 
 (defvar elm-interactive--seen-prompt nil
   "Non-nil represents the fact that a prompt has been spotted.")
@@ -980,7 +981,6 @@ Add this function to your `elm-mode-hook'."
     (cl-case command
       (interactive (company-begin-backend 'company-elm))
       (sorted t)
-      (duplicates t)
       (prefix (elm-oracle--completion-prefix-at-point))
       (doc-buffer (elm-company--docbuffer arg))
       (candidates (cons :async (apply-partially #'elm-company--candidates arg)))
@@ -1065,7 +1065,10 @@ IMPORTS-LIST is the result of `elm-imports--list' at the time
                                    (shell-quote-argument file)
                                    (shell-quote-argument prefix))))
         (json-array-type 'list))
-    (json-read-from-string (shell-command-to-string command))))
+    (seq-uniq
+     (json-read-from-string (shell-command-to-string command))
+     (lambda (i1 i2)
+       (string-equal (alist-get 'fullName i1) (alist-get 'fullName i2))))))
 
 ;;;###autoload
 (defun elm-test-project ()
