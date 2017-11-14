@@ -796,7 +796,7 @@ EXPOSING"
   "Given IMPORTS-LIST, return the local name for function with NAME and FULL-NAME."
   (let* ((suffix (concat "." name))
          (module-name (s-chop-suffix suffix full-name))
-         (imports-entry (alist-get module-name imports-list nil nil 'string-equal)))
+         (imports-entry (alist-get module-name imports-list nil 'string-equal)))
     (let-alist imports-entry
       (if (or (string-equal "Basics" module-name)
               (when .exposing
