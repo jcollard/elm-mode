@@ -56,18 +56,27 @@ IS-INTERACTIVE, show a buffer if the formatting fails."
          (_ (with-temp-file in-file (insert contents))))
 
     (unwind-protect
-        (let* ((command elm-format-command)
-               (version elm-format-elm-version)
+        (let* ((version elm-format-elm-version)
                (error-buffer (get-buffer-create "*elm-format errors*"))
+               (command-with-args (funcall
+                         elm-command-wrapper-function
+                         (-map (lambda (arg) (shell-quote-argument arg))
+                               (cons (funcall elm-executable-find elm-format-command)
+                                     (list
+                                      in-file
+                                      "--output" out-file
+                                      "--elm-version" version
+                                      "--yes")))))
+               (command (car command-with-args))
+               (args (cdr command-with-args))
                (retcode
                 (with-temp-buffer
-                  (call-process command
-                                nil (list (current-buffer) err-file)
-                                nil
-                                in-file
-                                "--output" out-file
-                                "--elm-version" version
-                                "--yes"))))
+                  (apply 'call-process
+                         command
+                         nil (list (current-buffer) err-file)
+                         nil
+                         args))))
+          (message (prin1-to-string command-with-args))
           (with-current-buffer error-buffer
             (read-only-mode 0)
             (insert-file-contents err-file nil nil nil t)

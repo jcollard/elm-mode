@@ -49,6 +49,32 @@
 (defvar elm-reactor--process-name "elm-reactor")
 (defvar elm-reactor--buffer-name "*elm-reactor*")
 
+(defcustom elm-command-wrapper-function #'identity
+  "Function to modify commands before execution.
+
+The default value is `identity' which does not change the command. You may
+provide your own function to run commands through `bundle exec', `nix-shell' or
+similar wrappers."
+  :group 'elm
+  :type '(choice (const :tag "Do not modify commands" identity)
+                 (function :tag "Modify command with a custom function"))
+  :risky t)
+
+(defcustom elm-executable-find #'executable-find
+  "Function to search for executables.
+
+The value of this option is a function which is given the name or path of an
+executable and shall return the full path to the executable, or nil if the
+executable does not exit.
+
+The default is the standard `executable-find' function which searches
+`exec-path'. You can customize this option to search for checkers in other
+environments such as bundle or NixOS sandboxes."
+  :group 'elm
+  :type '(choice (const :tag "Search executables in `exec-path'" executable-find)
+                 (function :tag "Search executables with a custom function"))
+  :risky t)
+
 (defcustom elm-interactive-command "elm-repl"
   "The Elm REPL command."
   :type '(string)
@@ -61,6 +87,11 @@
 
 (defvar elm-interactive-prompt-regexp "^[>|] "
   "Prompt for `run-elm-interactive'.")
+
+(defvar elm-test-command "elm-test"
+  "The Elm Test command."
+  :type '(string)
+  :group 'elm)
 
 (defcustom elm-reactor-command "elm-reactor"
   "The Elm Reactor command."
@@ -191,6 +222,21 @@
     map)
   "Keymap for Elm package mode.")
 
+(defun elm-command-wrapper (program args)
+  (s-join
+   " "
+   (elm-command-wrapper-list program args)))
+
+(defun elm-command-wrapper-list (program args)
+  "Return the transformed program and args as a list"
+   (-map
+    (lambda (arg) (shell-quote-argument arg))
+    (funcall
+     elm-command-wrapper-function
+     (-map (lambda (arg) (shell-quote-argument arg))
+           (cons (funcall elm-executable-find program)
+                 args)))))
+
 (defun elm-interactive-mode-beginning ()
   "Go to the start of the line."
   (interactive)
@@ -280,7 +326,7 @@ Stolen from ‘haskell-mode’."
 
     (unless buffer
       (apply #'make-comint-in-buffer elm-interactive--process-name buffer
-             elm-interactive-command nil elm-interactive-arguments)
+             (elm-command-wrapper elm-interactive-command '()) nil elm-interactive-arguments)
       (elm-interactive-mode))
 
     (setq-local elm-repl--origin origin)))
@@ -374,13 +420,13 @@ Runs `elm-reactor' first."
              (append (cl-remove-if (apply-partially #'string-prefix-p "--output=") elm-compile-arguments)
                      (list (concat "--output=" (expand-file-name output))))
            elm-compile-arguments)))
-    (concat elm-compile-command " "
+    (apply elm-command-wrapper-function (concat elm-compile-command " "
             (mapconcat 'shell-quote-argument
                        (append (list file)
                                elm-compile-arguments
                                (when json
                                  (list "--report=json")))
-                       " "))))
+                       " ")))))
 
 (defun elm-compile--filter ()
   "Filter function for compilation output."
@@ -1077,9 +1123,10 @@ Completions are in the same format as those returned by
 (defun elm-oracle--run (prefix &optional file)
   "Get completions for PREFIX inside FILE."
   (let ((default-directory (elm--find-dependency-file-path))
-        (command (s-join " " (list elm-oracle-command
-                                   (shell-quote-argument file)
-                                   (shell-quote-argument prefix))))
+        (command (elm-command-wrapper elm-oracle-command
+                                      (list
+                                       (shell-quote-argument file)
+                                       (shell-quote-argument prefix))))
         (json-array-type 'list))
     (seq-uniq
      (json-read-from-string (shell-command-to-string command))
@@ -1092,7 +1139,7 @@ Completions are in the same format as those returned by
   (interactive)
   (let ((default-directory (elm--find-elm-test-root-directory))
         (compilation-buffer-name-function (lambda (_) "*elm-test*")))
-    (compile "elm-test")))
+    (compile (elm-command-wrapper elm-test-command '()))))
 
 
 (provide 'elm-interactive)
