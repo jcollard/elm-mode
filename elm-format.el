@@ -60,13 +60,13 @@ IS-INTERACTIVE, show a buffer if the formatting fails."
                (error-buffer (get-buffer-create "*elm-format errors*"))
                (command-with-args (funcall
                          elm-command-wrapper-function
-                         (-map (lambda (arg) (shell-quote-argument arg))
-                               (cons (funcall elm-executable-find elm-format-command)
-                                     (list
-                                      in-file
-                                      "--output" out-file
-                                      "--elm-version" version
-                                      "--yes")))))
+                         (mapcar 'shell-quote-argument
+                                 (cons (funcall elm-executable-find elm-format-command)
+                                       (list
+                                        in-file
+                                        "--output" out-file
+                                        "--elm-version" version
+                                        "--yes")))))
                (command (car command-with-args))
                (args (cdr command-with-args))
                (retcode
