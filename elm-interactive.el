@@ -88,7 +88,7 @@ environments such as bundle or NixOS sandboxes."
 (defvar elm-interactive-prompt-regexp "^[>|] "
   "Prompt for `run-elm-interactive'.")
 
-(defvar elm-test-command "elm-test"
+(defcustom elm-test-command "elm-test"
   "The Elm Test command."
   :type '(string)
   :group 'elm)
@@ -222,20 +222,19 @@ environments such as bundle or NixOS sandboxes."
     map)
   "Keymap for Elm package mode.")
 
-(defun elm-command-wrapper (program args)
+(defun elm-command-wrapper (program &optional args)
   (s-join
    " "
    (elm-command-wrapper-list program args)))
 
 (defun elm-command-wrapper-list (program args)
   "Return the transformed program and args as a list"
-   (-map
-    (lambda (arg) (shell-quote-argument arg))
-    (funcall
-     elm-command-wrapper-function
-     (-map (lambda (arg) (shell-quote-argument arg))
-           (cons (funcall elm-executable-find program)
-                 args)))))
+  (mapcar 'shell-quote-argument
+          (funcall
+           elm-command-wrapper-function
+           (mapcar 'shell-quote-arugment
+                   (cons (funcall elm-executable-find program)
+                         args)))))
 
 (defun elm-interactive-mode-beginning ()
   "Go to the start of the line."
@@ -1123,11 +1122,9 @@ Completions are in the same format as those returned by
 (defun elm-oracle--run (prefix &optional file)
   "Get completions for PREFIX inside FILE."
   (let ((default-directory (elm--find-dependency-file-path))
-        (command (elm-command-wrapper elm-oracle-command
-                                      (list
-                                       (shell-quote-argument file)
-                                       (shell-quote-argument prefix))))
+        (command (elm-command-wrapper elm-oracle-command (list file prefix)))
         (json-array-type 'list))
+    (message command)
     (seq-uniq
      (json-read-from-string (shell-command-to-string command))
      (lambda (i1 i2)
@@ -1139,7 +1136,7 @@ Completions are in the same format as those returned by
   (interactive)
   (let ((default-directory (elm--find-elm-test-root-directory))
         (compilation-buffer-name-function (lambda (_) "*elm-test*")))
-    (compile (elm-command-wrapper elm-test-command '()))))
+    (compile (elm-command-wrapper elm-test-command))))
 
 
 (provide 'elm-interactive)
