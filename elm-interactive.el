@@ -232,7 +232,7 @@ environments such as bundle or NixOS sandboxes."
   (mapcar 'shell-quote-argument
           (funcall
            elm-command-wrapper-function
-           (mapcar 'shell-quote-arugment
+           (mapcar 'shell-quote-argument
                    (cons (funcall elm-executable-find program)
                          args)))))
 
@@ -1124,7 +1124,6 @@ Completions are in the same format as those returned by
   (let ((default-directory (elm--find-dependency-file-path))
         (command (elm-command-wrapper elm-oracle-command (list file prefix)))
         (json-array-type 'list))
-    (message command)
     (seq-uniq
      (json-read-from-string (shell-command-to-string command))
      (lambda (i1 i2)
