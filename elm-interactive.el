@@ -384,7 +384,6 @@ Runs `elm-reactor' first."
 
 (defun elm-compile--filter ()
   "Filter function for compilation output."
-  (message "APPLY! %S %S" compilation-filter-start (point-max))
   (ansi-color-apply-on-region (point-min) (point-max)))
 
 (define-compilation-mode elm-compilation-mode "Elm-Compile"
