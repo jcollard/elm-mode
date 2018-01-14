@@ -407,11 +407,10 @@ in the file."
   (let* ((default-directory (elm--find-dependency-file-path))
          (report (shell-command-to-string
                   (elm-compile--command file output t))))
-    (if (string-prefix-p "[" report)
-        (let ((json (json-read-from-string report)))
-          (cl-flet ((start-line (o) (let-alist o .region.start.line)))
-            (cl-sort (append json nil) (lambda (o1 o2) (< (start-line o1) (start-line o2))))))
-      (error "Nothing to do"))))
+    (when (string-prefix-p "[" report)
+      (let ((json (json-read-from-string report)))
+        (cl-flet ((start-line (o) (let-alist o .region.start.line)))
+          (cl-sort (append json nil) (lambda (o1 o2) (< (start-line o1) (start-line o2)))))))))
 
 (defun elm-compile--temporary ()
   "Get a compilation report for the current buffer."
