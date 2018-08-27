@@ -271,24 +271,17 @@ Stolen from ‘haskell-mode’."
   (interactive)
   (elm-interactive-kill-current-session)
   (let* ((default-directory (elm--find-dependency-file-path))
-         (buffer (comint-check-proc elm-interactive--process-name))
-         (origin (point-marker)))
+         (origin (point-marker))
+         (cmd (append elm-interactive-command elm-interactive-arguments)))
 
     (setq elm-interactive--current-project default-directory)
-
-    (pop-to-buffer
-     (if (or buffer (not (derived-mode-p 'elm-interactive-mode))
-             (comint-check-proc (current-buffer)))
-         (get-buffer-create (or buffer elm-interactive--buffer-name))
-       (current-buffer)))
-
-    (unless buffer
-      (let ((cmd (append elm-interactive-command elm-interactive-arguments)))
-        (apply #'make-comint-in-buffer elm-interactive--process-name buffer
-               (car cmd) nil (cdr cmd)))
-      (elm-interactive-mode))
-
-    (setq-local elm-repl--origin origin)))
+    (let ((buffer (get-buffer-create elm-interactive--buffer-name)))
+      (apply #'make-comint-in-buffer elm-interactive--process-name buffer
+             (car cmd) nil (cdr cmd))
+      (elm-interactive-mode)
+      (with-current-buffer buffer
+        (setq-local elm-repl--origin origin))
+      (pop-to-buffer buffer))))
 
 (defun elm-repl-return-to-origin ()
   "Jump back to the location from which we last jumped to the repl."
