@@ -41,9 +41,12 @@
   :type 'number
   :group 'elm-util)
 
-(defconst elm-package-json
+(defcustom elm-package-json
   "elm-package.json"
-  "The name of the package JSON configuration file.")
+  "The name of the package JSON configuration file.
+Set to \"elm.json\" for use with Elm 0.19."
+  :type 'string
+  :group 'elm-util)
 
 (defun elm--get-module-name ()
   "Return the qualified name of the module in the current buffer."

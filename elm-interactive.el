@@ -49,9 +49,10 @@
 (defvar elm-reactor--process-name "elm-reactor")
 (defvar elm-reactor--buffer-name "*elm-reactor*")
 
-(defcustom elm-interactive-command "elm-repl"
-  "The Elm REPL command."
-  :type '(string)
+(defcustom elm-interactive-command '("elm-repl")
+  "The Elm REPL command.
+For Elm 0.19 and greater, set this to '(\"elm\" \"repl\")."
+  :type '(repeat string)
   :group 'elm)
 
 (defcustom elm-interactive-arguments '()
@@ -62,9 +63,10 @@
 (defvar elm-interactive-prompt-regexp "^[>|] "
   "Prompt for `run-elm-interactive'.")
 
-(defcustom elm-reactor-command "elm-reactor"
-  "The Elm Reactor command."
-  :type '(string)
+(defcustom elm-reactor-command '("elm-reactor")
+  "The Elm Reactor command.
+For Elm 0.19 and greater, set this to '(\"elm\" \"reactor\")."
+  :type '(repeat string)
   :group 'elm)
 
 (defcustom elm-reactor-port "8000"
@@ -84,9 +86,10 @@
 
 (defvar elm-compile--buffer-name "*elm-make*")
 
-(defcustom elm-compile-command "elm-make"
-  "The Elm compilation command."
-  :type '(string)
+(defcustom elm-compile-command '("elm-make")
+  "The Elm compilation command.
+For Elm 0.19 and greater, set this to '(\"elm\" \"make\")."
+  :type '(repeat string)
   :group 'elm)
 
 (defcustom elm-compile-arguments '("--yes" "--warn" "--output=elm.js")
@@ -129,9 +132,10 @@
 
 (defvar elm-package-buffer-name "*elm-package*")
 
-(defcustom elm-package-command "elm-package"
-  "The Elm package command."
-  :type '(string)
+(defcustom elm-package-command '("elm-package")
+  "The Elm package command.
+For Elm 0.19 and greater, set this to '(\"elm\" \"package\")."
+  :type '(repeat string)
   :group 'elm)
 
 (defcustom elm-package-arguments '("install" "--yes")
@@ -267,23 +271,17 @@ Stolen from ‘haskell-mode’."
   (interactive)
   (elm-interactive-kill-current-session)
   (let* ((default-directory (elm--find-dependency-file-path))
-         (buffer (comint-check-proc elm-interactive--process-name))
-         (origin (point-marker)))
+         (origin (point-marker))
+         (cmd (append (elm--ensure-list elm-interactive-command) elm-interactive-arguments)))
 
     (setq elm-interactive--current-project default-directory)
-
-    (pop-to-buffer
-     (if (or buffer (not (derived-mode-p 'elm-interactive-mode))
-             (comint-check-proc (current-buffer)))
-         (get-buffer-create (or buffer elm-interactive--buffer-name))
-       (current-buffer)))
-
-    (unless buffer
+    (let ((buffer (get-buffer-create elm-interactive--buffer-name)))
       (apply #'make-comint-in-buffer elm-interactive--process-name buffer
-             elm-interactive-command nil elm-interactive-arguments)
-      (elm-interactive-mode))
-
-    (setq-local elm-repl--origin origin)))
+             (car cmd) nil (cdr cmd))
+      (elm-interactive-mode)
+      (with-current-buffer buffer
+        (setq-local elm-repl--origin origin))
+      (pop-to-buffer buffer))))
 
 (defun elm-repl-return-to-origin ()
   "Jump back to the location from which we last jumped to the repl."
@@ -328,6 +326,11 @@ of the file specified."
       (elm-interactive--send-command (concat line " \\\n")))
     (elm-interactive--send-command "\n")))
 
+(defun elm--ensure-list (v)
+  "Return V if it is a list, otherwise a single-element list containing V."
+  (if (consp v)
+      v
+    (list v)))
 
 ;;; Reactor:
 ;;;###autoload
@@ -340,8 +343,9 @@ of the file specified."
     (when process
       (delete-process process))
 
-    (apply #'start-process elm-reactor--process-name elm-reactor--buffer-name
-           elm-reactor-command elm-reactor-arguments)))
+    (let ((cmd (append (elm--ensure-list elm-reactor-command) elm-reactor-arguments)))
+      (apply #'start-process elm-reactor--process-name elm-reactor--buffer-name
+             (car cmd) (cdr cmd)))))
 
 (defun elm-reactor--browse (path &optional debug)
   "Open (reactor-relative) PATH in browser with optional DEBUG.
@@ -374,13 +378,13 @@ Runs `elm-reactor' first."
              (append (cl-remove-if (apply-partially #'string-prefix-p "--output=") elm-compile-arguments)
                      (list (concat "--output=" (expand-file-name output))))
            elm-compile-arguments)))
-    (concat elm-compile-command " "
-            (mapconcat 'shell-quote-argument
-                       (append (list file)
-                               elm-compile-arguments
-                               (when json
-                                 (list "--report=json")))
-                       " "))))
+    (s-join " "
+            (append (elm--ensure-list elm-compile-command)
+                    (mapcar 'shell-quote-argument
+                            (append (list file)
+                                    elm-compile-arguments
+                                    (when json
+                                      (list "--report=json"))))))))
 
 (defun elm-compile--filter ()
   "Filter function for compilation output."
@@ -563,7 +567,7 @@ Each is captured as a group.")
 (defun elm-package--get-marked-install-commands ()
   "Get a list of the commands required to install the marked packages."
   (-map (lambda (package)
-          (concat elm-package-command " " (s-join " " elm-package-arguments) " " package))
+          (s-join " " (append (elm--ensure-list elm-package-command) elm-package-arguments (list package))))
         (elm-package--get-marked-packages)))
 
 (defun elm-package--read-dependencies ()
