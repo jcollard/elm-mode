@@ -272,7 +272,7 @@ Stolen from ‘haskell-mode’."
   (elm-interactive-kill-current-session)
   (let* ((default-directory (elm--find-dependency-file-path))
          (origin (point-marker))
-         (cmd (append elm-interactive-command elm-interactive-arguments)))
+         (cmd (append (elm--ensure-list elm-interactive-command) elm-interactive-arguments)))
 
     (setq elm-interactive--current-project default-directory)
     (let ((buffer (get-buffer-create elm-interactive--buffer-name)))
@@ -326,6 +326,11 @@ of the file specified."
       (elm-interactive--send-command (concat line " \\\n")))
     (elm-interactive--send-command "\n")))
 
+(defun elm--ensure-list (v)
+  "Return V if it is a list, otherwise a single-element list containing V."
+  (if (consp v)
+      v
+    (list v)))
 
 ;;; Reactor:
 ;;;###autoload
@@ -338,7 +343,7 @@ of the file specified."
     (when process
       (delete-process process))
 
-    (let ((cmd (append elm-reactor-command elm-reactor-arguments)))
+    (let ((cmd (append (elm--ensure-list elm-reactor-command) elm-reactor-arguments)))
       (apply #'start-process elm-reactor--process-name elm-reactor--buffer-name
              (car cmd) (cdr cmd)))))
 
@@ -374,7 +379,7 @@ Runs `elm-reactor' first."
                      (list (concat "--output=" (expand-file-name output))))
            elm-compile-arguments)))
     (s-join " "
-            (append elm-compile-command
+            (append (elm--ensure-list elm-compile-command)
                     (mapcar 'shell-quote-argument
                             (append (list file)
                                     elm-compile-arguments
@@ -562,7 +567,7 @@ Each is captured as a group.")
 (defun elm-package--get-marked-install-commands ()
   "Get a list of the commands required to install the marked packages."
   (-map (lambda (package)
-          (s-join " " (append elm-package-command elm-package-arguments (list package))))
+          (s-join " " (append (elm--ensure-list elm-package-command) elm-package-arguments (list package))))
         (elm-package--get-marked-packages)))
 
 (defun elm-package--read-dependencies ()
