@@ -574,8 +574,11 @@ Each is captured as a group.")
   "Read the current package's dependencies."
   (setq elm-package--working-dir (elm--find-dependency-file-path))
   (let-alist (elm--read-dependency-file)
-    (setq elm-package--dependencies (-map (lambda (dep) (symbol-name (car dep)))
-                                          .dependencies))))
+    (setq elm-package--dependencies
+          (-map (lambda (dep) (symbol-name (car dep)))
+                (if (consp .dependencies.direct)
+                    (append .dependencies.direct .dependencies.indirect)
+                  .dependencies)))))
 
 (defun elm-package--read-json (uri)
   "Read a JSON file from a URI."
@@ -599,22 +602,18 @@ Each is captured as a group.")
 (defun elm-package-refresh-package (package version)
   "Refresh the cache for PACKAGE with VERSION."
   (let ((documentation-uri
-         (elm-package--build-uri "packages" package version "documentation.json")))
+         (elm-package--build-uri "packages" package version "docs.json")))
     (setq elm-package--cache
           (cons `(,package . ,(elm-package--read-json documentation-uri))
                 elm-package--cache))))
 
 (defun elm-package-latest-version (package)
   "Get the latest version of PACKAGE."
-  (let ((package (-find (lambda (p)
-                          (let-alist p
-                            (equal .name package)))
-                        elm-package--contents)))
-
-    (if (not package)
+  (let ((entry (assoc (intern-soft package) elm-package--contents)))
+    (if (not entry)
         (error "Package not found")
-      (let-alist package
-        (elt .versions 0)))))
+      (let ((versions (cdr entry)))
+        (elt versions 0)))))
 
 (defun elm-package--ensure-cached (package)
   "Ensure that PACKAGE has been cached."
