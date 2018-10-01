@@ -82,7 +82,7 @@ Relies on `haskell-mode' stuff."
 
 (defun elm--get-buffer-dirname ()
   "Return the absolute dirname of the current buffer."
-  (concat (f-dirname (buffer-file-name)) "/"))
+  (file-name-as-directory default-directory))
 
 (defun elm--buffer-local-file-name ()
   "Return the current file name relative to the dependency file."
