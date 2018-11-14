@@ -86,7 +86,7 @@ For Elm 0.19 and greater, set this to '(\"elm\" \"reactor\")."
 
 (defvar elm-compile--buffer-name "*elm-make*")
 
-(defcustom elm-compile-command '("elm-make")
+(defcustom elm-compile-command '("elm" "make")
   "The Elm compilation command.
 For Elm 0.19 and greater, set this to '(\"elm\" \"make\")."
   :type '(repeat string)
