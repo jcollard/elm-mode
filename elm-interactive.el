@@ -1077,15 +1077,16 @@ Completions are in the same format as those returned by
 
 (defun elm-oracle--run (prefix &optional file)
   "Get completions for PREFIX inside FILE."
-  (let ((default-directory (elm--find-dependency-file-path))
-        (command (s-join " " (list elm-oracle-command
-                                   (shell-quote-argument file)
-                                   (shell-quote-argument prefix))))
-        (json-array-type 'list))
-    (seq-uniq
-     (json-read-from-string (shell-command-to-string command))
-     (lambda (i1 i2)
-       (string-equal (alist-get 'fullName i1) (alist-get 'fullName i2))))))
+  (when (executable-find elm-oracle-command)
+    (let ((default-directory (elm--find-dependency-file-path))
+          (command (s-join " " (list elm-oracle-command
+                                     (shell-quote-argument file)
+                                     (shell-quote-argument prefix))))
+          (json-array-type 'list))
+      (seq-uniq
+       (json-read-from-string (shell-command-to-string command))
+       (lambda (i1 i2)
+         (string-equal (alist-get 'fullName i1) (alist-get 'fullName i2)))))))
 
 ;;;###autoload
 (defun elm-test-project ()
