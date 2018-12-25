@@ -278,8 +278,8 @@ Stolen from ‘haskell-mode’."
     (let ((buffer (get-buffer-create elm-interactive--buffer-name)))
       (apply #'make-comint-in-buffer elm-interactive--process-name buffer
              (car cmd) nil (cdr cmd))
-      (elm-interactive-mode)
       (with-current-buffer buffer
+        (elm-interactive-mode)
         (setq-local elm-repl--origin origin))
       (pop-to-buffer buffer))))
 
