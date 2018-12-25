@@ -49,9 +49,9 @@
 (defvar elm-reactor--process-name "elm-reactor")
 (defvar elm-reactor--buffer-name "*elm-reactor*")
 
-(defcustom elm-interactive-command '("elm-repl")
+(defcustom elm-interactive-command '("elm" "repl")
   "The Elm REPL command.
-For Elm 0.19 and greater, set this to '(\"elm\" \"repl\")."
+For Elm 0.18 and earlier, set this to '(\"elm-repl\")."
   :type '(repeat string)
   :group 'elm)
 
@@ -63,9 +63,9 @@ For Elm 0.19 and greater, set this to '(\"elm\" \"repl\")."
 (defvar elm-interactive-prompt-regexp "^[>|] "
   "Prompt for `run-elm-interactive'.")
 
-(defcustom elm-reactor-command '("elm-reactor")
+(defcustom elm-reactor-command '("elm" "reactor")
   "The Elm Reactor command.
-For Elm 0.19 and greater, set this to '(\"elm\" \"reactor\")."
+For Elm 0.18 and earlier, set this to '(\"elm-reactor\")."
   :type '(repeat string)
   :group 'elm)
 
@@ -87,13 +87,13 @@ For Elm 0.19 and greater, set this to '(\"elm\" \"reactor\")."
 (defvar elm-compile--buffer-name "*elm-make*")
 
 (defcustom elm-compile-command '("elm" "make")
-  "The Elm compilation command.
-For Elm 0.19 and greater, set this to '(\"elm\" \"make\")."
+  "The Elm compilation command."
   :type '(repeat string)
   :group 'elm)
 
-(defcustom elm-compile-arguments '("--yes" "--warn" "--output=elm.js")
-  "Command line arguments to pass to the Elm compilation command."
+(defcustom elm-compile-arguments '("--output=elm.js")
+  "Command line arguments to pass to the Elm compilation command.
+For Elm 0.18 and earlier, set this to '(\"--yes\" \"--warn\" \"--output=elm.js\")."
   :type '(repeat string)
   :group 'elm)
 
