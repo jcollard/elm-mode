@@ -30,10 +30,11 @@
   :group 'elm-format
   :type 'boolean)
 
-(defcustom elm-format-elm-version "0.18"
+(defcustom elm-format-elm-version "0.19"
   "The version of Elm against which code should be formatted."
   :group 'elm-format
-  :type '(choice (const :tag "Default: 0.18" "0.18")
+  :type '(choice (const :tag "Default: 0.19" "0.19")
+		 (const :tag "0.18" "0.18")
                  (const :tag "0.17" "0.17")
                  (const :tag "0.16" "0.16")))
 

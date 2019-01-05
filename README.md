@@ -163,8 +163,8 @@ Set or customize `elm-format-on-save` to `t` to apply `elm-format` on
 the current buffer on every save.
 
 Set or customize `elm-format-elm-version` to change which version of
-Elm to format against. Valid options are `0.17` and `0.16`. The
-default is `0.17`.
+Elm to format against. Valid options are `0.19`, `0.18`, `0.17` and `0.16`. The
+default is `0.19`.
 
 #### `elm-test`
 
