@@ -4,7 +4,7 @@
 ;; Copyright (C) 2015, 2016  Bogdan Popa
 
 ;; Author: Joseph Collard
-;; Package-Requires: ((f "0.17") (let-alist "1.0.5") (seq "2.2") (s "1.7.0") (emacs "24.4") (dash "2.13.0"))
+;; Package-Requires: ((f "0.17") (let-alist "1.0.4") (seq "2.2") (s "1.7.0") (emacs "24.4") (dash "2.13.0") (reformatter "0.1"))
 ;; URL: https://github.com/jcollard/elm-mode
 
 ;; This file is not part of GNU Emacs.
@@ -107,8 +107,6 @@ Find the roots of this function in the c-awk-mode."
     (elm-sort-imports))
   (when elm-tags-on-save
     (elm-mode-generate-tags))
-  (when elm-format-on-save
-    (elm-mode-format-buffer))
   (when (or elm-sort-imports-on-save
             elm-tags-on-save
             elm-format-on-save)
@@ -162,6 +160,8 @@ Find the roots of this function in the c-awk-mode."
 
   (add-function :before-until (local 'eldoc-documentation-function) #'elm-eldoc)
 
+  (when elm-format-on-save
+    (elm-format-on-save-mode))
   (add-hook 'after-save-hook #'elm-mode-after-save-handler nil t)
 
   (turn-on-elm-font-lock))
