@@ -26,7 +26,7 @@
 (require 'reformatter)
 
 (defcustom elm-format-on-save nil
-  "When non-nil, run `elm-format' on the current buffer on save.
+  "When non-nil, run `elm-format-buffer' on save.
 
 This variable is obsolete, and you should prefer to enable
 `elm-format-on-save-mode' by adding it to your `elm-mode-hook',
@@ -50,16 +50,16 @@ for your project:
   :group 'elm-format
   :type 'string)
 
-
-;;;###autoload (autoload 'elm-format "elm-format" nil t)
+;;;###autoload (autoload 'elm-format-buffer "elm-format" nil t)
 ;;;###autoload (autoload 'elm-format-on-save-mode "elm-format" nil t)
 (reformatter-define elm-format
   :program elm-format-command
   :args (list "--stdin" "--elm-version" elm-format-elm-version "--yes")
+  :group 'elm-format
   :lighter " ElmFmt")
 
 ;;;###autoload
-(define-obsolete-function-alias 'elm-mode-format-buffer 'elm-format "20190113")
+(define-obsolete-function-alias 'elm-mode-format-buffer 'elm-format-buffer "20190113")
 
 
 (provide 'elm-format)
