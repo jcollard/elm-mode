@@ -113,8 +113,7 @@ Find the roots of this function in the c-awk-mode."
   (when elm-tags-on-save
     (elm-mode-generate-tags))
   (when (or elm-sort-imports-on-save
-            elm-tags-on-save
-            elm-format-on-save)
+            elm-tags-on-save)
     (let ((before-save-hook '())
           (after-save-hook '()))
       (basic-save-buffer))))
