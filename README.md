@@ -159,8 +159,14 @@ will have to install it manually.
 | ------------------ | ---------------------------------------- |
 | <kbd>C-c C-f</kbd> | Automatically format the current buffer. |
 
-Set or customize `elm-format-on-save` to `t` to apply `elm-format` on
-the current buffer on every save.
+Enable `elm-format-on-save-mode` to apply `elm-format` on the current
+buffer on every save.  You might like to add it to your
+`elm-mode-hook`, or enable it on a per-project basis by including an
+entry like the following in your `.dir-locals.el`:
+
+```elisp
+(elm-mode (mode . elm-format-on-save))
+```
 
 Set or customize `elm-format-elm-version` to change which version of
 Elm to format against. Valid options are `0.19`, `0.18`, `0.17` and `0.16`. The
