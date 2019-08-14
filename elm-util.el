@@ -69,9 +69,11 @@ Relies on `haskell-mode' stuff."
            (end (or (haskell-ds-forward-decl) (point-max)))
            (raw-decl (s-trim-right (buffer-substring start end)))
            (lines (split-string raw-decl "\n"))
-           (first-line (car lines)))
+           (first-line (car lines))
+           ;; Shadow the defcustom pulse-delay variable.
+           (pulse-delay (/ elm-flash-duration 10.0)))
 
-      (inferior-haskell-flash-decl start end elm-flash-duration)
+      (pulse-momentary-highlight-region start end)
       (if (string-match-p "^[a-z].*:" first-line)
           (cdr lines)
         lines))))
