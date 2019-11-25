@@ -7,9 +7,10 @@
   "Create an imenu index for the current buffer."
   (save-excursion
     (imenu--generic-function
-     '((nil "^type \\([A-Z][^ \n]+\\)" 1)
-       (nil "^type alias \\([A-Z][^ \n]+\\)" 1)
-       (nil "^\\([^ ]+\\) :" 1)))))
+     '(("Type" "^type \\([A-Z][^ \n]+\\)" 1)
+       ("Type Alias" "^type alias \\([A-Z][^ \n]+\\)" 1)
+       ("Port" "^port \\([^ ]+\\)" 1)
+       ("Function" "^\\([^ ]+\\) :" 1)))))
 
 
 (provide 'elm-imenu)
