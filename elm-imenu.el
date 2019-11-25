@@ -9,6 +9,7 @@
     (imenu--generic-function
      '(("Type" "^type \\([A-Z][^ \n]+\\)" 1)
        ("Type Alias" "^type alias \\([A-Z][^ \n]+\\)" 1)
+       ("Port" "^port \\([^ ]+\\)" 1)
        ("Function" "^\\([^ ]+\\) :" 1)))))
 
 
