@@ -497,8 +497,6 @@ Returns the location of the start of the comment, nil otherwise."
          (rhs-sign (pop sep))
          (aft-rhs-sign (pop sep))
          (last-line (= end end-visible))
-         (is-where
-          (string-match "where[ \t]*" elm-indent-current-line-first-ident))
          (diff-first                 ; not a function def with the same name
           (or (null valname-string)
               (not (string= (s-trim valname-string)
@@ -529,34 +527,24 @@ Returns the location of the start of the comment, nil otherwise."
           (pcase                         ; general case
               (elm-indent-find-case test)
             ;; "1.1.11"   1= vn gd rh arh
-            (1 (if is-where
-                   (elm-indent-push-pos guard)
-                 (elm-indent-push-pos valname)
-                 (if diff-first (elm-indent-push-pos aft-rhs-sign))))
+            (1 (elm-indent-push-pos valname)
+               (if diff-first (elm-indent-push-pos aft-rhs-sign)))
             ;; "1.1.10"   2= vn gd rh
-            (2 (if is-where
-                   (elm-indent-push-pos guard)
-                 (elm-indent-push-pos valname)
-                 (if last-line
-                     (elm-indent-push-pos-offset guard))))
+            (2 (elm-indent-push-pos valname)
+               (if last-line
+                   (elm-indent-push-pos-offset guard)))
             ;; "1.1100"   3= vn gd agd
-            (3 (if is-where
-                   (elm-indent-push-pos-offset guard)
-                 (elm-indent-push-pos valname)
-                 (if diff-first
-                     (elm-indent-push-pos aft-guard))))
+            (3 (elm-indent-push-pos valname)
+               (if diff-first
+                   (elm-indent-push-pos aft-guard)))
             ;; "1.1000"   4= vn gd
-            (4 (if is-where
-                   (elm-indent-push-pos guard)
-                 (elm-indent-push-pos valname)
-                 (if last-line
-                     (elm-indent-push-pos-offset guard 2))))
+            (4 (elm-indent-push-pos valname)
+               (if last-line
+                   (elm-indent-push-pos-offset guard 2)))
             ;; "1.0011"   5= vn rh arh
-            (5 (if is-where
-                   (elm-indent-push-pos-offset valname)
-                 (elm-indent-push-pos valname)
-                 (if diff-first
-                     (elm-indent-push-pos aft-rhs-sign))))
+            (5 (elm-indent-push-pos valname)
+               (if diff-first
+                   (elm-indent-push-pos aft-rhs-sign)))
             ;; "1.0010"   6= vn rh
             (6 (elm-indent-push-pos valname)
                (elm-indent-push-pos valname valname-string)
@@ -568,19 +556,13 @@ Returns the location of the start of the comment, nil otherwise."
             (8 (elm-indent-push-pos valname)
                (elm-indent-push-pos-offset valname))
             ;; "001.11"   9= gd rh arh
-            (9 (if is-where
-                   (elm-indent-push-pos guard)
-                 (elm-indent-push-pos aft-rhs-sign)))
+            (9 (elm-indent-push-pos aft-rhs-sign))
             ;; "001.10"  10= gd rh
-            (10 (if is-where
-                    (elm-indent-push-pos guard)
-                  (if last-line
-                      (elm-indent-push-pos-offset guard))))
+            (10 (if last-line
+                    (elm-indent-push-pos-offset guard)))
             ;; "001100"  11= gd agd
-            (11 (if is-where
-                    (elm-indent-push-pos guard)
-                  (if (elm-indent-no-otherwise guard)
-                      (elm-indent-push-pos aft-guard))))
+            (11 (if (elm-indent-no-otherwise guard)
+                    (elm-indent-push-pos aft-guard)))
             ;; "001000"  12= gd
             (12 (if last-line (elm-indent-push-pos-offset guard 2)))
             ;; "000011"  13= rh arh
@@ -722,15 +704,13 @@ and find indentation info for each part."
               ((sep
                 (elm-indent-separate-valdef
                  (point) (line-end-position))))
-            ;; if the first ident is where or the start of a def
+            ;; if the first ident is the start of a def
             ;; keep it in a global variable
             (setq elm-indent-current-line-first-ident
-                  (if (string-match "where[ \t]*" (nth 1 sep))
-                      (nth 1 sep)
-                    (if (nth 5 sep)              ; is there a rhs-sign
-                        (if (= (char-after (nth 5 sep)) ?\:) ;is it a typdef
-                            ":" (nth 1 sep))
-                      "")))))
+                  (if (nth 5 sep)              ; is there a rhs-sign
+                      (if (= (char-after (nth 5 sep)) ?\:) ;is it a typdef
+                          ":" (nth 1 sep))
+                    ""))))
       (while contour-line               ; explore the contour points
         (setq line-start (pop contour-line))
         (goto-char line-start)
