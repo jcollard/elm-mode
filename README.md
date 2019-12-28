@@ -33,7 +33,7 @@ list (note that hitting any other key will cancel the cycle).
 ### MELPA
 
 If your Emacs has `package.el` (which is automatically the case
-for Emacs >= 24), you can install `elm-mode` from the package in
+for Emacs >= 25.1), you can install `elm-mode` from the package in
 [MELPA](http://melpa.milkbox.net/).
 
 ### From source
@@ -46,7 +46,7 @@ the following dependencies are available:
 * [s](https://github.com/magnars/s.el)
 * [dash](https://github.com/magnars/dash.el)
 
-This package assumes you are runing Emacs 24 or later.
+This package assumes you are runing Emacs 25.1 or later.
 
 ## Bindings
 

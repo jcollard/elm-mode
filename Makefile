@@ -4,7 +4,7 @@ INIT_PACKAGES="(progn \
   (require 'package) \
   (push '(\"melpa\" . \"https://melpa.org/packages/\") package-archives) \
   (package-initialize) \
-  (dolist (pkg '(f let-alist seq s dash reformatter package-lint)) \
+  (dolist (pkg '(f s dash reformatter package-lint)) \
     (unless (package-installed-p pkg) \
       (unless (assoc pkg package-archive-contents) \
         (package-refresh-contents)) \
