@@ -123,8 +123,6 @@ Find the roots of this function in the c-awk-mode."
   (let ((map (make-keymap)))
     (define-key map (kbd "C-c C-f") 'elm-mode-format-buffer)
     (define-key map (kbd "C-c M-t") 'elm-mode-generate-tags)
-    (define-key map (kbd "M-.") 'elm-mode-goto-tag-at-point)
-    (define-key map (kbd "M-,") 'pop-tag-mark)
     (define-key map (kbd "C-c C-l") 'elm-repl-load)
     (define-key map (kbd "C-c C-p") 'elm-repl-push)
     (define-key map (kbd "C-c C-e") 'elm-repl-push-decl)

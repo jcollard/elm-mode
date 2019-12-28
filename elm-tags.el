@@ -41,15 +41,6 @@
    "elm.tags"))
 
 ;;;###autoload
-(defun elm-mode-goto-tag-at-point ()
-  "Go to tag at point."
-  (interactive)
-  (let ((tag (find-tag-default)))
-    (unless tag
-      (user-error "No tag candidate found around point"))
-    (find-tag tag)))
-
-;;;###autoload
 (defun elm-mode-generate-tags ()
   "Generate a TAGS file for the current project."
   (interactive)
