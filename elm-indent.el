@@ -31,7 +31,6 @@
 ;;; Code:
 (require 's)
 (require 'cl-lib)
-(require 'pcase)
 
 
 ;;; Customizations
@@ -419,7 +418,7 @@ Returns the location of the start of the comment, nil otherwise."
             (if (string-match "\\<type\\>" valname-string)
                 (elm-indent-push-pos-offset valname)
               (elm-indent-push-pos-offset valname 0)))
-        (pcase                           ; general case
+        (cl-case                           ; general case
             (elm-indent-find-case test)
           ;; "1.1.11"   1= vn gd rh arh
           (1 (elm-indent-push-pos valname)
@@ -480,7 +479,7 @@ Returns the location of the start of the comment, nil otherwise."
           ;; "000010"  14= rh
           (14 (if last-line (elm-indent-push-pos-offset rhs-sign 2 )))
           ;; "000000"  15=
-          (_ (error "elm-indent-empty: %s impossible case" test ))))
+          (t (error "elm-indent-empty: %s impossible case" test ))))
       elm-indent-info)))
 
 (defun elm-indent-ident (start end end-visible indent-info)
@@ -524,7 +523,7 @@ Returns the location of the start of the comment, nil otherwise."
                   (elm-indent-push-pos-offset valname))))
         (if (string= elm-indent-current-line-first-ident ":")
             (if valname (elm-indent-push-pos valname))
-          (pcase                         ; general case
+          (cl-case                         ; general case
               (elm-indent-find-case test)
             ;; "1.1.11"   1= vn gd rh arh
             (1 (elm-indent-push-pos valname)
@@ -570,7 +569,7 @@ Returns the location of the start of the comment, nil otherwise."
             ;; "000010"  14= rh
             (14 (if last-line (elm-indent-push-pos-offset rhs-sign 2)))
             ;; "000000"  15=
-            (_ (error "elm-indent-ident: %s impossible case" test )))))
+            (t (error "elm-indent-ident: %s impossible case" test )))))
       elm-indent-info)))
 
 (defun elm-indent-other (start end end-visible indent-info)
@@ -597,7 +596,7 @@ than an identifier, a guard or rhs."
       (if (and valname-string           ; special case for start keywords
                (string-match elm-indent-start-keywords-re valname-string))
           (elm-indent-push-pos-offset valname)
-        (pcase                           ; general case
+        (cl-case                           ; general case
             (elm-indent-find-case test)
           ;; "1.1.11"   1= vn gd rh arh
           (1 (elm-indent-push-pos aft-rhs-sign))
@@ -637,7 +636,7 @@ than an identifier, a guard or rhs."
           ;; "000010"  14= rh
           (14 (if last-line (elm-indent-push-pos-offset rhs-sign 2)))
           ;; "000000"  15=
-          (_ (error "elm-indent-other: %s impossible case" test ))))
+          (t (error "elm-indent-other: %s impossible case" test ))))
       elm-indent-info)))
 
 (defun elm-indent-valdef-indentation (start end end-visible curr-line-type
@@ -645,7 +644,7 @@ than an identifier, a guard or rhs."
   "Find indentation information for a value definition."
   (let ((elm-indent-info indent-info))
     (if (< start end-visible)
-        (pcase curr-line-type
+        (cl-case curr-line-type
           ('empty (elm-indent-empty start end end-visible indent-info))
           ('ident (elm-indent-ident start end end-visible indent-info))
           ('guard (elm-indent-guard start end end-visible indent-info))
@@ -815,7 +814,7 @@ OPEN is the start position of the comment in which point is."
 (defun elm-indent-closing-keyword (start)
   (let ((open (save-excursion
                 (elm-indent-find-matching-start
-                 (pcase (char-after)
+                 (cl-case (char-after)
                    (?i "\\<\\(?:\\(in\\)\\|let\\)\\>")
                    (?o "\\<\\(?:\\(of\\)\\|case\\)\\>")
                    (?t "\\<\\(?:\\(then\\)\\|if\\)\\>")
