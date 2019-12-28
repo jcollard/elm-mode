@@ -27,6 +27,7 @@
 (require 'json)
 (require 'let-alist)
 (require 's)
+(require 'pulse)
 
 (require 'haskell-decl-scan nil 'noerror)
 (require 'inf-haskell nil 'noerror)
