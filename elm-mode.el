@@ -6,6 +6,7 @@
 ;; Author: Joseph Collard
 ;; Package-Requires: ((f "0.17") (s "1.7.0") (emacs "25.1") (dash "2.13.0") (reformatter "0.3"))
 ;; URL: https://github.com/jcollard/elm-mode
+;; Package-Version: 0-snapshot
 
 ;; This file is not part of GNU Emacs.
 
