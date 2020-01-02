@@ -39,12 +39,8 @@ for Emacs >= 25.1), you can install `elm-mode` from the package in
 ### From source
 
 Add this repo to your load-path and `(require 'elm-mode)`. Ensure that
-the following dependencies are available:
-
-* [f](https://github.com/rejeep/f.el)
-* [let-alist](https://elpa.gnu.org/packages/let-alist.html)
-* [s](https://github.com/magnars/s.el)
-* [dash](https://github.com/magnars/dash.el)
+you have installed all the dependencies listed in the `Package-Requires`
+header of `elm-mode.el`.
 
 This package assumes you are runing Emacs 25.1 or later.
 
