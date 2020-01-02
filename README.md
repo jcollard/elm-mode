@@ -30,19 +30,19 @@ list (note that hitting any other key will cancel the cycle).
 
 ## Installation
 
+This package requires *Emacs 25.1 or later*.
+
 ### MELPA
 
-If your Emacs has `package.el` (which is automatically the case
-for Emacs >= 25.1), you can install `elm-mode` from the package in
-[MELPA](http://melpa.milkbox.net/).
+You can install `elm-mode` from the package in
+[MELPA](https://melpa.org/). This is by far the most straightforward
+and recommended installation method.
 
 ### From source
 
 Add this repo to your load-path and `(require 'elm-mode)`. Ensure that
 you have installed all the dependencies listed in the `Package-Requires`
 header of `elm-mode.el`.
-
-This package assumes you are runing Emacs 25.1 or later.
 
 ## Bindings
 
