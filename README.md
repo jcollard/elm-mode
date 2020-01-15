@@ -14,7 +14,7 @@ Elm mode for Emacs.
 1. Integration with [elm-repl](https://github.com/elm-lang/elm-repl).
 1. Integration with [elm-reactor](https://github.com/elm-lang/elm-reactor).
 1. Integration with [elm-package](https://github.com/elm-lang/elm-package).
-1. Integration with [elm-oracle][elm-oracle]
+1. Integration with [elm-oracle][elm-oracle] (but see _Completion_ below)
 1. Integration with [elm-format][elm-format]
 1. Integration with [elm-test][elm-test]
 
@@ -123,7 +123,7 @@ The following bindings are available in the package list buffer:
 Set or customize `elm-sort-imports-on-save` to `t` to apply
 `elm-sort-imports` on the current buffer on every save.
 
-#### `elm-oracle`
+#### Completion for Elm <= 0.18 using `elm-oracle`
 
 The following functionality requires [elm-oracle][elm-oracle] to be
 installed.  `elm-oracle` does not come with the Elm installer so you
@@ -148,6 +148,14 @@ documentation snippets for the autocompletion candidates.
 Here's a screenshot of `company-mode` in action:
 
 ![company-mode](/screenshots/company-mode.png)
+
+#### Completion for Elm >= 0.19
+
+To obtain completion, code navigation and other niceties, use
+[elm-language-server](https://github.com/elm-tooling/elm-language-server)
+and an LSP package. [eglot](https://github.com/joaotavora/eglot) is a lightweight
+LSP front-end package for Emacs, and has built-in support for `elm-language-server`.
+Some users might prefer the rather larger and more opinionated `lsp-mode`.
 
 #### `elm-format`
 
