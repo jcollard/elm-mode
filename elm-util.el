@@ -43,9 +43,9 @@
   :group 'elm-util)
 
 (defcustom elm-package-json
-  "elm-package.json"
+  "elm.json"
   "The name of the package JSON configuration file.
-Set to \"elm.json\" for use with Elm 0.19."
+Set to \"elm-package.json\" for use with Elm 0.18 and earlier."
   :type 'string
   :group 'elm-util)
 

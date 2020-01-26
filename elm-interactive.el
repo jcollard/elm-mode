@@ -132,9 +132,9 @@ For Elm 0.18 and earlier, set this to '(\"--yes\" \"--warn\" \"--output=elm.js\"
 
 (defvar elm-package-buffer-name "*elm-package*")
 
-(defcustom elm-package-command '("elm-package")
+(defcustom elm-package-command '("elm" "package")
   "The Elm package command.
-For Elm 0.19 and greater, set this to '(\"elm\" \"package\")."
+For Elm 0.18 and earler, set this to '(\"elm-package\")."
   :type '(repeat string)
   :group 'elm)
 
