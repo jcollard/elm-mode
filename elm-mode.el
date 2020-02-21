@@ -157,7 +157,8 @@ Find the roots of this function in the c-awk-mode."
   (setq-local comment-start "--")
   (setq-local comment-end "")
   (setq-local imenu-create-index-function #'elm-imenu-create-index)
-  (setq-local paragraph-separate "\\(\r\t\n\\|-}\\)$")
+  (setq-local paragraph-start (concat " *{-\\| *-- |\\|" page-delimiter))
+  (setq-local paragraph-separate (concat " *$\\| *\\({-\\|-}\\) *$\\|" page-delimiter))
   (setq-local beginning-of-defun-function #'elm-beginning-of-defun)
   (setq-local end-of-defun-function #'elm-end-of-defun)
 
