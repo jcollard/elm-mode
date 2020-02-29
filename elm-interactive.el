@@ -46,7 +46,6 @@
 (defvar elm-interactive--current-project nil)
 (defvar elm-interactive--process-name "elm")
 (defvar elm-interactive--buffer-name "*elm*")
-(defvar elm-reactor--process-name "elm-reactor")
 (defvar elm-reactor--buffer-name "*elm-reactor*")
 
 (defcustom elm-interactive-command '("elm" "repl")
@@ -69,9 +68,9 @@ For Elm 0.18 and earlier, set this to '(\"elm-reactor\")."
   :type '(repeat string)
   :group 'elm)
 
-(defcustom elm-reactor-port "8000"
+(defcustom elm-reactor-port 8000
   "The Elm Reactor port."
-  :type '(string)
+  :type '(integer)
   :group 'elm)
 
 (defcustom elm-reactor-address "127.0.0.1"
@@ -79,8 +78,9 @@ For Elm 0.18 and earlier, set this to '(\"elm-reactor\")."
   :type '(string)
   :group 'elm)
 
-(defcustom elm-reactor-arguments `("-p" ,elm-reactor-port "-a" ,elm-reactor-address)
-  "Command line arguments to pass to the Elm Reactor command."
+(defcustom elm-reactor-arguments `((:eval (format "--port=%s" elm-reactor-port)))
+  "Command line arguments to pass to the Elm Reactor command.
+Args are expanded using `elm--expand-args'."
   :type '(repeat string)
   :group 'elm)
 
@@ -332,27 +332,42 @@ of the file specified."
       v
     (list v)))
 
+(defun elm--expand-args (args)
+  "Expand any `(:eval ...)' entries in ARGS by evaluating them."
+  (mapcar (lambda (arg)
+            (pcase arg
+              (`(:eval ,sexp) (eval sexp))
+              (_ arg)))
+          args))
+
 ;;; Reactor:
 ;;;###autoload
 (defun run-elm-reactor ()
   "Run the Elm reactor process."
   (interactive)
   (let ((default-directory (elm--find-dependency-file-path))
-        (process (get-process elm-reactor--process-name)))
+        (cmd (elm--expand-args (append (elm--ensure-list elm-reactor-command) elm-reactor-arguments))))
+    (with-current-buffer (get-buffer-create elm-reactor--buffer-name)
+      (comint-mode)
+      (ansi-color-for-comint-mode-on)
+      (let ((proc (get-buffer-process (current-buffer))))
+        (if (and proc (process-live-p proc))
+            (progn
+              (message "Restarting elm-reactor")
+              (delete-process proc))
+          (message "Starting elm-reactor")))
 
-    (when process
-      (delete-process process))
-
-    (let ((cmd (append (elm--ensure-list elm-reactor-command) elm-reactor-arguments)))
-      (apply #'start-process elm-reactor--process-name elm-reactor--buffer-name
-             (car cmd) (cdr cmd)))))
+      (let ((proc (apply #'start-process "elm reactor" elm-reactor--buffer-name
+                         (car cmd) (cdr cmd))))
+        (when proc
+          (set-process-filter proc 'comint-output-filter))))))
 
 (defun elm-reactor--browse (path &optional debug)
   "Open (reactor-relative) PATH in browser with optional DEBUG.
 
 Runs `elm-reactor' first."
   (run-elm-reactor)
-  (browse-url (concat "http://" elm-reactor-address ":" elm-reactor-port "/" path (when debug "?debug"))))
+  (browse-url (format "http://localhost:%s/%s%s" elm-reactor-port path (if debug "?debug" ""))))
 
 ;;;###autoload
 (defun elm-preview-buffer (debug)
