@@ -115,6 +115,7 @@ To disable this highlighting, set this to nil."
     (modify-syntax-entry ?\}  "){4nb" st)
     (modify-syntax-entry ?-  ". 123" st)
     (modify-syntax-entry ?\n ">" st)
+    (modify-syntax-entry ?. "_" st)
 
     (modify-syntax-entry ?\" "\"\"" st)
     (modify-syntax-entry ?\\ "\\" st)
