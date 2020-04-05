@@ -1233,13 +1233,6 @@ Invokes `elm-indent-hook' if not nil."
     (kill-local-variable 'indent-line-function)
     (kill-local-variable 'indent-region-function)))
 
-;;;###autoload
-(define-obsolete-function-alias 'turn-on-elm-indent 'elm-indent-mode)
-
-(defun turn-off-elm-indent ()
-  "Turn off ``intelligent'' Elm indentation mode."
-  (elm-indent-mode nil))
-
 
 (provide 'elm-indent)
 ;;; elm-indent.el ends here
