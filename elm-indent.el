@@ -6,10 +6,6 @@
 
 ;; Author: 1997-1998 Guy Lapalme <lapalme@iro.umontreal.ca>
 
-;; Keywords: indentation Elm layout-rule
-;; Version: 1.2
-;; URL: http://www.iro.umontreal.ca/~lapalme/layout/index.html
-
 ;; This file is not part of GNU Emacs.
 
 ;; This file was adapted from `haskell-indent.el'.
@@ -1232,13 +1228,6 @@ Invokes `elm-indent-hook' if not nil."
         (set (make-local-variable 'indent-region-function) 'elm-indent-region))
     (kill-local-variable 'indent-line-function)
     (kill-local-variable 'indent-region-function)))
-
-;;;###autoload
-(define-obsolete-function-alias 'turn-on-elm-indent 'elm-indent-mode)
-
-(defun turn-off-elm-indent ()
-  "Turn off ``intelligent'' Elm indentation mode."
-  (elm-indent-mode nil))
 
 
 (provide 'elm-indent)

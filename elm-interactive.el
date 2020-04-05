@@ -60,7 +60,7 @@ For Elm 0.18 and earlier, set this to '(\"elm-repl\")."
   :group 'elm)
 
 (defvar elm-interactive-prompt-regexp "^[>|] "
-  "Prompt for `run-elm-interactive'.")
+  "Prompt for `elm-interactive'.")
 
 (defcustom elm-reactor-command '("elm" "reactor")
   "The Elm Reactor command.
@@ -253,7 +253,7 @@ Stolen from ‘haskell-mode’."
 
 ;;;###autoload
 (define-derived-mode elm-interactive-mode comint-mode "Elm Interactive"
-  "Major mode for `run-elm-interactive'.
+  "Major mode for `elm-interactive'.
 
 \\{elm-interactive-mode-map}"
 
@@ -263,10 +263,10 @@ Stolen from ‘haskell-mode’."
 
   (add-hook 'comint-output-filter-functions #'elm-interactive--spot-prompt nil t)
 
-  (turn-on-elm-font-lock))
+  (elm--font-lock-enable))
 
 ;;;###autoload
-(defun run-elm-interactive ()
+(defun elm-interactive ()
   "Run an inferior instance of `elm-repl' inside Emacs."
   (interactive)
   (elm-interactive-kill-current-session)
@@ -282,6 +282,9 @@ Stolen from ‘haskell-mode’."
         (elm-interactive-mode)
         (setq-local elm-repl--origin origin))
       (pop-to-buffer buffer))))
+
+;;;###autoload
+(define-obsolete-function-alias 'run-elm-interactive 'elm-interactive "2020-04")
 
 (defun elm-repl-return-to-origin ()
   "Jump back to the location from which we last jumped to the repl."
@@ -301,7 +304,7 @@ of the file specified."
   (interactive)
   (save-buffer)
   (let ((import-statement (elm--build-import-statement)))
-    (run-elm-interactive)
+    (elm-interactive)
     (elm-interactive--send-command ":reset\n")
     (elm-interactive--send-command import-statement)))
 
@@ -311,7 +314,7 @@ of the file specified."
   (interactive "r")
   (let* ((to-push (buffer-substring-no-properties beg end))
          (lines (split-string (s-trim-right to-push) "\n")))
-    (run-elm-interactive)
+    (elm-interactive)
     (dolist (line lines)
       (elm-interactive--send-command (concat line " \\\n")))
     (elm-interactive--send-command "\n")))
@@ -321,7 +324,7 @@ of the file specified."
   "Push the current top level declaration to the REPL."
   (interactive)
   (let ((lines (elm--get-decl)))
-    (run-elm-interactive)
+    (elm-interactive)
     (dolist (line lines)
       (elm-interactive--send-command (concat line " \\\n")))
     (elm-interactive--send-command "\n")))
@@ -342,7 +345,7 @@ of the file specified."
 
 ;;; Reactor:
 ;;;###autoload
-(defun run-elm-reactor ()
+(defun elm-reactor ()
   "Run the Elm reactor process."
   (interactive)
   (let ((default-directory (elm--find-dependency-file-path))
@@ -362,11 +365,14 @@ of the file specified."
         (when proc
           (set-process-filter proc 'comint-output-filter))))))
 
+;;;###autoload
+(define-obsolete-function-alias 'run-elm-reactor 'elm-reactor "2020-04")
+
 (defun elm-reactor--browse (path &optional debug)
   "Open (reactor-relative) PATH in browser with optional DEBUG.
 
 Runs `elm-reactor' first."
-  (run-elm-reactor)
+  (elm-reactor)
   (browse-url (format "http://localhost:%s/%s%s" elm-reactor-port path (if debug "?debug" ""))))
 
 ;;;###autoload
@@ -973,7 +979,7 @@ elm-specific `completion-at-point' function."
                #'elm-oracle-completion-at-point-function))
 
 (defvar ac-sources)
-(defvar ac-source-elm
+(defvar elm-ac-source
   `((candidates . (elm-oracle--get-completions ac-prefix t))
     (prefix . ,elm-oracle--pattern)))
 
@@ -981,25 +987,28 @@ elm-specific `completion-at-point' function."
 (defun elm-oracle-setup-ac ()
   "Set up auto-complete support.
 Add this function to your `elm-mode-hook'."
-  (add-to-list 'ac-sources 'ac-source-elm))
+  (add-to-list 'ac-sources 'elm-ac-source))
 
 
 (declare-function company-begin-backend "company")
 (declare-function company-doc-buffer "company")
 
 ;;;###autoload
-(defun company-elm (command &optional arg &rest ignored)
+(defun elm-company (command &optional arg &rest ignored)
   "Provide completion info according to COMMAND and ARG.  IGNORED is not used."
   (interactive (list 'interactive))
   (when (derived-mode-p 'elm-mode)
     (cl-case command
-      (interactive (company-begin-backend 'company-elm))
+      (interactive (company-begin-backend 'elm-company))
       (sorted t)
       (prefix (elm-oracle--completion-prefix-at-point))
       (doc-buffer (elm-company--docbuffer arg))
       (candidates (cons :async (apply-partially #'elm-company--candidates arg)))
       (annotation (elm-company--signature arg))
       (meta (elm-company--meta arg)))))
+
+;;;###autoload
+(define-obsolete-function-alias 'company-elm 'elm-company "2020-04")
 
 (defun elm-company--candidates (prefix &optional callback)
   "Function providing candidates for company-mode for given PREFIX.

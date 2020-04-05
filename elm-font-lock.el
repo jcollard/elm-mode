@@ -199,7 +199,7 @@ Also highlights opening brackets without a matching bracket."
               elm--font-lock-operators)
         nil nil))
 
-(defun turn-on-elm-font-lock ()
+(defun elm--font-lock-enable ()
   "Turn on Elm font lock."
   (setq font-lock-multiline t)
   (set-syntax-table elm--syntax-table)
