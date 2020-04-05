@@ -979,7 +979,7 @@ elm-specific `completion-at-point' function."
                #'elm-oracle-completion-at-point-function))
 
 (defvar ac-sources)
-(defvar ac-source-elm
+(defvar elm-ac-source
   `((candidates . (elm-oracle--get-completions ac-prefix t))
     (prefix . ,elm-oracle--pattern)))
 
@@ -987,7 +987,7 @@ elm-specific `completion-at-point' function."
 (defun elm-oracle-setup-ac ()
   "Set up auto-complete support.
 Add this function to your `elm-mode-hook'."
-  (add-to-list 'ac-sources 'ac-source-elm))
+  (add-to-list 'ac-sources 'elm-ac-source))
 
 
 (declare-function company-begin-backend "company")
