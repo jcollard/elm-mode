@@ -168,7 +168,7 @@ Find the roots of this function in the c-awk-mode."
     (elm-format-on-save-mode))
   (add-hook 'after-save-hook #'elm-mode-after-save-handler nil t)
 
-  (turn-on-elm-font-lock))
+  (elm--font-lock-enable))
 
 ;; We enable intelligent indenting, but users can remove this from the
 ;; hook if they prefer.

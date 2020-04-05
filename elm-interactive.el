@@ -263,7 +263,7 @@ Stolen from ‘haskell-mode’."
 
   (add-hook 'comint-output-filter-functions #'elm-interactive--spot-prompt nil t)
 
-  (turn-on-elm-font-lock))
+  (elm--font-lock-enable))
 
 ;;;###autoload
 (defun run-elm-interactive ()
