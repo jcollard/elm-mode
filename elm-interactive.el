@@ -345,7 +345,7 @@ of the file specified."
 
 ;;; Reactor:
 ;;;###autoload
-(defun run-elm-reactor ()
+(defun elm-reactor ()
   "Run the Elm reactor process."
   (interactive)
   (let ((default-directory (elm--find-dependency-file-path))
@@ -365,11 +365,14 @@ of the file specified."
         (when proc
           (set-process-filter proc 'comint-output-filter))))))
 
+;;;###autoload
+(define-obsolete-function-alias 'run-elm-reactor 'elm-reactor "2020-04")
+
 (defun elm-reactor--browse (path &optional debug)
   "Open (reactor-relative) PATH in browser with optional DEBUG.
 
 Runs `elm-reactor' first."
-  (run-elm-reactor)
+  (elm-reactor)
   (browse-url (format "http://localhost:%s/%s%s" elm-reactor-port path (if debug "?debug" ""))))
 
 ;;;###autoload
