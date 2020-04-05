@@ -823,36 +823,40 @@ EXPOSING"
 
 ;;;###autoload
 (defun elm-expose-at-point ()
-  "Exposes expression at point."
+  "Exposes identifier at point."
   (interactive)
   (save-excursion
-    ;; If already at the beginning of defun then elm-beginning-of-defun will go to previous defun.
-    ;; Thus we go to the beginning of next defun and come back to make sure we will arrive at correct place.
+    ;; If already at the beginning of defun then
+    ;; elm-beginning-of-defun will go to previous defun.  Thus we go
+    ;; to the beginning of next defun and come back to make sure we
+    ;; will arrive at correct place.
     (elm-end-of-defun)
     (elm-beginning-of-defun)
-    (let* ((is-type-expression nil)
-           (expose-suffix "")
-           (expression-name (word-at-point))
-           (expression-name (if (string-equal expression-name "type")
-                                (progn
-                                  (setq is-type-expression t)
-                                  (forward-to-word 1)
-                                  (word-at-point))
-                              expression-name))
-           (expression-name (if (string-equal expression-name "alias")
-                                (progn
-                                  (setq is-type-expression nil)
-                                  (forward-to-word 1)
-                                  (word-at-point))
-                              expression-name)))
-      (if (string-equal expression-name "import")
-          (message "No expression to expose.")
-        (progn
-          (when (and is-type-expression (y-or-n-p "Expose constructors?")) (setq expose-suffix "(..)"))
-          (goto-char (point-min))
-          (re-search-forward "exposing[\s\n]+\(")
-          (insert (concat expression-name expose-suffix ", "))
-          (save-buffer))))))
+    (let* (case-fold-search
+           (expose (cond
+                    ((looking-at (rx "type" (+ space) "alias" (+ space)))
+                     (goto-char (match-end 0))
+                     (word-at-point))
+                    ((looking-at (rx "type" (+ space)))
+                     (goto-char (match-end 0))
+                     (concat (word-at-point)
+                             (if (y-or-n-p "Expose constructors? ")
+                                 "(..)"
+                               "")))
+                    ((or (looking-at (rx (or "port" "module" "import") (+ space)))
+                         (null (word-at-point)))
+                     (user-error "No identifier at point"))
+                    (t (word-at-point)))))
+      (goto-char (point-min))
+      (re-search-forward (rx bol "module" (+ (or space))
+                             upper (* (or word (syntax symbol)))))
+      (cond
+       ((looking-at (rx (+ (any space ?\n)) "exposing" (+ (any space ?\n)) "("))
+        (goto-char (match-end 0))
+        (insert expose)
+        (when (looking-at (rx (* (any space ?\n)) word))
+          (insert ", ")))
+       (t (insert "exposing (" expose ")"))))))
 
 (defun elm-documentation--show (documentation)
   "Show DOCUMENTATION in a help buffer."
