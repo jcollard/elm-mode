@@ -6,10 +6,6 @@
 
 ;; Author: 1997-1998 Guy Lapalme <lapalme@iro.umontreal.ca>
 
-;; Keywords: indentation Elm layout-rule
-;; Version: 1.2
-;; URL: http://www.iro.umontreal.ca/~lapalme/layout/index.html
-
 ;; This file is not part of GNU Emacs.
 
 ;; This file was adapted from `haskell-indent.el'.
