@@ -994,18 +994,21 @@ Add this function to your `elm-mode-hook'."
 (declare-function company-doc-buffer "company")
 
 ;;;###autoload
-(defun company-elm (command &optional arg &rest ignored)
+(defun elm-company (command &optional arg &rest ignored)
   "Provide completion info according to COMMAND and ARG.  IGNORED is not used."
   (interactive (list 'interactive))
   (when (derived-mode-p 'elm-mode)
     (cl-case command
-      (interactive (company-begin-backend 'company-elm))
+      (interactive (company-begin-backend 'elm-company))
       (sorted t)
       (prefix (elm-oracle--completion-prefix-at-point))
       (doc-buffer (elm-company--docbuffer arg))
       (candidates (cons :async (apply-partially #'elm-company--candidates arg)))
       (annotation (elm-company--signature arg))
       (meta (elm-company--meta arg)))))
+
+;;;###autoload
+(define-obsolete-function-alias 'company-elm 'elm-company "2020-04")
 
 (defun elm-company--candidates (prefix &optional callback)
   "Function providing candidates for company-mode for given PREFIX.

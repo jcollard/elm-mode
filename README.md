@@ -139,7 +139,7 @@ use [company-mode][company] for auto-completion, add the Elm backend
 to the backend list:
 
 ```elisp
-(add-to-list 'company-backends 'company-elm)
+(add-to-list 'company-backends 'elm-company)
 ```
 
 The Company backend supports `company-quickhelp` to display
