@@ -60,7 +60,7 @@ For Elm 0.18 and earlier, set this to '(\"elm-repl\")."
   :group 'elm)
 
 (defvar elm-interactive-prompt-regexp "^[>|] "
-  "Prompt for `run-elm-interactive'.")
+  "Prompt for `elm-interactive'.")
 
 (defcustom elm-reactor-command '("elm" "reactor")
   "The Elm Reactor command.
@@ -253,7 +253,7 @@ Stolen from ‘haskell-mode’."
 
 ;;;###autoload
 (define-derived-mode elm-interactive-mode comint-mode "Elm Interactive"
-  "Major mode for `run-elm-interactive'.
+  "Major mode for `elm-interactive'.
 
 \\{elm-interactive-mode-map}"
 
@@ -266,7 +266,7 @@ Stolen from ‘haskell-mode’."
   (elm--font-lock-enable))
 
 ;;;###autoload
-(defun run-elm-interactive ()
+(defun elm-interactive ()
   "Run an inferior instance of `elm-repl' inside Emacs."
   (interactive)
   (elm-interactive-kill-current-session)
@@ -282,6 +282,9 @@ Stolen from ‘haskell-mode’."
         (elm-interactive-mode)
         (setq-local elm-repl--origin origin))
       (pop-to-buffer buffer))))
+
+;;;###autoload
+(define-obsolete-function-alias 'run-elm-interactive 'elm-interactive "2020-04")
 
 (defun elm-repl-return-to-origin ()
   "Jump back to the location from which we last jumped to the repl."
@@ -301,7 +304,7 @@ of the file specified."
   (interactive)
   (save-buffer)
   (let ((import-statement (elm--build-import-statement)))
-    (run-elm-interactive)
+    (elm-interactive)
     (elm-interactive--send-command ":reset\n")
     (elm-interactive--send-command import-statement)))
 
@@ -311,7 +314,7 @@ of the file specified."
   (interactive "r")
   (let* ((to-push (buffer-substring-no-properties beg end))
          (lines (split-string (s-trim-right to-push) "\n")))
-    (run-elm-interactive)
+    (elm-interactive)
     (dolist (line lines)
       (elm-interactive--send-command (concat line " \\\n")))
     (elm-interactive--send-command "\n")))
@@ -321,7 +324,7 @@ of the file specified."
   "Push the current top level declaration to the REPL."
   (interactive)
   (let ((lines (elm--get-decl)))
-    (run-elm-interactive)
+    (elm-interactive)
     (dolist (line lines)
       (elm-interactive--send-command (concat line " \\\n")))
     (elm-interactive--send-command "\n")))

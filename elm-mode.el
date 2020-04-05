@@ -126,7 +126,7 @@ Find the roots of this function in the c-awk-mode."
     (define-key map (kbd "C-c C-l") 'elm-repl-load)
     (define-key map (kbd "C-c C-p") 'elm-repl-push)
     (define-key map (kbd "C-c C-e") 'elm-repl-push-decl)
-    (define-key map (kbd "C-c C-z") 'run-elm-interactive)
+    (define-key map (kbd "C-c C-z") 'elm-interactive)
     (define-key map (kbd "C-c C-a") 'elm-compile-add-annotations)
     (define-key map (kbd "C-c C-r") 'elm-compile-clean-imports)
     (define-key map (kbd "C-c C-c") 'elm-compile-buffer)
