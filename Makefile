@@ -17,7 +17,7 @@ INIT_PACKAGES="(progn \
 all: compile package-lint clean-elc
 
 package-lint:
-	${EMACS} -Q --eval ${INIT_PACKAGES} -batch -f package-lint-batch-and-exit elm-mode.el
+	${EMACS} -Q --eval ${INIT_PACKAGES} --eval '(setq package-lint-main-file "elm-mode.el")' -batch -f package-lint-batch-and-exit *.el
 
 compile: clean-elc
 	${EMACS} -Q --eval ${INIT_PACKAGES} -L . -batch -f batch-byte-compile *.el
