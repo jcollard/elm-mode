@@ -827,6 +827,42 @@ EXPOSING"
           name
         (concat (or .as module-name) suffix)))))
 
+;;;###autoload
+(defun elm-expose-at-point ()
+  "Exposes identifier at point."
+  (interactive)
+  (save-excursion
+    ;; If already at the beginning of defun then
+    ;; elm-beginning-of-defun will go to previous defun.  Thus we go
+    ;; to the beginning of next defun and come back to make sure we
+    ;; will arrive at correct place.
+    (elm-end-of-defun)
+    (elm-beginning-of-defun)
+    (let* (case-fold-search
+           (expose (cond
+                    ((looking-at (rx "type" (+ space) "alias" (+ space)))
+                     (goto-char (match-end 0))
+                     (word-at-point))
+                    ((looking-at (rx "type" (+ space)))
+                     (goto-char (match-end 0))
+                     (concat (word-at-point)
+                             (if (y-or-n-p "Expose constructors? ")
+                                 "(..)"
+                               "")))
+                    ((or (looking-at (rx (or "port" "module" "import") (+ space)))
+                         (null (word-at-point)))
+                     (user-error "No identifier at point"))
+                    (t (word-at-point)))))
+      (goto-char (point-min))
+      (re-search-forward (rx bol "module" (+ (or space))
+                             upper (* (or word (syntax symbol)))))
+      (cond
+       ((looking-at (rx (+ (any space ?\n)) "exposing" (+ (any space ?\n)) "("))
+        (goto-char (match-end 0))
+        (insert expose)
+        (when (looking-at (rx (* (any space ?\n)) word))
+          (insert ", ")))
+       (t (insert "exposing (" expose ")"))))))
 
 (defun elm-documentation--show (documentation)
   "Show DOCUMENTATION in a help buffer."
