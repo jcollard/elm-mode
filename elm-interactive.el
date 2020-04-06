@@ -854,15 +854,16 @@ EXPOSING"
                      (user-error "No identifier at point"))
                     (t (word-at-point)))))
       (goto-char (point-min))
-      (re-search-forward (rx bol "module" (+ (or space))
-                             upper (* (or word (syntax symbol)))))
-      (cond
-       ((looking-at (rx (+ (any space ?\n)) "exposing" (+ (any space ?\n)) "("))
-        (goto-char (match-end 0))
-        (insert expose)
-        (when (looking-at (rx (* (any space ?\n)) word))
-          (insert ", ")))
-       (t (insert "exposing (" expose ")"))))))
+      (if (re-search-forward (rx bol "module" (+ (or space))
+                                 upper (* (or word (syntax symbol)))
+                                 (+ (any space ?\n)) "exposing" (+ (any space ?\n)) "(")
+                             nil t)
+          (progn
+            (goto-char (match-end 0))
+            (insert expose)
+            (when (looking-at (rx (* (any space ?\n)) word))
+              (insert ", ")))
+        (error "Couldn't find module declaration")))))
 
 (defun elm-documentation--show (documentation)
   "Show DOCUMENTATION in a help buffer."
