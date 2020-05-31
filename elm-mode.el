@@ -4,7 +4,7 @@
 ;; Copyright (C) 2015, 2016  Bogdan Popa
 
 ;; Author: Joseph Collard
-;; Package-Requires: ((f "0.17") (s "1.7.0") (emacs "25.1") (dash "2.13.0") (reformatter "0.3"))
+;; Package-Requires: ((f "0.17") (s "1.7.0") (emacs "25.1") (dash "2.13.0") (reformatter "0.3") (project "0.3.0))
 ;; URL: https://github.com/jcollard/elm-mode
 ;; Package-Version: 0-snapshot
 
@@ -142,6 +142,33 @@ Find the roots of this function in the c-awk-mode."
     (define-key map (kbd "C-c C-v") 'elm-test-project)
     map)
   "Keymap for Elm major mode.")
+
+;; Let project.el know about Elm projects.
+(defun elm-mode--search-directory-tree (dir)
+  "Recursively discover whether an elm.json file exists in root."
+  (when dir
+    (or (car-safe (directory-files dir 'full "elm.json"))
+        (elm-mode--search-directory-tree (elm-mode--parent-dir dir)))))
+
+(defun elm-mode--parent-dir (dir)
+  "Return parent directory."
+  (let ((parent (file-name-directory (directory-file-name dir))))
+    (unless (equal parent dir)
+      parent)))
+
+(defun elm-mode--find-project-root (dir)
+  (elm-mode--search-directory-tree default-directory))
+
+(defun elm-mode-project-root (dir)
+  "Create the cons cell `project-root' needs to discover root."
+  (let ((project-file (elm-mode--find-project-root dir)))
+    (when project-file
+      (cons 'elm (file-name-directory project-file)))))
+
+(cl-defmethod project-root ((project (head elm)))
+  (cdr project))
+
+(add-hook 'project-find-functions #'elm-mode-project-root)
 
 ;;;###autoload
 (define-derived-mode elm-mode prog-mode "Elm"
