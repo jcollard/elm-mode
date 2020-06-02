@@ -49,6 +49,19 @@ Set to \"elm-package.json\" for use with Elm 0.18 and earlier."
   :type 'string
   :group 'elm-util)
 
+(when (require 'project nil t)
+  (defun elm-project-find-function (dir)
+    "Find a project for project.el looking upwards from DIR.
+This can be added to `project-find-functions' so that
+`project-root' will return the directory in which the
+`elm-package-json' file is found."
+    (let ((root-dir (locate-dominating-file elm-package-json dir)))
+      (when root-dir
+        (cons 'elm root-dir))))
+
+  (cl-defmethod project-root ((project (head elm)))
+    (cdr project)))
+
 (defun elm--get-module-name ()
   "Return the qualified name of the module in the current buffer."
   (save-excursion
