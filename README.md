@@ -169,7 +169,13 @@ will have to install it manually.
 
 Enable `elm-format-on-save-mode` to apply `elm-format` on the current
 buffer on every save.  You might like to add it to your
-`elm-mode-hook`, or enable it on a per-project basis by including an
+`elm-mode-hook`:
+
+```elisp
+(add-hook 'elm-mode-hook 'elm-format-on-save-mode)
+```
+
+Alternatively, you can enable it on a per-project basis by including an
 entry like the following in your `.dir-locals.el`:
 
 ```elisp
