@@ -1200,7 +1200,7 @@ TYPE is either 'guard or 'rhs."
     (define-key map [?\C-c ?\C-=] 'elm-indent-insert-equal)
     map))
 
-(define-obsolete-variable-alias 'elm-indent-map 'elm-indent-mode-map)
+(define-obsolete-variable-alias 'elm-indent-map 'elm-indent-mode-map "2017-10-29")
 
 ;;;###autoload
 (define-minor-mode elm-indent-mode
