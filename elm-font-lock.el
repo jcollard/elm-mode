@@ -1,4 +1,4 @@
-;;; elm-font-lock.el --- Font locking module for Elm mode.
+;;; elm-font-lock.el --- Font locking module for Elm mode.  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2013, 2014 Joseph Collard
 ;; Copyright (C) 2015 Bogdan Popa
@@ -55,9 +55,16 @@ To disable this highlighting, set this to nil."
   :group 'elm-font-lock)
 
 (defconst elm--keywords
-  '("let" "case" "in" "if" "of" "then" "else" "effect"
-    "module" "import" "as" "exposing" "type" "where"
-    "alias" "port" "infix" "infixr" "infixl")
+  '("if" "then" "else"
+    "case" "of"
+    "let" "in"
+    "type" "alias"
+    "effect" "module"
+    "where"
+    "import" "as" "hiding" "exposing"
+    "port" "export" "foreign"
+    "perform"
+    "deriving")
   "Reserved keywords.")
 
 (defconst elm--regexp-keywords

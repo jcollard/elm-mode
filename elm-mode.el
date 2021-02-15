@@ -1,4 +1,4 @@
-;;; elm-mode.el --- Major mode for Elm
+;;; elm-mode.el --- Major mode for Elm  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2013, 2014  Joseph Collard
 ;; Copyright (C) 2015, 2016  Bogdan Popa
@@ -34,13 +34,21 @@
 (require 'elm-format)
 (require 'elm-imenu)
 (require 'elm-indent)
+(require 'elm-indent-simple)
 (require 'elm-interactive)
 (require 'elm-font-lock)
+(require 'project)
+(require 'rx)
 
 (defgroup elm nil
   "Support for the elm programming language."
   :link '(url-link :tag "Github" "https://github.com/jcollard/elm-mode")
   :group 'languages)
+
+(defcustom elm-mode-enable-indent-simple nil
+  "Whether or not to enable the simpler indentation method."
+  :type 'boolean
+  :group 'elm)
 
 (defun elm-beginning-of-defun (&optional arg)
   "Move backward to the beginning of an ELM \"defun\".
@@ -146,33 +154,42 @@ Find the roots of this function in the c-awk-mode."
 ;;;###autoload
 (define-derived-mode elm-mode prog-mode "Elm"
   "Major mode for editing Elm source code."
-  (setq-local indent-tabs-mode nil)
+  :group 'elm
+  :syntax-table elm--syntax-table
 
+  ;; Indentation
   ;; Elm is not generally suitable for electric indentation, since
   ;; there is no unambiguously correct indent level for any given
   ;; line.
-  (when (boundp 'electric-indent-inhibit)
-    (setq-local electric-indent-inhibit t))
+  (when (boundp 'electric-indent-inhibit) (setq electric-indent-inhibit t))
 
   (setq-local comment-start "--")
   (setq-local comment-end "")
   (setq-local imenu-create-index-function #'elm-imenu-create-index)
+  (setq-local comment-start-skip "-- ")
+
   (setq-local paragraph-start (concat " *{-\\| *-- |\\|" page-delimiter))
   (setq-local paragraph-separate (concat " *$\\| *\\({-\\|-}\\) *$\\|" page-delimiter))
+
   (setq-local beginning-of-defun-function #'elm-beginning-of-defun)
   (setq-local end-of-defun-function #'elm-end-of-defun)
-
-  (add-function :before-until (local 'eldoc-documentation-function) #'elm-eldoc)
 
   (when elm-format-on-save
     (elm-format-on-save-mode))
   (add-hook 'after-save-hook #'elm-mode-after-save-handler nil t)
+  (elm--font-lock-enable)
 
-  (elm--font-lock-enable))
+  ;; We enable intelligent indenting, but users can remove this from the
+  ;; hook if they prefer.
+  (if elm-mode-enable-indent-simple
+      (progn
+        (remove-hook 'elm-mode-hook 'elm-indent-mode)
+        (add-hook 'elm-mode-hook 'elm-indent-simple-mode))
+    (progn
+      (remove-hook 'elm-mode-hook 'elm-indent-simple-mode)
+      (add-hook 'elm-mode-hook 'elm-indent-mode)))
+  )
 
-;; We enable intelligent indenting, but users can remove this from the
-;; hook if they prefer.
-(add-hook 'elm-mode-hook 'elm-indent-mode)
 
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.elm\\'" . elm-mode))
