@@ -913,8 +913,6 @@ EXPOSING"
   (tabulated-list-print))
 
 
-(autoload 'popup-make-item "popup")
-
 ;;;###autoload
 (defun elm-test-project ()
   "Run the elm-test command on the current project."

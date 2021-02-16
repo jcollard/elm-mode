@@ -45,11 +45,6 @@
   :link '(url-link :tag "Github" "https://github.com/jcollard/elm-mode")
   :group 'languages)
 
-(defcustom elm-mode-enable-indent-simple nil
-  "Whether or not to enable the simpler indentation method."
-  :type 'boolean
-  :group 'elm)
-
 (defun elm-beginning-of-defun (&optional arg)
   "Move backward to the beginning of an ELM \"defun\".
 With ARG, do it that many times.  Negative arg -N means move
@@ -151,6 +146,15 @@ Find the roots of this function in the c-awk-mode."
     map)
   "Keymap for Elm major mode.")
 
+(defcustom elm-mode-indent-mode 'elm-indent-mode
+  "The chosen indentation method for ``elm-mode''.
+
+The choices are:
+- ``elm-indent-mode', the default'
+- ``elm-indent-simple-mode'', a simpler way to indent Elm code"
+  :type 'symbol
+  :group 'elm)
+
 ;;;###autoload
 (define-derived-mode elm-mode prog-mode "Elm"
   "Major mode for editing Elm source code."
@@ -177,19 +181,11 @@ Find the roots of this function in the c-awk-mode."
   (when elm-format-on-save
     (elm-format-on-save-mode))
   (add-hook 'after-save-hook #'elm-mode-after-save-handler nil t)
-  (elm--font-lock-enable)
+  (elm--font-lock-enable))
 
-  ;; We enable intelligent indenting, but users can remove this from the
-  ;; hook if they prefer.
-  (if elm-mode-enable-indent-simple
-      (progn
-        (remove-hook 'elm-mode-hook 'elm-indent-mode)
-        (add-hook 'elm-mode-hook 'elm-indent-simple-mode))
-    (progn
-      (remove-hook 'elm-mode-hook 'elm-indent-simple-mode)
-      (add-hook 'elm-mode-hook 'elm-indent-mode)))
-  )
-
+;; We enable intelligent indenting, but users can remove this from the
+;; hook if they prefer.
+(add-hook 'elm-mode-hook elm-mode-indent-mode)
 
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.elm\\'" . elm-mode))
