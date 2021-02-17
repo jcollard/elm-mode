@@ -31,11 +31,11 @@
     (+ (- (current-column) (current-indentation))
        (current-indentation))))
 
-(defmacro elm-indent-simple--find-indentation-of-tokens (tokens)
-  `(save-excursion
-     (re-search-backward (regexp-opt ',tokens) (point-min) t nil)
-     (+ (- (current-column) (current-indentation))
-        (current-indentation))))
+(defun elm-indent-simple--find-indentation-of-tokens (tokens)
+  (save-excursion
+    (re-search-backward (regexp-opt tokens) (point-min) t nil)
+    (+ (- (current-column) (current-indentation))
+       (current-indentation))))
 
 (defun elm-indent-simple--two-lines-same-token-p (token)
   "Checks if line and previous line start with same token."
@@ -52,7 +52,7 @@
     (forward-comment (- (point)))
     (looking-back (regexp-opt tokens) nil)))
 
-(defmacro elm-indent-simple--previous-line-starts-with (tokens)
+(defun elm-indent-simple--previous-line-starts-with (tokens)
   (save-excursion
     (forward-line -1)
     (back-to-indentation)
@@ -77,13 +77,13 @@ default to the indentation level of previous line."
        ((elm-indent-simple--previous-line-ends-with '("=" "<-" "[" "{" "of" "if" "else" ":" "->" "exposing")) positive-offset)
        ((looking-at-p (regexp-opt '("{-" "-}"))) 0)
        ((and (= indent-level-previous-line 0) (looking-at-p "=")) positive-offset)
-       ((elm-indent-simple--previous-line-starts-with ("type" "let")) positive-offset)
+       ((elm-indent-simple--previous-line-starts-with '("type" "let")) positive-offset)
        ((looking-at-p ")") (elm-indent-simple--find-indentation-of-list))
        ((looking-at-p "}") (elm-indent-simple--find-indentation-of-list))
        ((looking-at-p "]") (elm-indent-simple--find-indentation-of-list))
        ((looking-at-p ",") (elm-indent-simple--find-indentation-of-list))
-       ((looking-at-p "else") (elm-indent-simple--find-indentation-of-tokens ("if")))
-       ((looking-at-p "then") (elm-indent-simple--find-indentation-of-tokens ("if")))
+       ((looking-at-p "else") (elm-indent-simple--find-indentation-of-tokens '("if")))
+       ((looking-at-p "then") (elm-indent-simple--find-indentation-of-tokens '("if")))
        (t (elm-indent-simple-lastly))))))
 
 (defun elm-indent-simple-level-2-previous-lines ()
