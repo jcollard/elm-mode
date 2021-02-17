@@ -84,7 +84,7 @@ default to the indentation level of previous line."
        ((looking-at-p ",") (elm-indent-simple--find-indentation-of-list))
        ((looking-at-p "else") (elm-indent-simple--find-indentation-of-tokens ("if")))
        ((looking-at-p "then") (elm-indent-simple--find-indentation-of-tokens ("if")))
-       (t (elm-indent-lastly))))))
+       (t (elm-indent-simple-lastly))))))
 
 (defun elm-indent-simple-level-2-previous-lines ()
   "Returns indent level of the two previous lines."
