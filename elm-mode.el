@@ -185,7 +185,7 @@ The choices are:
 
 ;; We enable intelligent indenting, but users can remove this from the
 ;; hook if they prefer.
-(add-hook 'elm-mode-hook elm-mode-indent-mode)
+(add-hook 'elm-mode-hook 'elm-mode-indent-mode)
 
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.elm\\'" . elm-mode))
