@@ -123,32 +123,6 @@ The following bindings are available in the package list buffer:
 Set or customize `elm-sort-imports-on-save` to `t` to apply
 `elm-sort-imports` on the current buffer on every save.
 
-#### Completion for Elm <= 0.18 using `elm-oracle`
-
-The following functionality requires [elm-oracle][elm-oracle] to be
-installed.  `elm-oracle` does not come with the Elm installer so you
-will have to install it manually.
-
-| Keybinding          | Description                                               |
-| ------------------- | --------------------------------------------------------- |
-| <kbd>C-c C-t</kbd>  | Show the type of the function at point in the minibuffer. |
-| <kbd>C-c M-d</kbd>  | Show the documentation of the function at point.          |
-
-`elm-mode` supports auto-completion through `elm-oracle`.  To
-use [company-mode][company] for auto-completion, add the Elm backend
-to the backend list:
-
-```elisp
-(add-to-list 'company-backends 'elm-company)
-```
-
-The Company backend supports `company-quickhelp` to display
-documentation snippets for the autocompletion candidates.
-
-Here's a screenshot of `company-mode` in action:
-
-![company-mode](/screenshots/company-mode.png)
-
 #### Completion for Elm >= 0.19
 
 To obtain completion, code navigation and other niceties, use
@@ -181,10 +155,6 @@ entry like the following in your `.dir-locals.el`:
 ```elisp
 (elm-mode (mode . elm-format-on-save))
 ```
-
-Set or customize `elm-format-elm-version` to change which version of
-Elm to format against. Valid options are `0.19`, `0.18`, `0.17` and `0.16`. The
-default is `0.19`.
 
 #### `elm-test`
 
