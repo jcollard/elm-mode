@@ -27,6 +27,24 @@ available indentations to choose from. If the automatic indentation
 level was not the one you expected simply hit `TAB` to cycle through the
 list (note that hitting any other key will cancel the cycle).
 
+### Simpler indentation
+There is also a simpler indentation mode, `Elm Indent Simple` which doesn't try
+to be as smart as the default one. The benefit of this mode is that it works a
+little more similarly to how more conventional editors handle indentation:
+indent one step forward by pressing `TAB`, one step backward with `S-TAB`.
+
+It tries to be a little smart, however, and guess the easiest to determine
+indentation levels.
+
+You can enable it by setting a variable, `elm-mode-indent-mode` to
+`#'elm-indent-simple-mode`, for example by doing this:
+
+```elisp
+(use-package elm-mode
+  :init
+  (setq elm-mode-indent-mode #'elm-indent-simple-mode))
+```
+
 ## Installation
 
 This package requires *Emacs 25.1 or later*.
