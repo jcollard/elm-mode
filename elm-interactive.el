@@ -49,8 +49,7 @@
 (defvar elm-reactor--buffer-name "*elm-reactor*")
 
 (defcustom elm-interactive-command '("elm" "repl")
-  "The Elm REPL command.
-For Elm 0.18 and earlier, set this to '(\"elm-repl\")."
+  "The Elm REPL command."
   :type '(repeat string)
   :group 'elm)
 
@@ -63,8 +62,7 @@ For Elm 0.18 and earlier, set this to '(\"elm-repl\")."
   "Prompt for `elm-interactive'.")
 
 (defcustom elm-reactor-command '("elm" "reactor")
-  "The Elm Reactor command.
-For Elm 0.18 and earlier, set this to '(\"elm-reactor\")."
+  "The Elm Reactor command."
   :type '(repeat string)
   :group 'elm)
 
@@ -92,8 +90,7 @@ Args are expanded using `elm--expand-args'."
   :group 'elm)
 
 (defcustom elm-compile-arguments '("--output=elm.js")
-  "Command line arguments to pass to the Elm compilation command.
-For Elm 0.18 and earlier, set this to '(\"--yes\" \"--warn\" \"--output=elm.js\")."
+  "Command line arguments to pass to the Elm compilation command."
   :type '(repeat string)
   :group 'elm)
 

@@ -40,10 +40,7 @@ for your project:
 (defcustom elm-format-elm-version "0.19"
   "The version of Elm against which code should be formatted."
   :group 'elm-format
-  :type '(choice (const :tag "Default: 0.19" "0.19")
-		 (const :tag "0.18" "0.18")
-                 (const :tag "0.17" "0.17")
-                 (const :tag "0.16" "0.16")))
+  :type 'string)
 
 (defcustom elm-format-command "elm-format"
   "The name of the `elm-format' command."
