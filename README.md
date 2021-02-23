@@ -10,10 +10,10 @@ Elm mode for Emacs.
 
 1. Syntax highlighting.
 1. Intelligent indentation.
-1. Integration with [elm-make](https://github.com/elm-lang/elm-make).
-1. Integration with [elm-repl](https://github.com/elm-lang/elm-repl).
-1. Integration with [elm-reactor](https://github.com/elm-lang/elm-reactor).
-1. Integration with [elm-package](https://github.com/elm-lang/elm-package).
+1. Integration with `elm-make`
+1. Integration with `elm-repl`
+1. Integration with `elm-reactor`
+1. Integration with `elm-package`
 1. Integration with [elm-format][elm-format]
 1. Integration with [elm-test][elm-test]
 
@@ -128,7 +128,7 @@ To obtain completion, code navigation and other niceties, use
 [elm-language-server](https://github.com/elm-tooling/elm-language-server)
 and an LSP package. [eglot](https://github.com/joaotavora/eglot) is a lightweight
 LSP front-end package for Emacs, and has built-in support for `elm-language-server`.
-Some users might prefer the rather larger and more opinionated `lsp-mode`.
+Some users might prefer the rather larger and more opinionated [lsp-mode](https://github.com/emacs-lsp/lsp-mode).
 
 #### `elm-format`
 
