@@ -144,7 +144,7 @@ Find the roots of this function in the c-awk-mode."
     map)
   "Keymap for Elm major mode.")
 
-(defcustom elm-mode-indent-mode 'elm-indent-mode
+(defcustom elm-mode-indent-mode #'elm-indent-mode
   "The chosen indentation method for ``elm-mode''.
 
 The choices are:
@@ -183,7 +183,7 @@ The choices are:
 
 ;; We enable intelligent indenting, but users can remove this from the
 ;; hook if they prefer.
-(add-hook 'elm-mode-hook 'elm-mode-indent-mode)
+(add-hook 'elm-mode-hook elm-mode-indent-mode)
 
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.elm\\'" . elm-mode))
