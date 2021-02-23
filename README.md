@@ -14,7 +14,6 @@ Elm mode for Emacs.
 1. Integration with [elm-repl](https://github.com/elm-lang/elm-repl).
 1. Integration with [elm-reactor](https://github.com/elm-lang/elm-reactor).
 1. Integration with [elm-package](https://github.com/elm-lang/elm-package).
-1. Integration with [elm-oracle][elm-oracle] (but see _Completion_ below)
 1. Integration with [elm-format][elm-format]
 1. Integration with [elm-test][elm-test]
 
@@ -169,5 +168,4 @@ will have to install it manually.
 
 [company-mode]: http://company-mode.github.io/
 [elm-format]: https://github.com/avh4/elm-format#installation-
-[elm-oracle]: https://github.com/ElmCast/elm-oracle#installation
 [elm-test]: https://github.com/rtfeldman/node-test-runner
