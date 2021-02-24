@@ -146,7 +146,7 @@ Find the roots of this function in the c-awk-mode."
 
 ;;;###autoload
 (defcustom elm-mode-hook '(elm-indent-mode)
-  "Hook called by ``elm-mode''."
+  "Hook called by `elm-mode'."
   :type 'hook
   :group 'elm)
 
