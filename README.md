@@ -10,11 +10,10 @@ Elm mode for Emacs.
 
 1. Syntax highlighting.
 1. Intelligent indentation.
-1. Integration with [elm-make](https://github.com/elm-lang/elm-make).
-1. Integration with [elm-repl](https://github.com/elm-lang/elm-repl).
-1. Integration with [elm-reactor](https://github.com/elm-lang/elm-reactor).
-1. Integration with [elm-package](https://github.com/elm-lang/elm-package).
-1. Integration with [elm-oracle][elm-oracle] (but see _Completion_ below)
+1. Integration with `elm-make`
+1. Integration with `elm-repl`
+1. Integration with `elm-reactor`
+1. Integration with `elm-package`
 1. Integration with [elm-format][elm-format]
 1. Integration with [elm-test][elm-test]
 
@@ -27,6 +26,22 @@ choose from. The exact number is printed in the minibuffer either as
 available indentations to choose from. If the automatic indentation
 level was not the one you expected simply hit `TAB` to cycle through the
 list (note that hitting any other key will cancel the cycle).
+
+### Simpler indentation
+There is also a simpler indentation mode, `Elm Indent Simple` which doesn't try
+to be as smart as the default one. The benefit of this mode is that it works a
+little more similarly to how more conventional editors handle indentation:
+indent one step forward by pressing `TAB`, one step backward with `S-TAB`.
+
+It tries to be a little smart, however, and guess the easiest to determine
+indentation levels.
+
+You can enable it by setting a variable, `elm-mode-indent-mode` to
+`#'elm-indent-simple-mode`, for example by doing this:
+
+```elisp
+  (setq elm-mode-hook '(elm-indent-simple-mode))
+```
 
 ## Installation
 
@@ -129,7 +144,7 @@ To obtain completion, code navigation and other niceties, use
 [elm-language-server](https://github.com/elm-tooling/elm-language-server)
 and an LSP package. [eglot](https://github.com/joaotavora/eglot) is a lightweight
 LSP front-end package for Emacs, and has built-in support for `elm-language-server`.
-Some users might prefer the rather larger and more opinionated `lsp-mode`.
+Some users might prefer the rather larger and more opinionated [lsp-mode](https://github.com/emacs-lsp/lsp-mode).
 
 #### `elm-format`
 
@@ -169,5 +184,4 @@ will have to install it manually.
 
 [company-mode]: http://company-mode.github.io/
 [elm-format]: https://github.com/avh4/elm-format#installation-
-[elm-oracle]: https://github.com/ElmCast/elm-oracle#installation
 [elm-test]: https://github.com/rtfeldman/node-test-runner

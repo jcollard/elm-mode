@@ -140,19 +140,14 @@ Find the roots of this function in the c-awk-mode."
     (define-key map (kbd "C-c C-d") 'elm-documentation-lookup)
     (define-key map (kbd "C-c C-i") 'elm-import)
     (define-key map (kbd "C-c C-s") 'elm-sort-imports)
-    (define-key map (kbd "C-c C-t") 'elm-oracle-type-at-point)
-    (define-key map (kbd "C-c M-d") 'elm-oracle-doc-at-point)
     (define-key map (kbd "C-c C-v") 'elm-test-project)
     map)
   "Keymap for Elm major mode.")
 
-(defcustom elm-mode-indent-mode 'elm-indent-mode
-  "The chosen indentation method for ``elm-mode''.
-
-The choices are:
-- ``elm-indent-mode', the default'
-- ``elm-indent-simple-mode'', a simpler way to indent Elm code"
-  :type 'symbol
+;;;###autoload
+(defcustom elm-mode-hook '(elm-indent-mode)
+  "Hook called by `elm-mode'."
+  :type 'hook
   :group 'elm)
 
 ;;;###autoload
@@ -182,10 +177,6 @@ The choices are:
     (elm-format-on-save-mode))
   (add-hook 'after-save-hook #'elm-mode-after-save-handler nil t)
   (elm--font-lock-enable))
-
-;; We enable intelligent indenting, but users can remove this from the
-;; hook if they prefer.
-(add-hook 'elm-mode-hook 'elm-mode-indent-mode)
 
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.elm\\'" . elm-mode))
