@@ -40,9 +40,7 @@ You can enable it by setting a variable, `elm-mode-indent-mode` to
 `#'elm-indent-simple-mode`, for example by doing this:
 
 ```elisp
-(use-package elm-mode
-  :init
-  (setq elm-mode-indent-mode #'elm-indent-simple-mode))
+  (setq elm-mode-indent-mode #'elm-indent-simple-mode)
 ```
 
 ## Installation
