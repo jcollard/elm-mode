@@ -141,6 +141,18 @@ Find the roots of this function in the c-awk-mode."
     (define-key map (kbd "C-c C-i") 'elm-import)
     (define-key map (kbd "C-c C-s") 'elm-sort-imports)
     (define-key map (kbd "C-c C-v") 'elm-test-project)
+    (easy-menu-define elm-mode-map map
+      "Elm Mode Menu"
+      '("Elm"
+        ["Format Buffer" elm-format t]
+        "--"
+        ["Load Current File in REPL" elm-repl-load t]
+        ["Push Region to REPL" elm-repl-push t]
+        "--"
+        ["Sort Imports" elm-sort-imports t]
+        ["View Doc in Browser" elm-documentation-lookup t]
+        "--"
+        ["Generate TAGS" elm-mode-generate-tags t]))
     map)
   "Keymap for Elm major mode.")
 
