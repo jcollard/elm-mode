@@ -128,12 +128,12 @@ Args are expanded using `elm--expand-args'."
 
 (defvar elm-package-buffer-name "*elm-package*")
 
-(defcustom elm-package-command '("elm" "package")
+(defcustom elm-package-command '("elm")
   "The Elm package command."
   :type '(repeat string)
   :group 'elm)
 
-(defcustom elm-package-arguments '("install" "--yes")
+(defcustom elm-package-arguments '("install")
   "Command line arguments to pass to the Elm package command."
   :type '(repeat string)
   :group 'elm)
@@ -568,7 +568,7 @@ Each is captured as a group.")
   "Get packages that are marked for installation."
   (mapcar (lambda (id)
             (let-alist (nth id elm-package--contents)
-              (concat .name " " (elt .versions 0))))
+              .name))
           elm-package--marked-contents))
 
 (defun elm-package--get-marked-install-commands ()
@@ -757,7 +757,11 @@ Each is captured as a group.")
       (goto-char (point-min))
       (re-search-forward "^ *$")
       (setq elm-package--marked-contents nil)
-      (setq elm-package--contents (append (json-read) nil)))))
+      (setq elm-package--contents
+            (cl-loop for (name . versions) in (json-read)
+                     collect `((name . ,(symbol-name name))
+                               (versions . ,(nreverse versions))
+                               (summary . "")))))))
 
 ;;;###autoload
 (defun elm-import (refresh)
