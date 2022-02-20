@@ -124,7 +124,7 @@ Find the roots of this function in the c-awk-mode."
 
 (defvar elm-mode-map
   (let ((map (make-keymap)))
-    (define-key map (kbd "C-c C-f") 'elm-mode-format-buffer)
+    (define-key map (kbd "C-c C-f") 'elm-format-buffer)
     (define-key map (kbd "C-c M-t") 'elm-mode-generate-tags)
     (define-key map (kbd "C-c C-l") 'elm-repl-load)
     (define-key map (kbd "C-c C-p") 'elm-repl-push)
