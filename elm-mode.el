@@ -178,6 +178,7 @@ Find the roots of this function in the c-awk-mode."
   (setq-local comment-end "")
   (setq-local imenu-create-index-function #'elm-imenu-create-index)
   (setq-local comment-start-skip "-- ")
+  (setq-local indent-tabs-mode -1)
 
   (setq-local paragraph-start (concat " *{-\\| *-- |\\|" page-delimiter))
   (setq-local paragraph-separate (concat " *$\\| *\\({-\\|-}\\) *$\\|" page-delimiter))
