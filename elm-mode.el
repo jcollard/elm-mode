@@ -4,7 +4,7 @@
 ;; Copyright (C) 2015, 2016  Bogdan Popa
 
 ;; Author: Joseph Collard
-;; Package-Requires: ((f "0.17") (s "1.7.0") (emacs "25.1") (dash "2.13.0") (reformatter "0.3"))
+;; Package-Requires: ((f "0.17") (s "1.7.0") (emacs "25.1") (seq "2.23") (reformatter "0.3"))
 ;; URL: https://github.com/jcollard/elm-mode
 ;; Package-Version: 0-snapshot
 
