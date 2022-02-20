@@ -1,7 +1,7 @@
 EMACS ?= emacs
 
 # A space-separated list of required package names
-NEEDED_PACKAGES = f s dash reformatter package-lint
+NEEDED_PACKAGES = f s reformatter package-lint
 
 INIT_PACKAGES="(progn \
   (require 'package) \

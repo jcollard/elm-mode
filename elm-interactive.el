@@ -26,7 +26,6 @@
 (require 'comint)
 (require 'compile)
 (require 'cl-lib)
-(require 'dash)
 (require 'elm-font-lock)
 (require 'elm-util)
 (require 'f)
@@ -549,44 +548,44 @@ Each is captured as a group.")
   "Build a URI by combining the package catalog root and SEGMENTS."
   (concat elm-package-catalog-root (s-join "/" segments)))
 
-(defun elm-package--format-entry (index entry)
+(defun elm-package--format-entry (entry index)
   "Format a package '(INDEX ENTRY) for display in the package listing."
   (let-alist entry
-    (let ((mark (if (-contains? elm-package--marked-contents index)
+    (let ((mark (if (member index elm-package--marked-contents)
                     "*"
                   ""))
           (button (list .name . ()))
-          (status (if (-contains? elm-package--dependencies .name)
+          (status (if (member .name elm-package--dependencies)
                       "dependency"
                     "available")))
       (list index (vector mark button (elt .versions 0) status .summary)))))
 
 (defun elm-package--entries ()
   "Return the formatted package list."
-  (-map-indexed #'elm-package--format-entry elm-package--contents))
+  (seq-map-indexed #'elm-package--format-entry elm-package--contents))
 
 (defun elm-package--get-marked-packages ()
   "Get packages that are marked for installation."
-  (-map (lambda (id)
-          (let-alist (nth id elm-package--contents)
-            (concat .name " " (elt .versions 0))))
-        elm-package--marked-contents))
+  (mapcar (lambda (id)
+            (let-alist (nth id elm-package--contents)
+              (concat .name " " (elt .versions 0))))
+          elm-package--marked-contents))
 
 (defun elm-package--get-marked-install-commands ()
   "Get a list of the commands required to install the marked packages."
-  (-map (lambda (package)
-          (s-join " " (append (elm--ensure-list elm-package-command) elm-package-arguments (list package))))
-        (elm-package--get-marked-packages)))
+  (mapcar (lambda (package)
+            (s-join " " (append (elm--ensure-list elm-package-command) elm-package-arguments (list package))))
+          (elm-package--get-marked-packages)))
 
 (defun elm-package--read-dependencies ()
   "Read the current package's dependencies."
   (setq elm-package--working-dir (elm--find-dependency-file-path))
   (let-alist (elm--read-dependency-file)
     (setq elm-package--dependencies
-          (-map (lambda (dep) (symbol-name (car dep)))
-                (if (consp .dependencies.direct)
-                    (append .dependencies.direct .dependencies.indirect)
-                  .dependencies)))))
+          (mapcar (lambda (dep) (symbol-name (car dep)))
+                  (if (consp .dependencies.direct)
+                      (append .dependencies.direct .dependencies.indirect)
+                    .dependencies)))))
 
 (defun elm-package--read-json (uri)
   "Read a JSON file from a URI."
@@ -704,8 +703,8 @@ Each is captured as a group.")
   (let ((id (tabulated-list-get-id)))
     (when id
       (setq elm-package--marked-contents
-            (-reject (lambda (x) (= id x))
-                     elm-package--marked-contents))
+            (seq-remove (lambda (x) (= id x))
+                        elm-package--marked-contents))
       (elm-package-next 1)
       (elm-package-refresh))))
 
