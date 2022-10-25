@@ -54,7 +54,7 @@
 This can be added to `project-find-functions' so that
 `project-root' will return the directory in which the
 `elm-package-json' file is found."
-    (let ((root-dir (locate-dominating-file elm-package-json dir)))
+    (let ((root-dir (locate-dominating-file dir elm-package-json)))
       (when root-dir
         (cons 'elm root-dir))))
 
