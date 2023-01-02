@@ -61,7 +61,7 @@ To disable this highlighting, set this to nil."
     "type" "alias"
     "module"
     "where"
-    "import" "as" "hiding" "exposing"
+    "import" "as" "exposing"
     "port"
     "perform"
     "deriving")
