@@ -62,9 +62,7 @@ To disable this highlighting, set this to nil."
     "module"
     "where"
     "import" "as" "exposing"
-    "port"
-    "perform"
-    "deriving")
+    "port")
   "Reserved keywords.")
 
 (defconst elm--regexp-keywords
