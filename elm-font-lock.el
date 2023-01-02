@@ -62,7 +62,7 @@ To disable this highlighting, set this to nil."
     "module"
     "where"
     "import" "as" "hiding" "exposing"
-    "port" "export" "foreign"
+    "port"
     "perform"
     "deriving")
   "Reserved keywords.")
