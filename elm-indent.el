@@ -641,12 +641,12 @@ than an identifier, a guard or rhs."
   (let ((elm-indent-info indent-info))
     (if (< start end-visible)
         (cl-case curr-line-type
-          ('empty (elm-indent-empty start end end-visible indent-info))
-          ('ident (elm-indent-ident start end end-visible indent-info))
-          ('guard (elm-indent-guard start end end-visible indent-info))
-          ('rhs   (elm-indent-rhs start end end-visible indent-info))
-          ('comment (error "Comment indent should never happen"))
-          ('other (elm-indent-other start end end-visible indent-info)))
+          (empty (elm-indent-empty start end end-visible indent-info))
+          (ident (elm-indent-ident start end end-visible indent-info))
+          (guard (elm-indent-guard start end end-visible indent-info))
+          (rhs   (elm-indent-rhs start end end-visible indent-info))
+          (comment (error "Comment indent should never happen"))
+          (other (elm-indent-other start end end-visible indent-info)))
       elm-indent-info)))
 
 (defun elm-indent-line-indentation (line-start line-end end-visible
