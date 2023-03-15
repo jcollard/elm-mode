@@ -156,7 +156,7 @@ To disable this highlighting, set this to nil."
 
 (defconst elm--regexp-multiline-list-comma-closing-brackets
   (concat "^[[:space:]]*" (regexp-opt '("," "]" "}") t))
-  "A regular expression representing commas and closing brackets in multiline lists and records.")
+  "Regexp for commas and closing brackets in multiline lists/records.")
 
 (defconst elm--font-lock-multiline-list-comma-closing-brackets
   (cons elm--regexp-multiline-list-comma-closing-brackets
@@ -164,8 +164,9 @@ To disable this highlighting, set this to nil."
   "Highlighting for commas and closing brackets in multiline lists and records.")
 
 (defun elm--match-multiline-list-opening-bracket (limit)
-  "Highlighting search function for opening brackets in multiline lists and records.
-Also highlights opening brackets without a matching bracket."
+  "Search for opening brackets in multiline lists and records.
+Also highlights opening brackets without a matching bracket.
+LIMIT is the extent of the search."
   (when (elm--search-forward-opening-bracket limit)
     (let ((opening (point))
           (eol (line-end-position))
@@ -185,7 +186,8 @@ Also highlights opening brackets without a matching bracket."
         t)))
 
 (defun elm--search-forward-closing-bracket ()
-  "Go to the next matching bracket, assuming that the cursor is on an opening bracket."
+  "Go to the next matching bracket.
+Assumes that the cursor is on an opening bracket."
   (ignore-errors
     (save-match-data
       (forward-sexp)))

@@ -28,6 +28,7 @@
 (require 'cl-lib)
 (require 'elm-font-lock)
 (require 'elm-util)
+(require 'elm-defuns)
 (require 'f)
 (require 'json)
 (require 'let-alist)
@@ -37,6 +38,7 @@
 (require 'subr-x)
 (require 'tabulated-list)
 (require 'url)
+(require 'thingatpt)
 
 (defvar elm-interactive--seen-prompt nil
   "Non-nil represents the fact that a prompt has been spotted.")
@@ -379,7 +381,8 @@ Runs `elm-reactor' first."
 
 ;;; Make:
 (defun elm-compile--command (file &optional output json)
-  "Generate a command that will compile FILE into OUTPUT, with or without JSON reporting."
+  "Generate a command that will compile FILE into OUTPUT.
+When JSON is non-nil, JSON reporting will be enabled."
   (let ((elm-compile-arguments
          (if output
              (append (cl-remove-if (apply-partially #'string-prefix-p "--output=") elm-compile-arguments)
@@ -461,7 +464,8 @@ in the file."
 
 ;;;###autoload
 (defun elm-compile-clean-imports (&optional prompt)
-  "Remove unused imports from the current buffer, PROMPT optionally before deleting."
+  "Remove unused imports from the current buffer.
+Optionally PROMPT before deleting."
   (interactive "P")
   (let* ((report (elm-compile--temporary))
          (line-offset 0))
@@ -518,7 +522,8 @@ Each is captured as a group.")
 
 ;;;###autoload
 (defun elm-compile-add-annotations (&optional prompt)
-  "Add missing type annotations to the current buffer, PROMPT optionally before inserting."
+  "Add missing type annotations to the current buffer.
+Optionally PROMPT before inserting."
   (interactive "P")
   (let* ((report (elm-compile--temporary))
          (line-offset 0))
@@ -549,7 +554,7 @@ Each is captured as a group.")
   (concat elm-package-catalog-root (s-join "/" segments)))
 
 (defun elm-package--format-entry (entry index)
-  "Format a package '(INDEX ENTRY) for display in the package listing."
+  "Format a \='(INDEX ENTRY) list for display in the package listing."
   (let-alist entry
     (let ((mark (if (member index elm-package--marked-contents)
                     "*"
@@ -787,7 +792,7 @@ Each is captured as a group.")
 
 (defun elm-imports--list (buffer)
   "Find all imports in the current BUFFER.
-Return an alist of (FULL_NAME . ('as AS 'exposing EXPOSING), where
+Return an alist of (FULL_NAME . (\='as AS \='exposing EXPOSING), where
 EXPOSING"
   (with-current-buffer buffer
     (save-excursion

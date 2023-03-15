@@ -31,7 +31,7 @@
   :type 'boolean)
 
 (defcustom elm-tags-exclude-elm-stuff t
-  "Controls whether or not sources in the `elm-stuff' directory should be excluded from the TAGS file."
+  "Whether to exclude the `elm-stuff' directory from the TAGS file."
   :group 'elm-tags
   :type 'boolean)
 
