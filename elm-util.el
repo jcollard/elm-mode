@@ -23,6 +23,7 @@
 
 ;;; Commentary:
 ;;; Code:
+(require 'elm-defuns)
 (require 'f)
 (require 'json)
 (require 'let-alist)
@@ -70,26 +71,24 @@ This can be added to `project-find-functions' so that
     (buffer-substring-no-properties (match-beginning 1) (match-end 1))))
 
 (defun elm--get-decl ()
-  "Return the current declaration.
-
-Relies on `haskell-mode' stuff."
-  (unless (fboundp #'haskell-ds-backward-decl)
-    (error "This functionality requires haskell-mode"))
-
+  "Return the current declaration."
   (save-excursion
     (goto-char (1+ (point)))
-    (let* ((start (or (haskell-ds-backward-decl) (point-min)))
-           (end (or (haskell-ds-forward-decl) (point-max)))
-           (raw-decl (s-trim-right (buffer-substring start end)))
-           (lines (split-string raw-decl "\n"))
-           (first-line (car lines))
-           ;; Shadow the defcustom pulse-delay variable.
-           (pulse-delay (/ elm-flash-duration 10.0)))
+    (unless (elm-beginning-of-defun)
+      (user-error "Not in a declaration"))
+    (let ((start (point)))
+      (elm-end-of-defun)
+      (let* ((end (point))
+             (raw-decl (s-trim-right (buffer-substring start end)))
+             (lines (split-string raw-decl "\n"))
+             (first-line (car lines))
+             ;; Shadow the defcustom pulse-delay variable.
+             (pulse-delay (/ elm-flash-duration 10.0)))
 
-      (pulse-momentary-highlight-region start end)
-      (if (string-match-p "^[a-z].*:" first-line)
-          (cdr lines)
-        lines))))
+        (pulse-momentary-highlight-region start end)
+        (if (string-match-p "^[a-z].*:" first-line)
+            (cdr lines)
+          lines)))))
 
 (defun elm--build-import-statement ()
   "Generate a statement that will import the current module."
