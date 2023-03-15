@@ -38,6 +38,7 @@
 (require 'subr-x)
 (require 'tabulated-list)
 (require 'url)
+(require 'thingatpt)
 
 (defvar elm-interactive--seen-prompt nil
   "Non-nil represents the fact that a prompt has been spotted.")
