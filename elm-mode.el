@@ -31,6 +31,7 @@
 
 ;;; Code:
 (require 'elm-tags)
+(require 'elm-defuns)
 (require 'elm-format)
 (require 'elm-imenu)
 (require 'elm-indent)
@@ -44,71 +45,6 @@
   "Support for the elm programming language."
   :link '(url-link :tag "Github" "https://github.com/jcollard/elm-mode")
   :group 'languages)
-
-(defun elm-beginning-of-defun (&optional arg)
-  "Move backward to the beginning of an ELM \"defun\".
-With ARG, do it that many times.  Negative arg -N means move
-forward to Nth following beginning of defun.  Returns t unless
-search stops due to beginning or end of buffer.
-
-Find the roots of this function in the c-awk-mode."
-  (interactive "p")
-  (or arg (setq arg 1))
-  (save-match-data
-    (let ((found t) ; Has the most recent regexp search found b-of-defun?
-          (regexp "^[^- \t\n\r]"))
-      (if (>= arg 0)
-          ;; Go back one defun each time round the following loop. (For +ve arg)
-          (while (and found (< 0 arg) (not (eq (point) (point-min))))
-            ;; Go back one "candidate" each time round the next loop until one
-            ;; is genuinely a beginning-of-defun.
-
-            (setq found (search-backward-regexp
-                         regexp (point-min) 'stop-at-limit))
-            (when found
-              (while (and (forward-line -1)
-                          (looking-at regexp)
-                          (not (= (point-min) (point)))))
-              (forward-line))
-            (setq arg (1- arg)))
-        ;; The same for a -ve arg.
-        (if (not (eq (point) (point-max))) (forward-char 1))
-        (while (and found (< arg 0) (not (eq (point) (point-max)))) ; The same for -ve arg.
-          (setq found (search-forward-regexp
-                       regexp (point-min) 'stop-at-limit))
-          (setq arg (1+ arg))))
-      (eq arg 0))))
-
-(defun elm-end-of-defun (&optional arg)
-  "Move forward to the end of an ELM \"defun\".
-With ARG, do it that many times.  Negative arg -N means move
-forward to Nth previous end of defun.  Returns t unless
-search stops due to beginning or end of buffer.
-
-Find the roots of this function in the c-awk-mode."
-  (interactive "p")
-  (or arg (setq arg 1))
-  (save-match-data
-    (let ((found t) ; Has the most recent regexp search found b-of-defun?
-          (regexp "^\n\n"))
-      (if (>= arg 0)
-          ;; Go back one defun each time round the following loop. (For +ve arg)
-          (while (and found (< 0 arg) (not (eq (point) (point-max))))
-            ;; Go back one "candidate" each time round the next loop until one
-            ;; is genuinely a beginning-of-defun.
-            (setq found (search-forward-regexp
-                         regexp
-                         (point-max) 'stop-at-limit))
-            (setq arg (1- arg)))
-        ;; The same for a -ve arg.
-        (if (not (eq (point) (point-min))) (forward-char 1))
-        (while (and found (< arg 0) (not (eq (point) (point-min)))) ; The same for -ve arg.
-          (setq found (search-backward-regexp
-                       regexp (point-min) 'stop-at-limit))
-          (setq arg (1+ arg)))
-        (if found (goto-char (match-beginning 0))))
-      (eq arg 0))))
-
 
 (defun elm-mode-after-save-handler ()
   "Perform various operations upon saving a buffer."

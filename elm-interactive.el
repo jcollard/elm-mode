@@ -28,6 +28,7 @@
 (require 'cl-lib)
 (require 'elm-font-lock)
 (require 'elm-util)
+(require 'elm-defuns)
 (require 'f)
 (require 'json)
 (require 'let-alist)
