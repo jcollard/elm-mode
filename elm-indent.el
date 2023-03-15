@@ -1196,12 +1196,12 @@ TYPE is either \='guard or \='rhs."
   (elm-indent-align-def mark-active 'rhs))
 
 
+(define-obsolete-variable-alias 'elm-indent-map 'elm-indent-mode-map "2017-10-29")
+
 (defvar elm-indent-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map [?\C-c ?\C-=] 'elm-indent-insert-equal)
     map))
-
-(define-obsolete-variable-alias 'elm-indent-map 'elm-indent-mode-map "2017-10-29")
 
 ;;;###autoload
 (define-minor-mode elm-indent-mode
