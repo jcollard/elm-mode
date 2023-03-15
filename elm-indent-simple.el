@@ -163,7 +163,7 @@ ambiguous, multiple invocations will indent tabstops forward."
   
   (if elm-indent-simple-mode
       (progn
-        (setq-local tab-width elm-indent-offset)
+        (setq-local tab-width elm-indent-simple-offset)
         (setq-local indent-line-function #'elm-indent-simple-indent-line)
         (setq-local indent-region-function nil))
     (kill-local-variable 'tab-width)
