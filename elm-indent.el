@@ -252,7 +252,8 @@ Returns the location of the start of the comment, nil otherwise."
         (elm-indent-skip-blanks-and-newlines-forward end))))
 
 (defun elm-indent-next-symbol-safe (end)
-  "Puts point to the next following symbol, or to end if there are no more symbols in the sexp."
+  "Puts point to the next following symbol.
+If there are no more symbols in the sexp, puts point at END instead."
   (condition-case errlist (elm-indent-next-symbol end)
     (error (goto-char end))))
 
@@ -1074,7 +1075,7 @@ of the regions to move."
 (defun elm-indent-align-def (p-arg type)
   "Align guards or rhs within the current definition before point.
 If P-ARG is t align all defs up to the mark.
-TYPE is either 'guard or 'rhs."
+TYPE is either \='guard or \='rhs."
   (save-excursion
     (let (start-block end-block
                       (maxcol (if (eq type 'rhs) elm-indent-rhs-align-column 0))

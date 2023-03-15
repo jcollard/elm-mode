@@ -149,10 +149,10 @@ per the `elm-package-json' variable."
         (f-join source-dir elm-main-file)))))
 
 (defun elm--shell-and-command ()
-  "Determine the appropriate 'and' command for the current shell.
+  "Determine the appropriate \"and\" command for the current shell.
 
-Currently only special cases the Fish shell, returning '; and ' when
-Fish is used as the default system shell.  Returns ' && ' in all other
+Currently only special cases the Fish shell, returning \"; and \" when
+Fish is used as the default system shell.  Returns \" && \" in all other
 cases."
   ;; TODO: Windows?
   (let* ((shell (getenv "SHELL"))
