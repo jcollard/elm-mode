@@ -743,7 +743,12 @@ Optionally PROMPT before inserting."
              (process (get-buffer-process buffer)))
         (setq elm-package--marked-contents nil)
         (with-current-buffer buffer
-          (set-process-sentinel process #'elm-package--install-sentinel))
+          (set-process-sentinel process
+                                (lambda (proc event)
+                                  (elm-package--install-sentinel proc event)
+                                  (when (and (memq (process-status proc) '(exit))
+                                             (= (process-exit-status proc) 0))
+                                    (kill-buffer (process-buffer proc))))))
         (pop-to-buffer buffer)))))
 
 ;;;###autoload
