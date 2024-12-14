@@ -734,11 +734,17 @@ Optionally PROMPT before inserting."
          (command-to-run (s-join and (elm-package--get-marked-install-commands))))
     (when (yes-or-no-p (concat "Install " (s-join ", " (elm-package--get-marked-packages)) " ?"))
       (let* ((default-directory elm-package--working-dir)
-             (compilation-buffer-name-function (lambda (_) elm-package-compile-buffer-name))
-             (compilation-buffer (compile command-to-run)))
+             (buffer (make-comint-in-buffer "elm-package-install"
+                                            elm-package-compile-buffer-name
+                                            shell-file-name
+                                            nil
+                                            shell-command-switch
+                                            command-to-run))
+             (process (get-buffer-process buffer)))
         (setq elm-package--marked-contents nil)
-        (set-process-sentinel (get-buffer-process compilation-buffer)
-                              #'elm-package--install-sentinel)))))
+        (with-current-buffer buffer
+          (set-process-sentinel process #'elm-package--install-sentinel))
+        (pop-to-buffer buffer)))))
 
 ;;;###autoload
 (defun elm-package-catalog (refresh)
