@@ -735,7 +735,7 @@ Optionally PROMPT before inserting."
     (when (yes-or-no-p (concat "Install " (s-join ", " (elm-package--get-marked-packages)) " ?"))
       (let* ((default-directory elm-package--working-dir)
              (compilation-buffer-name-function (lambda (_) elm-package-compile-buffer-name))
-             (compilation-buffer (compile command-to-run)))
+             (compilation-buffer (compile command-to-run t)))
         (setq elm-package--marked-contents nil)
         (set-process-sentinel (get-buffer-process compilation-buffer)
                               #'elm-package--install-sentinel)))))
